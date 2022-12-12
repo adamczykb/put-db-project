@@ -39,6 +39,23 @@ $$;
 
 ALTER FUNCTION public.zysk_z_podrozy(id bigint) OWNER TO bartek;
 
+create or replace procedure select_klient
+(
+  procenty int
+)
+language plpgsql
+as $$
+declare 
+cnt int=(select max(id) from Podroz);
+begin
+  while cnt>0 loop
+    update Podroz
+    set cena=cena+cena*(procenty/100)
+    where id=cnt;
+  end loop;
+end; 
+$$;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
