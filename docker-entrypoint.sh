@@ -1,9 +1,10 @@
 #!/bin/bash
 
 cd /opt/put-db-project/frontend;
-npm run build;
+echo "Frontend is set up";
+npm install
+npm run build || true;
 cd ./dist
 rm *.map;
-
-
-source /opt/put-db-project/backend/target/release/travel_office_server
+echo "Server started";
+exec /opt/put-db-project/backend/target/release/travel_office_server
