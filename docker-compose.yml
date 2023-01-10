@@ -2,7 +2,7 @@ version: "3.9"
 services:
   db:
     image: postgres:latest
-    #restart: always
+    restart: always
     env_file:
       - ./.env
     volumes:
@@ -13,9 +13,11 @@ services:
       - db_network
 
   backend:
-    build: ./backend
+    build: .
+    volumes:
+      - .:/opt/put-db-project
     ports:
-      - "7777:7777"
+      - "8080:8080"
     networks:
       - db_network
 
@@ -32,7 +34,6 @@ services:
       - pgadmin-data:/var/lib/pgadmin
     networks:
       - db_network
-
 volumes:
   pgdata:
   pgadmin-data:
