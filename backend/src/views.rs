@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn http_response(params: HashMap<&str, &str>) -> String {
+pub fn http_response(params: HashMap<&str, String>) -> String {
     return format!(
         "HTTP/1.1 {}\r\nContent-Length: {}\r\n\r\n{}",
         params.get("Status").unwrap(),
