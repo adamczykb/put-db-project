@@ -12,16 +12,10 @@ pub fn urls(request: HashMap<String, String>) -> String {
                 ("Content", "W".to_owned()),
             ]));
         } else {
-            if url.is_empty() || url == "/" {
-                url = "index.html"
+            if url.split('/').collect::<Vec<&str>>()[1] == "static" {
+                url = url.split("/").last().unwrap();
             } else {
-                url = request
-                    .get("URL")
-                    .unwrap()
-                    .as_str()
-                    .split("/")
-                    .last()
-                    .unwrap();
+                url = "index.html"
             }
             let content = fs::read_to_string("./dist/".to_owned() + url);
             if content.is_ok() {
