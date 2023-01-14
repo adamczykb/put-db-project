@@ -177,8 +177,8 @@ const Home: React.FC = () => {
     {
       title: 'Operation',
       dataIndex: 'Operation',
-      //@ts-ignore
-      render: (_, record: { key: React.Key, record: any }) =>
+      
+      render: (_, record: any) =>
         dataSource.length >= 1 ? (
           <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
             <a>Delete</a>
@@ -241,7 +241,7 @@ const Home: React.FC = () => {
   return (
     <div>
       <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-        Add a row
+        Dodaj klienta
       </Button>
       <Table
         components={components}
