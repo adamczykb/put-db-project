@@ -1,16 +1,31 @@
-use std::collections::HashMap;
-
+use crate::views::get_all_clients_json;
 use crate::views::http_response;
+use std::collections::HashMap;
 use std::fs;
 pub fn urls(request: HashMap<String, String>) -> String {
     let mut response: HashMap<&str, String> = HashMap::new();
     if request.get("Method").unwrap() == "GET" {
         let mut url = request.get("URL").unwrap().as_str();
-        if url == "/api/" {
-            response.extend(HashMap::from([
-                ("Status", "200 OK".to_owned()),
-                ("Content", "W".to_owned()),
-            ]));
+        if url.split('/').collect::<Vec<&str>>()[1] == "api" {
+            match url.split('/').collect::<Vec<&str>>()[2] {
+                "get" => match url.split('/').collect::<Vec<&str>>()[3] {
+                    "all_clients" => {
+                        response.extend(get_all_clients_json());
+                    }
+                    _ => response.extend(HashMap::from([
+                        ("Status", "404 NOT FOUND".to_owned()),
+                        ("Content", "".to_owned()),
+                    ])),
+                },
+                //"push" => {};
+                //"update" => {};
+                _ => {
+                    response.extend(HashMap::from([
+                        ("Status", "404 NOT FOUND".to_owned()),
+                        ("Content", "".to_owned()),
+                    ]));
+                }
+            }
         } else {
             if url.split('/').collect::<Vec<&str>>()[1] == "static" {
                 url = url.split("/").last().unwrap();

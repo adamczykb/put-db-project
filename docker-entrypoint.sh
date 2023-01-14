@@ -8,6 +8,7 @@ npm run build || true
 cd ./dist
 rm *.map
 cd ..
-cp ./dist ../backend/dist -r
+cp ./dist ../backend/ -r
 echo "Server started"
+cd /opt/put-db-project/backend
 exec /opt/put-db-project/backend/target/release/travel_office_server

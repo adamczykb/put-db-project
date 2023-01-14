@@ -1,10 +1,12 @@
 use chrono;
+use postgres::{Client, NoTls};
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::TcpStream;
 
 use crate::urls::urls;
+use std::env;
 
 pub fn handle_connection(mut stream: TcpStream) {
     let request: HashMap<String, String> = parse_request(&stream);
@@ -56,4 +58,15 @@ fn parse_request(stream: &TcpStream) -> HashMap<String, String> {
         }
     }
     request
+}
+
+pub fn get_postgres_client() -> Result<Client, postgres::Error> {
+    if env::args().len() > 1 && env::args().collect::<Vec<String>>()[1] == "DEBUG" {
+        return Client::connect(
+            "postgresql://postgres:alamakota@127.0.0.1:5432/postgres",
+            NoTls,
+        );
+    } else {
+        return Client::connect("postgresql://postgres:alamakota@db:5432/postgres", NoTls);
+    }
 }

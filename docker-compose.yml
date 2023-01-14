@@ -14,6 +14,7 @@ services:
 
   backend:
     build: .
+    restart: always
     entrypoint: bash /opt/put-db-project/docker-entrypoint.sh
     volumes:
       - .:/opt/put-db-project
