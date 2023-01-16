@@ -657,7 +657,7 @@ alter table public."zakwaterowanie_podroz" alter column "id" add generated alway
 -- data for name: atrakcja; type: table data; schema: public; owner: postgres
 --
 
-copy public."atrakcja" ("id", "nazwa", "sezon", "opis", "adres", "koszt") from stdin;
+
 
 
 
@@ -667,7 +667,7 @@ copy public."atrakcja" ("id", "nazwa", "sezon", "opis", "adres", "koszt") from s
 -- data for name: atrakcja_przewodnik; type: table data; schema: public; owner: postgres
 --
 
-copy public."atrakcja_przewodnik" ("atrakcja_id", "przewodnik_id", "id") from stdin;
+
 
 
 
@@ -677,8 +677,6 @@ copy public."atrakcja_przewodnik" ("atrakcja_id", "przewodnik_id", "id") from st
 -- data for name: etap; type: table data; schema: public; owner: postgres
 --
 
-copy public."etap" ("id", "punkt_poczatkowy", "punkt_konczowy", "koszt", "data_poczatkowa", "data_koncowa") from stdin;
-
 
 
 --
@@ -687,7 +685,6 @@ copy public."etap" ("id", "punkt_poczatkowy", "punkt_konczowy", "koszt", "data_p
 -- data for name: etap_podroz; type: table data; schema: public; owner: postgres
 --
 
-copy public."etap_podroz" ("etap_id", "podroz_id", "id") from stdin;
 
 
 
@@ -697,7 +694,6 @@ copy public."etap_podroz" ("etap_id", "podroz_id", "id") from stdin;
 -- data for name: firma_transportowa; type: table data; schema: public; owner: postgres
 --
 
-copy public."firma_transportowa" ("id", "nazwa", "telefon", "adres") from stdin;
 
 
 
@@ -707,7 +703,6 @@ copy public."firma_transportowa" ("id", "nazwa", "telefon", "adres") from stdin;
 -- data for name: jezyk; type: table data; schema: public; owner: postgres
 --
 
-copy public."jezyk" ("kod", "nazwa") from stdin;
 
 
 
@@ -717,7 +712,6 @@ copy public."jezyk" ("kod", "nazwa") from stdin;
 -- data for name: jezyk_pracownik; type: table data; schema: public; owner: postgres
 --
 
-copy public."jezyk_pracownik" ("jezyk_kod", "pracownik_id", "id") from stdin;
 
 
 
@@ -727,7 +721,6 @@ copy public."jezyk_pracownik" ("jezyk_kod", "pracownik_id", "id") from stdin;
 -- data for name: jezyk_przewodnik; type: table data; schema: public; owner: postgres
 --
 
-copy public."jezyk_przewodnik" ("jezyk_kod", "przewodnik_id", "id") from stdin;
 
 
 
@@ -737,7 +730,6 @@ copy public."jezyk_przewodnik" ("jezyk_kod", "przewodnik_id", "id") from stdin;
 -- data for name: klient; type: table data; schema: public; owner: postgres
 --
 
-copy public."klient" ("pesel", "imie", "nazwisko", "adres", "numer_telefonu", "data_urodzenia") from stdin;
 
 
 
@@ -747,7 +739,6 @@ copy public."klient" ("pesel", "imie", "nazwisko", "adres", "numer_telefonu", "d
 -- data for name: klient_podroz; type: table data; schema: public; owner: postgres
 --
 
-copy public."klient_podroz" ("klient_pesel", "podroz_id", "id") from stdin;
 
 
 
@@ -757,7 +748,6 @@ copy public."klient_podroz" ("klient_pesel", "podroz_id", "id") from stdin;
 -- data for name: podroz; type: table data; schema: public; owner: postgres
 --
 
-copy public."podroz" ("id", "nazwa", "data_rozpoczęcia", "data_ukonczenia", "opis", "cena") from stdin;
 
 
 
@@ -767,7 +757,6 @@ copy public."podroz" ("id", "nazwa", "data_rozpoczęcia", "data_ukonczenia", "op
 -- data for name: podroz_atrakcja; type: table data; schema: public; owner: postgres
 --
 
-copy public."podroz_atrakcja" ("podroz_id", "atrakcja_id", "id") from stdin;
 
 
 
@@ -777,7 +766,6 @@ copy public."podroz_atrakcja" ("podroz_id", "atrakcja_id", "id") from stdin;
 -- data for name: pracownik; type: table data; schema: public; owner: postgres
 --
 
-copy public."pracownik" ("id", "imie", "nazwisko", "numer_telefon", "adres") from stdin;
 
 
 
@@ -786,68 +774,6 @@ copy public."pracownik" ("id", "imie", "nazwisko", "numer_telefon", "adres") fro
 -- dependencies: 233
 -- data for name: pracownik_podroz; type: table data; schema: public; owner: postgres
 --
-
-copy public."pracownik_podroz" ("pracownik_id", "podroz_id", "id") from stdin;
-
-
-
---
--- toc entry 3534 (class 0 oid 16796)
--- dependencies: 234
--- data for name: przewodnik; type: table data; schema: public; owner: postgres
---
-
-copy public."przewodnik" ("id", "imie", "nazwisko", "adres", "numer_telefonu") from stdin;
-
-
-
---
--- toc entry 3536 (class 0 oid 16802)
--- dependencies: 236
--- data for name: przewodnik_podroz; type: table data; schema: public; owner: postgres
---
-
-copy public."przewodnik_podroz" ("przewodnik_id", "podroz_id", "id") from stdin;
-
-
-
---
--- toc entry 3537 (class 0 oid 16805)
--- dependencies: 237
--- data for name: transport; type: table data; schema: public; owner: postgres
---
-
-copy public."transport" ("id", "nazwa", "liczba_jednostek", "liczba_miejsc") from stdin;
-
-
-
---
--- toc entry 3538 (class 0 oid 16808)
--- dependencies: 238
--- data for name: transport_firma_transportowa; type: table data; schema: public; owner: postgres
---
-
-copy public."transport_firma_transportowa" ("transport_id", "firma_transportowa_id", "id") from stdin;
-
-
-
---
--- toc entry 3540 (class 0 oid 16812)
--- dependencies: 240
--- data for name: zakwaterowanie; type: table data; schema: public; owner: postgres
---
-
-copy public."zakwaterowanie" ("id", "nazwa", "koszt", "ilosc_miejsc", "standard_zakwaterowania", "adres") from stdin;
-
-
-
---
--- toc entry 3542 (class 0 oid 16818)
--- dependencies: 242
--- data for name: zakwaterowanie_podroz; type: table data; schema: public; owner: postgres
---
-
-copy public."zakwaterowanie_podroz" ("zakwaterowanie_id", "podroz_id", "id") from stdin;
 
 
 
