@@ -4,6 +4,7 @@ use std::{env, fs};
 use travel_office_server::ThreadPool;
 use utils::get_postgres_client;
 mod client;
+mod language;
 mod urls;
 mod utils;
 mod views;

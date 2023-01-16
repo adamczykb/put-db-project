@@ -197,6 +197,14 @@ pub fn delete_certain_client_json<'a>(
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
+
+        connection
+            .execute(
+                "Delete from klient_podroz where klient_pesel=$1",
+                &[&params.params.pesel],
+            )
+            .unwrap_or(0);
+
         let query_result = connection
             .execute("Delete from klient where pesel=$1", &[&params.params.pesel])
             .unwrap_or(0);

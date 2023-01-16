@@ -1,10 +1,10 @@
 use crate::{
+    language::Jezyk,
     urls::RequestBody,
     utils::get_postgres_client,
-    views::{Jezyk, Response, ResponseArray},
+    views::{Response, ResponseArray},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{map::Values, Value};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -358,6 +358,20 @@ pub fn delete_certain_worker_json<'a>(
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
+
+        connection
+            .execute(
+                "Delete from jezyk_pracownik where pracownik_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+        connection
+            .execute(
+                "Delete from pracownik_podroz where pracownik_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+
         let query_result = connection
             .execute("Delete from pracownik where id=$1", &[&params.params.id])
             .unwrap_or(0);
