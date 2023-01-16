@@ -76,7 +76,13 @@ pub fn urls(request: HashMap<String, String>) -> String {
                 }
             }
         }
-        "POST" | "OPTION" => {
+        "OPTIONS" => {
+            response.extend(HashMap::from([
+                ("Status", "204 No Content".to_owned()),
+                ("Content", "".to_owned()),
+            ]));
+        }
+        "POST" => {
             let url = request.get("URL").unwrap().as_str();
             if url.split('/').collect::<Vec<&str>>()[1] == "api" {
                 match url.split('/').collect::<Vec<&str>>()[2] {
