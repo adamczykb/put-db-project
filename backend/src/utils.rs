@@ -20,9 +20,9 @@ fn log_server_incoming_connections(buffer: &HashMap<String, String>) {
     print!(
         "{} | {} {} {}",
         chrono::prelude::Local::now().format("%H:%M:%S %d.%m.%Y"),
-        buffer.get("Method").unwrap(),
-        buffer.get("URL").unwrap(),
-        buffer.get("Host").unwrap()
+        buffer.get("Method").unwrap_or(&"".to_string()),
+        buffer.get("URL").unwrap_or(&"".to_string()),
+        buffer.get("Host").unwrap_or(&"".to_string())
     );
 }
 

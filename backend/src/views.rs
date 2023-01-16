@@ -32,7 +32,7 @@ pub fn http_response(params: HashMap<&str, String>) -> String {
         );
     } else {
         return format!(
-            "HTTP/1.1 {}\r\nContent-Length: {}\r\nContent-Type:{}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, OPTIONS\r\nAccess-Control-Allow-Headers: X-PINGOTHER, Content-Type\r\nAccess-Control-Max-Age: 86400\r\n{}",
+            "HTTP/1.1 {}\r\nContent-Length: {}\r\nContent-Type:{}\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: POST, GET, OPTIONS\r\nAccess-Control-Allow-Headers: X-PINGOTHER, Content-Type\r\nAccess-Control-Max-Age: 86400\r\n\r\n{}",
             params.get("Status").unwrap(),
             params.get("Content").unwrap().len(),
             params.get("Content-Type").unwrap_or(&"".to_owned()),
