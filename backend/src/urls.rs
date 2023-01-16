@@ -76,7 +76,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                 }
             }
         }
-        "POST" => {
+        "POST" | "OPTION" => {
             let url = request.get("URL").unwrap().as_str();
             if url.split('/').collect::<Vec<&str>>()[1] == "api" {
                 match url.split('/').collect::<Vec<&str>>()[2] {
