@@ -52,19 +52,32 @@ fn parse_request(stream: &TcpStream) -> HashMap<String, String> {
                 let main_conection_data: Vec<&str> = line.split(" ").collect();
                 request.insert(
                     "Method".to_string(),
-                    main_conection_data.get(0).unwrap_or(&"").to_string(),
+                    main_conection_data
+                        .get(0)
+                        .unwrap_or(&"")
+                        .trim_matches(char::from(0))
+                        .to_string(),
                 );
                 request.insert(
                     "URL".to_string(),
-                    main_conection_data.get(1).unwrap_or(&"").to_string(),
+                    main_conection_data
+                        .get(1)
+                        .unwrap_or(&"")
+                        .trim_matches(char::from(0))
+                        .to_string(),
                 );
                 request.insert(
                     "HTTP_version".to_string(),
-                    main_conection_data.get(2).unwrap_or(&"").to_string(),
+                    main_conection_data
+                        .get(2)
+                        .unwrap_or(&"")
+                        .trim_matches(char::from(0))
+                        .to_string(),
                 );
             } else {
                 if line.contains(": ") && !line.contains("{") {
-                    let splited_line: Vec<&str> = line.split(": ").collect();
+                    let splited_line: Vec<&str> =
+                        line.trim_matches(char::from(0)).split(": ").collect();
                     request.insert(
                         splited_line.get(0).unwrap().to_string(),
                         splited_line.get(1).unwrap().to_string(),
