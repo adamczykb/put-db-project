@@ -121,7 +121,7 @@ const Home: React.FC = () => {
   const [dataSource, setDataSource] = useState<DataType[]>([
     {
       key: '0',
-      Pesel: 'Pesel',
+      Pesel: '123',
       Imie: 'Edward King 0',
       Nazwisko: 'King',
       Data_urodzenia: '32',
@@ -144,7 +144,8 @@ const Home: React.FC = () => {
       title: 'Pesel',
       dataIndex: 'Pesel',
       width: '30%',
-      editable: true,
+      
+      // editable: true,
     },
     {
       title: 'Imie',
