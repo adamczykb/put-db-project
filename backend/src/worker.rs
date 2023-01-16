@@ -191,15 +191,20 @@ pub fn insert_certain_worker_json<'a>(
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connect to database!");
         return HashMap::from([
@@ -226,7 +231,7 @@ pub fn add_language_to_worker_json<'a>(
             != 1
         {
             return HashMap::from([
-                ("Status", "500 SERVER ERROR".to_owned()),
+                ("Status", "500 Internal Server Error".to_owned()),
                 (
                     "Content",
                     "{result:'Kod języka nie jest jednoznaczny'}".to_owned(),
@@ -244,7 +249,7 @@ pub fn add_language_to_worker_json<'a>(
             != 1
         {
             return HashMap::from([
-                ("Status", "500 SERVER ERROR".to_owned()),
+                ("Status", "500 Internal Server Error".to_owned()),
                 (
                     "Content",
                     "{result:'Id pracownika nie jest jednoznaczne'}".to_owned(),
@@ -272,15 +277,20 @@ pub fn add_language_to_worker_json<'a>(
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connet to database!");
         return HashMap::from([
@@ -317,15 +327,20 @@ pub fn remove_language_from_worker_json<'a>(
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connet to database!");
         return HashMap::from([
@@ -359,15 +374,20 @@ pub fn delete_certain_worker_json<'a>(
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connet to database!");
         return HashMap::from([

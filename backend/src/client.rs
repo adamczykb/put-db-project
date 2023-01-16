@@ -166,15 +166,20 @@ pub fn insert_certain_client_json<'a>(params: RequestBody<Klient>) -> HashMap<&'
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connect to database!");
         return HashMap::from([
@@ -208,15 +213,20 @@ pub fn delete_certain_client_json<'a>(
                 result: query_result,
             };
         }
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
+        let mut response = HashMap::from([
             (
                 "Content",
                 serde_json::to_string(&result).unwrap().to_owned(),
             ),
             ("Content-Type", "application/json".to_owned()),
         ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
     } else {
         println!("ERROR: Cannot connet to database!");
         return HashMap::from([

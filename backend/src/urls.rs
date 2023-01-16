@@ -2,14 +2,15 @@ use serde_json::map::Values;
 use serde_json::Value;
 
 use crate::client::{
-    get_all_clients_json, get_certain_clients_json, insert_certain_client_json,
-    update_certain_client_json, Klient, KlientQuery,
+    delete_certain_client_json, get_all_clients_json, get_certain_clients_json,
+    insert_certain_client_json, update_certain_client_json, Klient, KlientDeleteQuery, KlientQuery,
 };
 
 use crate::views::http_response;
 use crate::worker::{
-    add_language_to_worker_json, get_all_workers_json, get_certain_workers_json,
-    update_certain_worker_json, WorkerBasic, WorkerLanguageQuery, WorkerQuery,
+    add_language_to_worker_json, delete_certain_worker_json, get_all_workers_json,
+    get_certain_workers_json, insert_certain_worker_json, remove_language_from_worker_json,
+    update_certain_worker_json, WorkerBasic, WorkerDeleteQuery, WorkerLanguageQuery, WorkerQuery,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -138,17 +139,17 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             };
                         }
                         "worker" => {
-                            //match serde_json::from_str::<RequestBody<WorkerBasic>>(
-                            //request.get("Content").unwrap_or(&"".to_owned()),
-                            //) {
-                            //Ok(params) => {
-                            //response.extend(insert_certain_client_json(params));
-                            //}
-                            //Err(error) => {
-                            //println!("{}", error);
-                            //response.extend(server_error("WRONG QUERY".to_owned()));
-                            //}
-                            //};
+                            match serde_json::from_str::<RequestBody<WorkerBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_worker_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
                         }
                         "worker_language" => {
                             match serde_json::from_str::<RequestBody<WorkerLanguageQuery>>(
@@ -211,9 +212,45 @@ pub fn urls(request: HashMap<String, String>) -> String {
                         .unwrap_or(&"")
                         .to_owned()
                     {
-                        "client" => {}
-                        "worker" => {}
-                        "worker_language" => {}
+                        "client" => {
+                            match serde_json::from_str::<RequestBody<KlientDeleteQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_client_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "worker" => {
+                            match serde_json::from_str::<RequestBody<WorkerDeleteQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_worker_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "worker_language" => {
+                            match serde_json::from_str::<RequestBody<WorkerLanguageQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_language_from_worker_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
                         _ => {
                             response.extend(not_found());
                         }
