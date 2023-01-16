@@ -33,7 +33,7 @@ fn server_error(message: String) -> HashMap<&'static str, String> {
     message_output.push_str(message.as_str());
     message_output.push_str("'}");
     HashMap::from([
-        ("Status", "500 SERVER ERROR".to_owned()),
+        ("Status", "500 Internal Server Error".to_owned()),
         ("Content", message_output),
         ("Content-Type", "application/json".to_owned()),
     ])
