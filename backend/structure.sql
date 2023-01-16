@@ -651,6 +651,131 @@ alter table public."zakwaterowanie_podroz" alter column "id" add generated alway
 );
 
 
+--
+-- toc entry 3514 (class 0 oid 16736)
+-- dependencies: 214
+-- data for name: atrakcja; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+
+--
+-- toc entry 3516 (class 0 oid 16742)
+-- dependencies: 216
+-- data for name: atrakcja_przewodnik; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+
+--
+-- toc entry 3517 (class 0 oid 16745)
+-- dependencies: 217
+-- data for name: etap; type: table data; schema: public; owner: postgres
+--
+
+
+
+--
+-- toc entry 3520 (class 0 oid 16752)
+-- dependencies: 220
+-- data for name: etap_podroz; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3521 (class 0 oid 16755)
+-- dependencies: 221
+-- data for name: firma_transportowa; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3523 (class 0 oid 16761)
+-- dependencies: 223
+-- data for name: jezyk; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3524 (class 0 oid 16764)
+-- dependencies: 224
+-- data for name: jezyk_pracownik; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3525 (class 0 oid 16767)
+-- dependencies: 225
+-- data for name: jezyk_przewodnik; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3526 (class 0 oid 16770)
+-- dependencies: 226
+-- data for name: klient; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3527 (class 0 oid 16775)
+-- dependencies: 227
+-- data for name: klient_podroz; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3528 (class 0 oid 16778)
+-- dependencies: 228
+-- data for name: podroz; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3529 (class 0 oid 16783)
+-- dependencies: 229
+-- data for name: podroz_atrakcja; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3531 (class 0 oid 16787)
+-- dependencies: 231
+-- data for name: pracownik; type: table data; schema: public; owner: postgres
+--
+
+
+
+
+--
+-- toc entry 3533 (class 0 oid 16793)
+-- dependencies: 233
+-- data for name: pracownik_podroz; type: table data; schema: public; owner: postgres
+--
+
+
 
 --
 -- toc entry 3559 (class 0 oid 0)
