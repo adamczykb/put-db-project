@@ -4,6 +4,9 @@ use serde_json::Value;
 use crate::views::get_all_clients_json;
 use crate::views::get_certain_clients_json;
 use crate::views::http_response;
+use crate::views::insert_certain_client_json;
+use crate::views::update_certain_client_json;
+use crate::views::Klient;
 use crate::views::KlientQuery;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -61,32 +64,95 @@ pub fn urls(request: HashMap<String, String>) -> String {
             let mut url = request.get("URL").unwrap().as_str();
             if url.split('/').collect::<Vec<&str>>()[1] == "api" {
                 match url.split('/').collect::<Vec<&str>>()[2] {
-                    "get" => match url.split('/').collect::<Vec<&str>>()[3] {
+                    "get" => match url
+                        .split('/')
+                        .collect::<Vec<&str>>()
+                        .get(3)
+                        .unwrap_or(&"")
+                        .to_owned()
+                    {
                         "certain_clients" => {
-                            let params: RequestBody<KlientQuery> =
-                                match serde_json::from_str::<RequestBody<KlientQuery>>(
-                                    request.get("Content").unwrap_or(&"".to_owned()),
-                                ) {
-                                    Ok(params) => params,
-                                    Err(error) => {
-                                        println!("{}", error);
-                                        response.extend(HashMap::from([
-                                            ("Status", "500 WRONG QUERY".to_owned()),
-                                            ("Content", "{result:'WRONG QUERY'}".to_owned()),
-                                            ("Content-Type", "application/json".to_owned()),
-                                        ]));
-                                        return String::from("");
-                                    }
-                                };
-                            response.extend(get_certain_clients_json(params));
+                            match serde_json::from_str::<RequestBody<KlientQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => response.extend(get_certain_clients_json(params)),
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(HashMap::from([
+                                        ("Status", "500 WRONG QUERY".to_owned()),
+                                        ("Content", "{result:'WRONG QUERY'}".to_owned()),
+                                        ("Content-Type", "application/json".to_owned()),
+                                    ]));
+                                }
+                            };
                         }
                         _ => response.extend(HashMap::from([
                             ("Status", "404 NOT FOUND".to_owned()),
                             ("Content", "".to_owned()),
                         ])),
                     },
-                    //"push" => {};
-                    //"update" => {};
+                    "push" => match url
+                        .split('/')
+                        .collect::<Vec<&str>>()
+                        .get(3)
+                        .unwrap_or(&"")
+                        .to_owned()
+                    {
+                        "client" => {
+                            match serde_json::from_str::<RequestBody<Klient>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_client_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(HashMap::from([
+                                        ("Status", "500 WRONG QUERY".to_owned()),
+                                        ("Content", "{result:'WRONG QUERY'}".to_owned()),
+                                        ("Content-Type", "application/json".to_owned()),
+                                    ]));
+                                }
+                            };
+                        }
+                        _ => {
+                            response.extend(HashMap::from([
+                                ("Status", "404 NOT FOUND".to_owned()),
+                                ("Content", "".to_owned()),
+                            ]));
+                        }
+                    },
+                    "update" => match url
+                        .split('/')
+                        .collect::<Vec<&str>>()
+                        .get(3)
+                        .unwrap_or(&"")
+                        .to_owned()
+                    {
+                        "certain_client" => {
+                            match serde_json::from_str::<RequestBody<Klient>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_client_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(HashMap::from([
+                                        ("Status", "500 WRONG QUERY".to_owned()),
+                                        ("Content", "{result:'WRONG QUERY'}".to_owned()),
+                                        ("Content-Type", "application/json".to_owned()),
+                                    ]));
+                                }
+                            };
+                        }
+                        _ => {
+                            response.extend(HashMap::from([
+                                ("Status", "404 NOT FOUND".to_owned()),
+                                ("Content", "".to_owned()),
+                            ]));
+                        }
+                    },
                     _ => {
                         response.extend(HashMap::from([
                             ("Status", "404 NOT FOUND".to_owned()),
