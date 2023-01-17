@@ -136,8 +136,46 @@ pub fn get_certain_transport_company_json<'a>(
         ]);
     }
 }
-
-pub fn insert_transport_company_json<'a>(
+pub fn update_certain_transport_company_json<'a>(
+    params: RequestBody<FirmaTransportowaBasic>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "UPDATE firma_transportowa SET nazwa=$2, telefon=$3, adres=$4 where id=$1",
+                    &[
+                        &params.params.id,
+                        &params.params.nazwa,
+                        &params.params.telefon,
+                        &params.params.adres,
+                    ],
+                )
+                .unwrap(),
+        };
+        connection.close();
+        return HashMap::from([
+            ("Status", "200 OK".to_owned()),
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
+pub fn insert_certain_transport_company_json<'a>(
     params: RequestBody<FirmaTransportowaInsert>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();

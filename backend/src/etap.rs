@@ -138,7 +138,7 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
     }
 }
 
-pub fn insert_transport_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<&'a str, String> {
+pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
@@ -211,7 +211,37 @@ pub fn insert_transport_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<&'a
         ]);
     }
 }
-
+pub fn update_certain_etap_json<'a>(
+    params: RequestBody<EtapBasic>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute("UPDATE Etap SET punkt_poczatkowy=$2, punkt_konczowy=$3, koszt=$4, data_poczatkowa=TO_DATE($5,'DD-MM-YYYY'), data_koncowa=TO_DATE($6,'DD-MM-YYYY') where id=$1", &[&params.params.id,&params.params.punkt_poczatkowy,&params.params.punkt_konczowy,&params.params.koszt,&params.params.data_poczatkowa,&params.params.data_koncowa])
+                .unwrap()
+        };
+        connection.close();
+        return HashMap::from([
+            ("Status", "200 OK".to_owned()),
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
 pub fn delete_certain_etap_json<'a>(
     params: RequestBody<EtapDelete>,
 ) -> HashMap<&'a str, String> {

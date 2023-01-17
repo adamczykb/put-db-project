@@ -248,7 +248,7 @@ pub fn insert_certain_attraction_json<'a>(
     }
 }
 
-pub fn delete_certain_worker_json<'a>(
+pub fn delete_certain_attraction_json<'a>(
     params: RequestBody<AtrakcjaDeleteQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();

@@ -2,21 +2,46 @@ use serde_json::map::Values;
 use serde_json::Value;
 
 use crate::accommodation::{
-    get_all_accommodations_json, get_certain_accommodation_json, ZakwaterowanieQuery,
+    delete_certain_accommodation_json, get_all_accommodations_json, get_certain_accommodation_json,
+    insert_certain_accommodation_json, update_certain_accommodation_json, ZakwaterowanieBasic,
+    ZakwaterowanieDelete, ZakwaterowanieInsert, ZakwaterowanieQuery,
 };
-use crate::attraction::{get_all_attractions_json, get_certain_attraction_json, AtrakcjaQuery};
+use crate::attraction::{
+    delete_certain_attraction_json, get_all_attractions_json, get_certain_attraction_json,
+    insert_certain_attraction_json, update_certain_attraction_json, AtrakcjaBasic,
+    AtrakcjaDeleteQuery, AtrakcjaInsert, AtrakcjaQuery,
+};
 use crate::client::{
     delete_certain_client_json, get_all_clients_json, get_certain_clients_json,
     insert_certain_client_json, update_certain_client_json, Klient, KlientBasic, KlientDeleteQuery,
     KlientQuery,
 };
 
-use crate::etap::{get_all_etap_json, get_certain_etap_json, EtapQuery};
-use crate::language::{get_all_languages_json, get_certain_languages_json, JezykQuery};
-use crate::pilot::{get_all_pilots_json, get_certain_pilots_json, PilotQuery};
-use crate::transport::{get_all_transport_json, get_certain_transport_json, TransportQuery};
+use crate::etap::{
+    delete_certain_etap_json, get_all_etap_json, get_certain_etap_json, insert_certain_etap_json,
+    update_certain_etap_json, Etap, EtapBasic, EtapDelete, EtapInsert, EtapQuery,
+};
+use crate::language::{
+    delete_certain_language_json, get_all_languages_json, get_certain_languages_json, JezykDelete,
+    JezykQuery,
+};
+use crate::pilot::{
+    add_attraction_to_pilot_json, add_language_to_pilot_json, delete_certain_pilot_json,
+    get_all_pilots_json, get_certain_pilots_json, insert_certain_pilot_json,
+    remove_attraction_from_pilot_json, remove_language_from_pilot_json, update_certain_pilot_json,
+    PilotAttractionQuery, PilotBasic, PilotDeleteQuery, PilotInsert, PilotLanguageQuery,
+    PilotQuery,
+};
+use crate::transport::{
+    add_transport_company_to_transport_json, get_all_transport_json, get_certain_transport_json,
+    remove_transport_company_from_transport_json, update_certain_transport_json, TransportBasic,
+    TransportDelete, TransportFirmaTransportowaQuery, TransportInsert, TransportQuery,
+};
 use crate::transport_company::{
-    get_all_transport_company_json, get_certain_transport_company_json, FirmaTransportowaQuery,
+    delete_certain_transport_company_json, get_all_transport_company_json,
+    get_certain_transport_company_json, insert_certain_transport_company_json,
+    update_certain_transport_company_json, FirmaTransportowaBasic, FirmaTransportowaDelete,
+    FirmaTransportowaInsert, FirmaTransportowaQuery,
 };
 use crate::views::http_response;
 use crate::worker::{
@@ -269,6 +294,73 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "accommodation" => {
+                            match serde_json::from_str::<RequestBody<ZakwaterowanieInsert>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_accommodation_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "attraction" => {
+                            match serde_json::from_str::<RequestBody<AtrakcjaInsert>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_attraction_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "etap" => {
+                            match serde_json::from_str::<RequestBody<EtapInsert>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_etap_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot" => {
+                            match serde_json::from_str::<RequestBody<PilotInsert>>(
+                                request.get("content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("wrong query".to_owned()));
+                                }
+                            };
+                        }
+
+                        "transport_company" => {
+                            match serde_json::from_str::<RequestBody<FirmaTransportowaInsert>>(
+                                request.get("content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_transport_company_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("wrong query".to_owned()));
+                                }
+                            };
+                        }
+
                         "worker_language" => {
                             match serde_json::from_str::<RequestBody<WorkerLanguageQuery>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
@@ -282,6 +374,47 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "transport_company_transport" => {
+                            match serde_json::from_str::<RequestBody<TransportFirmaTransportowaQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response
+                                        .extend(add_transport_company_to_transport_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot_attraction" => {
+                            match serde_json::from_str::<RequestBody<PilotAttractionQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_attraction_to_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot_language" => {
+                            match serde_json::from_str::<RequestBody<PilotLanguageQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_language_to_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+
                         _ => {
                             response.extend(not_found());
                         }
@@ -312,6 +445,84 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             ) {
                                 Ok(params) => {
                                     response.extend(update_certain_worker_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_accommodation" => {
+                            match serde_json::from_str::<RequestBody<ZakwaterowanieBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_accommodation_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_attraction" => {
+                            match serde_json::from_str::<RequestBody<AtrakcjaBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_attraction_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_etap" => {
+                            match serde_json::from_str::<RequestBody<EtapBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_etap_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_pilot" => {
+                            match serde_json::from_str::<RequestBody<PilotBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_transport" => {
+                            match serde_json::from_str::<RequestBody<TransportBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_transport_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_transport_company" => {
+                            match serde_json::from_str::<RequestBody<FirmaTransportowaBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_transport_company_json(params));
                                 }
                                 Err(error) => {
                                     println!("{}", error);
@@ -356,12 +567,132 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "accommodation" => {
+                            match serde_json::from_str::<RequestBody<ZakwaterowanieDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_accommodation_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "attraction" => {
+                            match serde_json::from_str::<RequestBody<AtrakcjaDeleteQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_attraction_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "etap" => {
+                            match serde_json::from_str::<RequestBody<EtapDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_etap_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "language" => {
+                            match serde_json::from_str::<RequestBody<JezykDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_language_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot" => {
+                            match serde_json::from_str::<RequestBody<PilotDeleteQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "transport_company" => {
+                            match serde_json::from_str::<RequestBody<FirmaTransportowaDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_transport_company_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+
                         "worker_language" => {
                             match serde_json::from_str::<RequestBody<WorkerLanguageQuery>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
                                 Ok(params) => {
                                     response.extend(remove_language_from_worker_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot_language" => {
+                            match serde_json::from_str::<RequestBody<PilotLanguageQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_language_from_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "pilot_attraction" => {
+                            match serde_json::from_str::<RequestBody<PilotAttractionQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_attraction_from_pilot_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "transport_firma_transportowa" => {
+                            match serde_json::from_str::<RequestBody<TransportFirmaTransportowaQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_transport_company_from_transport_json(
+                                        params,
+                                    ));
                                 }
                                 Err(error) => {
                                     println!("{}", error);

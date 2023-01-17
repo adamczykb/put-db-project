@@ -18,6 +18,15 @@ pub struct Zakwaterowanie {
     pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ZakwaterowanieBasic {
+    pub id: i64,
+    pub nazwa: String,
+    pub koszt: i64,
+    pub ilosc_miejsc: i64,
+    pub standard_zakwaterowania: String,
+    pub adres: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ZakwaterowanieInsert {
     pub nazwa: String,
     pub koszt: i64,
@@ -182,7 +191,7 @@ pub fn insert_certain_accommodation_json<'a>(
 }
 
 pub fn update_certain_accommodation_json<'a>(
-    params: RequestBody<Zakwaterowanie>,
+    params: RequestBody<ZakwaterowanieBasic>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
