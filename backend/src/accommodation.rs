@@ -75,7 +75,7 @@ pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_languages_json<'a>(
+pub fn get_certain_accommodation_json<'a>(
     params: RequestBody<ZakwaterowanieQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
@@ -213,7 +213,7 @@ pub fn update_certain_accommodation_json<'a>(
     }
 }
 
-pub fn delete_certain_language_json<'a>(
+pub fn delete_certain_accommodation_json<'a>(
     params: RequestBody<ZakwaterowanieDelete>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();

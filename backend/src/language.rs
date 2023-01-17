@@ -159,7 +159,7 @@ pub fn delete_certain_language_json<'a>(
             .unwrap_or(0);
         connection
             .execute(
-                "Delete from jezyk_pracownik where jezyk_kod=$1",
+                "Delete from jezyk_przewodnik where jezyk_kod=$1",
                 &[&params.params.kod],
             )
             .unwrap_or(0);

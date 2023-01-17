@@ -1,6 +1,5 @@
 use crate::{
-    language::Jezyk,
-    pilot::PilotBasic,
+    transport_company::FirmaTransportowaBasic,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -9,78 +8,68 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Atrakcja {
+pub struct Transport {
     pub id: i64,
     pub nazwa: String,
-    pub adres: String,
-    pub sezon: String,
-    pub opis: String,
-    pub koszt: i64,
-    pub przewodnicy: Vec<PilotBasic>,
+    pub liczba_jednostek: i64,
+    pub liczba_miejsc: i64,
+    pub firmy_transportowe: Vec<FirmaTransportowaBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaBasic {
+pub struct TransportBasic {
     pub id: i64,
     pub nazwa: String,
-    pub adres: String,
-    pub sezon: String,
-    pub opis: String,
-    pub koszt: i64,
+    pub liczba_jednostek: i64,
+    pub liczba_miejsc: i64,
 }
-
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaInsert {
-    pub imie: String,
+pub struct TransportInsert {
     pub nazwa: String,
-    pub adres: String,
-    pub sezon: String,
-    pub opis: String,
-    pub koszt: i64,
+    pub liczba_jednostek: i64,
+    pub liczba_miejsc: i64,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaPilotQuery {
-    pub przewodnik_id: i64,
-    pub atrakcja_id: i64,
+pub struct TransportDelete {
+    pub id: i64,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaQuery {
+pub struct TransportQuery {
     pub id_list: Vec<i64>,
 }
-
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaDeleteQuery {
-    pub id: i64,
+pub struct TransportFirmaTransportowaQuery {
+    pub transport_id: i64,
+    pub firma_transportowa_id: String,
 }
-
-pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
+pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Atrakcja> = ResponseArray {
+        let result: ResponseArray<Transport> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
-                        from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
-                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt",
+                    "select t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
+                    from transport t 
+                    left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
+                    left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
+                    group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc",
                     &[],
                 )
                 .unwrap()
                 .iter()
-                .map(|row| Atrakcja {
+                .map(|row| Transport {
                     id: row.get(0),
                     nazwa: row.get(1),
-                    adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
-                        .unwrap_or(Vec::new()),
+                    liczba_jednostek: row.get(2),
+                    liczba_miejsc: row.get(3),
+                    firmy_transportowe: serde_json::from_str::<Vec<FirmaTransportowaBasic>>(
+                        row.get(4),
+                    )
+                    .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Atrakcja>>(),
+                .collect::<Vec<Transport>>(),
         };
         connection.close();
         return HashMap::from([
@@ -101,8 +90,8 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaQuery>,
+pub fn get_certain_transport_json<'a>(
+    params: RequestBody<TransportQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     let params_query: Vec<String> = params
@@ -111,34 +100,32 @@ pub fn get_certain_attraction_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
-                        from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
-                        where a.id in ("
-        .to_owned();
+    let mut query: String = "select t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
+                            from transport t 
+                            left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
+                            left join firma_transportowa ft on ft.id = fft.firma_transportowa_id  t.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt");
+    query.push_str(") group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc");
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Atrakcja> = ResponseArray {
+        let result: ResponseArray<Transport> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(&query, &[])
                 .unwrap()
                 .iter()
-                .map(|row| Atrakcja {
+                .map(|row| Transport {
                     id: row.get(0),
                     nazwa: row.get(1),
-                    adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
-                        .unwrap_or(Vec::new()),
+                    liczba_jednostek: row.get(2),
+                    liczba_miejsc: row.get(3),
+                    firmy_transportowe: serde_json::from_str::<Vec<FirmaTransportowaBasic>>(
+                        row.get(4),
+                    )
+                    .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Atrakcja>>(),
+                .collect::<Vec<Transport>>(),
         };
         connection.close();
         return HashMap::from([
@@ -158,9 +145,8 @@ pub fn get_certain_attraction_json<'a>(
         ]);
     }
 }
-
-pub fn update_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaBasic>,
+pub fn update_certain_transport_json<'a>(
+    params: RequestBody<TransportBasic>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -169,7 +155,7 @@ pub fn update_certain_attraction_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-            .execute("UPDATE atrakcja SET nazwa=$2, adres=$3, sezon=$4, opis=$5, koszt=$6 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.adres,&params.params.sezon,&params.params.opis,&params.params.koszt])
+            .execute("UPDATE transport SET nazwa=$2, liczba_jednostek=$3, liczba_miejsc=$4 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.liczba_jednostek,&params.params.liczba_miejsc])
             .unwrap()
             };
         connection.close();
@@ -191,26 +177,55 @@ pub fn update_certain_attraction_json<'a>(
     }
 }
 
-pub fn insert_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaInsert>,
+pub fn add_transport_company_to_transport_json<'a>(
+    params: RequestBody<TransportFirmaTransportowaQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
+        if connection
+            .query(
+                "select * from firma_transportowa where id=$1",
+                &[&params.params.firma_transportowa_id],
+            )
+            .unwrap()
+            .len()
+            != 1
+        {
+            return HashMap::from([
+                ("Status", "500 Internal Server Error".to_owned()),
+                (
+                    "Content",
+                    "{result:'Id atrakcji nie jest jednoznaczne'}".to_owned(),
+                ),
+                ("Content-Type", "application/json".to_owned()),
+            ]);
+        }
+        if connection
+            .query(
+                "select * from transport where id=$1",
+                &[&params.params.transport_id],
+            )
+            .unwrap()
+            .len()
+            != 1
+        {
+            return HashMap::from([
+                ("Status", "500 Internal Server Error".to_owned()),
+                (
+                    "Content",
+                    "{result:'Id pracownika nie jest jednoznaczne'}".to_owned(),
+                ),
+                ("Content-Type", "application/json".to_owned()),
+            ]);
+        }
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "INSERT INTO pracownik ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
-                &[
-                    &params.params.nazwa,
-                    &params.params.adres,
-                    &params.params.sezon,
-                    &params.params.opis,
-                    &params.params.koszt,
-                ],
+                "insert into transport_firma_transportowa (transport_id, firma_transportowa_id) values ($1,$2)",
+                &[&params.params.transport_id, &params.params.firma_transportowa_id],
             )
             .unwrap_or(0);
-
         if query_result > 0 {
             result = Response {
                 status: 200,
@@ -220,68 +235,7 @@ pub fn insert_certain_attraction_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new worker".to_owned(),
-                result: query_result,
-            };
-        }
-        let mut response = HashMap::from([
-            (
-                "Content",
-                serde_json::to_string(&result).unwrap().to_owned(),
-            ),
-            ("Content-Type", "application/json".to_owned()),
-        ]);
-        if result.status == 200 {
-            response.extend([("Status", "200 OK".to_owned())]);
-        } else {
-            response.extend([("Status", "500 Internal Server Error".to_owned())]);
-        }
-        connection.close();
-        return response;
-    } else {
-        println!("ERROR: Cannot connect to database!");
-        return HashMap::from([
-            ("Status", "401 PERMISSION DENIED".to_owned()),
-            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
-            ("Content-Type", "application/json".to_owned()),
-        ]);
-    }
-}
-
-pub fn delete_certain_worker_json<'a>(
-    params: RequestBody<AtrakcjaDeleteQuery>,
-) -> HashMap<&'a str, String> {
-    let client = get_postgres_client();
-    if client.is_ok() {
-        let mut connection = client.unwrap();
-        let result: Response<u64>;
-
-        connection
-            .execute(
-                "Delete from atrakcja_przewodnik where atrakcja_id=$1",
-                &[&params.params.id],
-            )
-            .unwrap_or(0);
-        connection
-            .execute(
-                "Delete from podroz_atrakcja where atrakcja_id=$1",
-                &[&params.params.id],
-            )
-            .unwrap_or(0);
-
-        let query_result = connection
-            .execute("Delete from atrakcja where id=$1", &[&params.params.id])
-            .unwrap_or(0);
-        if query_result > 0 {
-            result = Response {
-                status: 200,
-                message: "Atrakcja usunieta".to_owned(),
-                result: query_result,
-            };
-        } else {
-            result = Response {
-                status: 500,
-                message: "Atrakcja does not exist".to_owned(),
+                message: "Wystapil blad podczas dodwania powiazania".to_owned(),
                 result: query_result,
             };
         }
@@ -308,3 +262,105 @@ pub fn delete_certain_worker_json<'a>(
         ]);
     }
 }
+
+pub fn remove_transport_company_from_transport_json<'a>(
+    params: RequestBody<TransportFirmaTransportowaQuery>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64>;
+        let query_result = connection
+            .execute(
+                "DELETE from transport_firma_transportowa where transport_id=$1 and firma_transportowa_id=$2",
+                &[&params.params.transport_id, &params.params.firma_transportowa_id],
+            )
+            .unwrap_or(0);
+        if query_result > 0 {
+            result = Response {
+                status: 200,
+                message: "OK".to_owned(),
+                result: query_result,
+            };
+        } else {
+            result = Response {
+                status: 500,
+                message: "Wystapil blad podczas usuwania powiazania".to_owned(),
+                result: query_result,
+            };
+        }
+        let mut response = HashMap::from([
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
+//pub fn delete_certain_transport_json<'a>(
+//params: RequestBody<TransportDelete>,
+//) -> HashMap<&'a str, String> {
+//let client = get_postgres_client();
+//if client.is_ok() {
+//let mut connection = client.unwrap();
+//let result: Response<u64>;
+//connection
+//.execute(
+//"Delete from transport_firma_transportowa where transport_id=$1",
+//&[&params.params.id],
+//)
+//.unwrap_or(0);
+//let query_result = connection
+//.execute("Delete from transport where id=$1", &[&params.params.id])
+//.unwrap_or(0);
+//if query_result > 0 {
+//result = Response {
+//status: 200,
+//message: "Transportowa zostal usuniety".to_owned(),
+//result: query_result,
+//};
+//} else {
+//result = Response {
+//status: 500,
+//message: "Nie mozna usunac transportu".to_owned(),
+//result: query_result,
+//};
+//}
+//let mut response = HashMap::from([
+//(
+//"Content",
+//serde_json::to_string(&result).unwrap().to_owned(),
+//),
+//("Content-Type", "application/json".to_owned()),
+//]);
+//if result.status == 200 {
+//response.extend([("Status", "200 OK".to_owned())]);
+//} else {
+//response.extend([("Status", "500 Internal Server Error".to_owned())]);
+//}
+//connection.close();
+//return response;
+//} else {
+//println!("ERROR: Cannot connet to database!");
+//return HashMap::from([
+//("Status", "401 PERMISSION DENIED".to_owned()),
+//("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+//("Content-Type", "application/json".to_owned()),
+//]);
+//}
+//}
