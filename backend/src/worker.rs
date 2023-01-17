@@ -25,6 +25,13 @@ pub struct WorkerBasic {
     pub numer_telefon: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
+pub struct WorkerInsert {
+    pub imie: String,
+    pub nazwisko: String,
+    pub adres: String,
+    pub numer_telefon: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerLanguageQuery {
     pub pracownik_id: i64,
     pub language_kod: String,
@@ -55,7 +62,7 @@ pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefon: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap()
+                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new())
                         }
             }).collect::<Vec<Worker>>()
         };
@@ -104,7 +111,7 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
                     nazwisko: row.get(2),
                     adres: row.get(3),
                     numer_telefon: row.get(4),
-                    jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)).unwrap(),
+                    jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)).unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Worker>>(),
         };
@@ -160,7 +167,7 @@ pub fn update_certain_worker_json<'a>(
 }
 
 pub fn insert_certain_worker_json<'a>(
-    params: RequestBody<WorkerBasic>,
+    params: RequestBody<WorkerInsert>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {

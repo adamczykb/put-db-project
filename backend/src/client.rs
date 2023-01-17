@@ -1,4 +1,5 @@
 use crate::{
+    journey::PodrozBasic,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -9,6 +10,17 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Klient {
+    pub pesel: i64,
+    pub imie: String,
+    pub nazwisko: String,
+    pub adres: String,
+    pub numer_telefonu: String,
+    pub data_urodzenia: String,
+    pub podroze: Vec<PodrozBasic>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct KlientBasic {
     pub pesel: i64,
     pub imie: String,
     pub nazwisko: String,
@@ -34,7 +46,7 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select pesel,imie,nazwisko, adres,numer_telefonu,cast(data_urodzenia as varchar) from public.klient", &[]
+                    "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia", &[]
                     ).unwrap().iter().map(|row| {
                         Klient{
                             pesel:row.get(0),
@@ -42,7 +54,8 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
                             nazwisko: row.get(2),
                             adres: row.get(3),
                             numer_telefonu: row.get(4),
-                            data_urodzenia: row.get(5)
+                            data_urodzenia: row.get(5),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new())
                         }
                     }).collect::<Vec<Klient>>()
         };
@@ -73,9 +86,10 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select pesel,imie,nazwisko, adres,numer_telefonu,cast(data_urodzenia as varchar) from public.klient where pesel in (".to_owned() ;
+    let mut query:String = "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
-    query.push_str(")");
+    query
+        .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Klient> = ResponseArray {
@@ -92,6 +106,8 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
                     adres: row.get(3),
                     numer_telefonu: row.get(4),
                     data_urodzenia: row.get(5),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
+                        .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Klient>>(),
         };
@@ -114,7 +130,9 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
     }
 }
 
-pub fn update_certain_client_json<'a>(params: RequestBody<Klient>) -> HashMap<&'a str, String> {
+pub fn update_certain_client_json<'a>(
+    params: RequestBody<KlientBasic>,
+) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
@@ -144,7 +162,9 @@ pub fn update_certain_client_json<'a>(params: RequestBody<Klient>) -> HashMap<&'
     }
 }
 
-pub fn insert_certain_client_json<'a>(params: RequestBody<Klient>) -> HashMap<&'a str, String> {
+pub fn insert_certain_client_json<'a>(
+    params: RequestBody<KlientBasic>,
+) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
