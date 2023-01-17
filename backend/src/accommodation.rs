@@ -1,63 +1,60 @@
 use crate::{
-    journey::PodrozBasic,
+    journey::{Podroz, PodrozBasic},
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{map::Values, Value};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize)]
-pub struct Klient {
-    pub pesel: i64,
-    pub imie: String,
-    pub nazwisko: String,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Zakwaterowanie {
+    pub id: i64,
+    pub nazwa: String,
+    pub koszt: i64,
+    pub ilosc_miejsc: i64,
+    pub standard_zakwaterowania: String,
     pub adres: String,
-    pub numer_telefonu: String,
-    pub data_urodzenia: String,
     pub podroze: Vec<PodrozBasic>,
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct KlientBasic {
-    pub pesel: i64,
-    pub imie: String,
-    pub nazwisko: String,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ZakwaterowanieInsert {
+    pub nazwa: String,
+    pub koszt: i64,
+    pub ilosc_miejsc: i64,
+    pub standard_zakwaterowania: String,
     pub adres: String,
-    pub numer_telefonu: String,
-    pub data_urodzenia: String,
+    pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct KlientQuery {
-    pub pesel_list: Vec<i64>,
+pub struct ZakwaterowanieDelete {
+    pub id: String,
 }
-
 #[derive(Serialize, Deserialize, Debug)]
-pub struct KlientDeleteQuery {
-    pub pesel: i64,
+pub struct ZakwaterowanieQuery {
+    pub id_list: Vec<i64>,
 }
-
-pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
+pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let  result: ResponseArray<Klient> = ResponseArray{
+        let result: ResponseArray<Zakwaterowanie> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
-            result: connection.query(
-                    "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia", &[]
-                    ).unwrap().iter().map(|row| {
-                        Klient{
-                            pesel:row.get(0),
-                            imie: row.get(1),
-                            nazwisko: row.get(2),
-                            adres: row.get(3),
-                            numer_telefonu: row.get(4),
-                            data_urodzenia: row.get(5),
+            result: connection
+                .query("select z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres", &[])
+                .unwrap()
+                .iter()
+                .map(|row| Zakwaterowanie {
+                    id:row.get(0),
+                            nazwa: row.get(1),
+                            koszt:row.get(2),
+                            ilosc_miejsc: row.get(3),
+                            standard_zakwaterowania: row.get(4),
+                            adres: row.get(5),
                             podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new())
-                        }
-                    }).collect::<Vec<Klient>>()
+                })
+                .collect::<Vec<Zakwaterowanie>>(),
         };
         connection.close();
         return HashMap::from([
@@ -78,38 +75,41 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap<&'a str, String> {
+pub fn get_certain_languages_json<'a>(
+    params: RequestBody<ZakwaterowanieQuery>,
+) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     let params_query: Vec<String> = params
         .params
-        .pesel_list
+        .id_list
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
+    let mut query: String = "select z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query
-        .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia");
+    query.push_str(
+        ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres",
+    );
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Klient> = ResponseArray {
+        let result: ResponseArray<Zakwaterowanie> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(&query, &[])
                 .unwrap()
                 .iter()
-                .map(|row| Klient {
-                    pesel: row.get(0),
-                    imie: row.get(1),
-                    nazwisko: row.get(2),
-                    adres: row.get(3),
-                    numer_telefonu: row.get(4),
-                    data_urodzenia: row.get(5),
+                .map(|row| Zakwaterowanie {
+                    id: row.get(0),
+                    nazwa: row.get(1),
+                    koszt: row.get(2),
+                    ilosc_miejsc: row.get(3),
+                    standard_zakwaterowania: row.get(4),
+                    adres: row.get(5),
                     podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
                         .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Klient>>(),
+                .collect::<Vec<Zakwaterowanie>>(),
         };
         connection.close();
         return HashMap::from([
@@ -130,48 +130,19 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
     }
 }
 
-pub fn update_certain_client_json<'a>(
-    params: RequestBody<KlientBasic>,
-) -> HashMap<&'a str, String> {
-    let client = get_postgres_client();
-    if client.is_ok() {
-        let mut connection = client.unwrap();
-        let result: Response<u64> = Response {
-            status: 200,
-            message: "OK".to_owned(),
-            result: connection
-                .execute("UPDATE KLIENT SET imie=$2, nazwisko=$3, adres=$4, numer_telefonu=$5, data_urodzenia=TO_DATE($6,'DD-MM-YYYY') where pesel=$1", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia])
-                .unwrap()
-        };
-        connection.close();
-        return HashMap::from([
-            ("Status", "200 OK".to_owned()),
-            (
-                "Content",
-                serde_json::to_string(&result).unwrap().to_owned(),
-            ),
-            ("Content-Type", "application/json".to_owned()),
-        ]);
-    } else {
-        println!("ERROR: Cannot connet to database!");
-        return HashMap::from([
-            ("Status", "401 PERMISSION DENIED".to_owned()),
-            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
-            ("Content-Type", "application/json".to_owned()),
-        ]);
-    }
-}
-
-pub fn insert_certain_client_json<'a>(
-    params: RequestBody<KlientBasic>,
+pub fn insert_certain_accommodation_json<'a>(
+    params: RequestBody<ZakwaterowanieInsert>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
         let query_result = connection
-                .execute("INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY'))", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia])
-                .unwrap_or(0);
+            .execute(
+                "INSERT INTO zakwaterowanie (nazwa,koszt,ilosc_miejsc,standard_zakwaterowania,adres) values ($1,$2,$3,$4,$5)",
+                &[&params.params.nazwa, &params.params.koszt, &params.params.ilosc_miejsc, &params.params.standard_zakwaterowania, &params.params.adres],
+            )
+            .unwrap_or(0);
 
         if query_result > 0 {
             result = Response {
@@ -182,7 +153,7 @@ pub fn insert_certain_client_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new client, client with certain PESEL exists".to_owned(),
+                message: "Nie mozna dodac zakwaterowania".to_owned(),
                 result: query_result,
             };
         }
@@ -210,34 +181,68 @@ pub fn insert_certain_client_json<'a>(
     }
 }
 
-pub fn delete_certain_client_json<'a>(
-    params: RequestBody<KlientDeleteQuery>,
+pub fn update_certain_accommodation_json<'a>(
+    params: RequestBody<Zakwaterowanie>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute("UPDATE zakwaterowanie SET nazwa=$1,koszt=$2,ilosc_miejsc=$3,standard_zakwaterowania=$4,adres=$5 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.koszt,&params.params.ilosc_miejsc,&params.params.standard_zakwaterowania,&params.params.adres])
+                .unwrap()
+        };
+        connection.close();
+        return HashMap::from([
+            ("Status", "200 OK".to_owned()),
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
+
+pub fn delete_certain_language_json<'a>(
+    params: RequestBody<ZakwaterowanieDelete>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
-
         connection
             .execute(
-                "Delete from klient_podroz where klient_pesel=$1",
-                &[&params.params.pesel],
+                "Delete from zakwaterowanie_podroz where zakwaterowanie_id=$1",
+                &[&params.params.id],
             )
             .unwrap_or(0);
 
         let query_result = connection
-            .execute("Delete from klient where pesel=$1", &[&params.params.pesel])
+            .execute(
+                "Delete from zakwaterowanie where kod=$1",
+                &[&params.params.id],
+            )
             .unwrap_or(0);
         if query_result > 0 {
             result = Response {
                 status: 200,
-                message: "Klient deleted".to_owned(),
+                message: "Zakwaterowanie usuniete".to_owned(),
                 result: query_result,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Klient does not exist".to_owned(),
+                message: "Nie mozna usunac zakwaterowania".to_owned(),
                 result: query_result,
             };
         }

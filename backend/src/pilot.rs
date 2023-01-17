@@ -1,4 +1,6 @@
 use crate::{
+    attraction::AtrakcjaBasic,
+    journey::PodrozBasic,
     language::Jezyk,
     urls::RequestBody,
     utils::get_postgres_client,
@@ -8,63 +10,75 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Worker {
+pub struct Pilot {
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
-    pub numer_telefon: String,
+    pub numer_telefonu: String,
     pub jezyki: Vec<Jezyk>,
+    pub podroze: Vec<PodrozBasic>,
+    pub atrakcje: Vec<AtrakcjaBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WorkerBasic {
+pub struct PilotBasic {
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
-    pub numer_telefon: String,
+    pub numer_telefonu: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WorkerInsert {
+pub struct PilotInsert {
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
-    pub numer_telefon: String,
+    pub numer_telefonu: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WorkerLanguageQuery {
-    pub pracownik_id: i64,
+pub struct PilotLanguageQuery {
+    pub przewodnik_id: i64,
     pub language_kod: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WorkerQuery {
+pub struct PilotQuery {
     pub id_list: Vec<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WorkerDeleteQuery {
+pub struct PilotDeleteQuery {
     pub id: i64,
 }
 
-pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
+pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let  result: ResponseArray<Worker> = ResponseArray{
+        let  result: ResponseArray<Pilot> = ResponseArray{
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon", &[]
+                    "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text  
+                        from przewodnik p
+                        left join przewodnik_podroz pp on pp.przewodnik_id=p.id 
+                        left join podroz po on po.id=pp.podroz_id 
+                        left join jezyk_przewodnik jp on jp.przewodnik_id=p.id 
+                        left join jezyk je on je.kod=jp.jezyk_kod
+                        left join atrakcja_przewodnik ap on ap.przewodnik_id=p.id 
+                        left join atrakcja a on a.id=ap.atrakcja_id 
+                        group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu", &[]
                     ).unwrap().iter().map(|row| {
-                        Worker{
+                        Pilot{
                             id:row.get(0),
                             imie: row.get(1),
                             nazwisko:row.get(2),
                             adres: row.get(3),
-                            numer_telefon: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new())
+                            numer_telefonu: row.get(4),
+                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new()),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new()),
+                            atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
-            }).collect::<Vec<Worker>>()
+            }).collect::<Vec<Pilot>>()
         };
         connection.close();
         return HashMap::from([
@@ -85,7 +99,7 @@ pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap<&'a str, String> {
+pub fn get_certain_pilots_json<'a>(params: RequestBody<PilotQuery>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     let params_query: Vec<String> = params
         .params
@@ -93,27 +107,39 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod where p.id in (".to_owned() ;
+    let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text
+                        from przewodnik p
+                        left join przewodnik_podroz pp on pp.przewodnik_id=p.id 
+                        left join podroz po on po.id=pp.podroz_id 
+                        left join jezyk_przewodnik jp on jp.przewodnik_id=p.id 
+                        left join jezyk je on je.kod=jp.jezyk_kod  
+                        left join atrakcja_przewodnik ap on ap.przewodnik_id=p.id 
+                        left join atrakcja a on a.id=ap.atrakcja_id
+                        where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon");
+    query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu");
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Worker> = ResponseArray {
+        let result: ResponseArray<Pilot> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(&query, &[])
                 .unwrap()
                 .iter()
-                .map(|row| Worker {
+                .map(|row| Pilot {
                     id: row.get(0),
                     imie: row.get(1),
                     nazwisko: row.get(2),
                     adres: row.get(3),
-                    numer_telefon: row.get(4),
+                    numer_telefonu: row.get(4),
                     jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)).unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
+                        .unwrap_or(Vec::new()),
+                    atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7))
+                        .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Worker>>(),
+                .collect::<Vec<Pilot>>(),
         };
         connection.close();
         return HashMap::from([
@@ -134,9 +160,7 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
     }
 }
 
-pub fn update_certain_worker_json<'a>(
-    params: RequestBody<WorkerBasic>,
-) -> HashMap<&'a str, String> {
+pub fn update_certain_pilot_json<'a>(params: RequestBody<PilotBasic>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
@@ -144,7 +168,7 @@ pub fn update_certain_worker_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-            .execute("UPDATE pracownik SET imie=$2, nazwisko=$3, adres=$4, numer_telefon=$5 where id=$1", &[&params.params.id,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefon])
+            .execute("UPDATE przewodnik SET imie=$2, nazwisko=$3, adres=$4, numer_telefonu=$5 where id=$1", &[&params.params.id,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu])
             .unwrap()
             };
         connection.close();
@@ -166,21 +190,19 @@ pub fn update_certain_worker_json<'a>(
     }
 }
 
-pub fn insert_certain_worker_json<'a>(
-    params: RequestBody<WorkerInsert>,
-) -> HashMap<&'a str, String> {
+pub fn insert_certain_pilot_json<'a>(params: RequestBody<PilotInsert>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefon) values ($1,$2,$3,$4)",
+                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefonu) values ($1,$2,$3,$4)",
                 &[
                     &params.params.imie,
                     &params.params.nazwisko,
                     &params.params.adres,
-                    &params.params.numer_telefon,
+                    &params.params.numer_telefonu,
                 ],
             )
             .unwrap_or(0);
@@ -222,8 +244,8 @@ pub fn insert_certain_worker_json<'a>(
     }
 }
 
-pub fn add_language_to_worker_json<'a>(
-    params: RequestBody<WorkerLanguageQuery>,
+pub fn add_language_to_pilot_json<'a>(
+    params: RequestBody<PilotLanguageQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -248,8 +270,8 @@ pub fn add_language_to_worker_json<'a>(
         }
         if connection
             .query(
-                "select * from Pracowik where id=$1",
-                &[&params.params.pracownik_id],
+                "select * from przewodnik where id=$1",
+                &[&params.params.przewodnik_id],
             )
             .unwrap()
             .len()
@@ -267,8 +289,8 @@ pub fn add_language_to_worker_json<'a>(
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "insert into jezyk_pracownik (jezyk_kod, pracownik_id) values ($1,$2)",
-                &[&params.params.language_kod, &params.params.pracownik_id],
+                "insert into jezyk_przewodnik (jezyk_kod, przewodnik_id) values ($1,$2)",
+                &[&params.params.language_kod, &params.params.przewodnik_id],
             )
             .unwrap_or(0);
         if query_result > 0 {
@@ -308,8 +330,8 @@ pub fn add_language_to_worker_json<'a>(
     }
 }
 
-pub fn remove_language_from_worker_json<'a>(
-    params: RequestBody<WorkerLanguageQuery>,
+pub fn remove_language_from_pilot_json<'a>(
+    params: RequestBody<PilotLanguageQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -317,8 +339,8 @@ pub fn remove_language_from_worker_json<'a>(
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "DELETE from jezyk_pracownik where pracownik_id=$1 and jezyk_kod=$2",
-                &[&params.params.pracownik_id, &params.params.language_kod],
+                "DELETE from jezyk_przewodnik where przewodnik_id=$1 and jezyk_kod=$2",
+                &[&params.params.przewodnik_id, &params.params.language_kod],
             )
             .unwrap_or(0);
         if query_result > 0 {
@@ -358,8 +380,8 @@ pub fn remove_language_from_worker_json<'a>(
     }
 }
 
-pub fn delete_certain_worker_json<'a>(
-    params: RequestBody<WorkerDeleteQuery>,
+pub fn delete_certain_pilot_json<'a>(
+    params: RequestBody<PilotDeleteQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -368,30 +390,35 @@ pub fn delete_certain_worker_json<'a>(
 
         connection
             .execute(
-                "Delete from jezyk_pracownik where pracownik_id=$1",
+                "Delete from jezyk_przewodnik where przewodnik_id=$1",
                 &[&params.params.id],
             )
             .unwrap_or(0);
         connection
             .execute(
-                "Delete from pracownik_podroz where pracownik_id=$1",
+                "Delete from przewodnik_podroz where przewodnik_id=$1",
                 &[&params.params.id],
             )
             .unwrap_or(0);
-
+        connection
+            .execute(
+                "Delete from atrakcja_przewodnik where przewodnik_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
         let query_result = connection
             .execute("Delete from pracownik where id=$1", &[&params.params.id])
             .unwrap_or(0);
         if query_result > 0 {
             result = Response {
                 status: 200,
-                message: "Pracowik deleted".to_owned(),
+                message: "Przewodnik deleted".to_owned(),
                 result: query_result,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Pracownik does not exist".to_owned(),
+                message: "Przewodnik does not exist".to_owned(),
                 result: query_result,
             };
         }
