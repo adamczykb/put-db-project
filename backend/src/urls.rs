@@ -21,6 +21,17 @@ use crate::etap::{
     delete_certain_etap_json, get_all_etap_json, get_certain_etap_json, insert_certain_etap_json,
     update_certain_etap_json, Etap, EtapBasic, EtapDelete, EtapInsert, EtapQuery,
 };
+use crate::journey::{
+    add_accommodation_to_journey_json, add_attraction_to_journey_json, add_client_to_journey_json,
+    add_etap_to_journey_json, add_pilot_to_journey_json, add_worker_to_journey_json,
+    delete_certain_journey_json, get_all_journey_json, get_certain_journeys_json,
+    insert_certain_journey_json, remove_accommodation_from_journey_json,
+    remove_attraction_from_journey_json, remove_client_from_journey_json,
+    remove_etap_from_journey_json, remove_pilot_from_journey_json, remove_worker_from_journey_json,
+    update_certain_journey_json, PodrozAttractionQuery, PodrozBasic, PodrozDelete, PodrozEtapQuery,
+    PodrozInsert, PodrozKlientQuery, PodrozPilotQuery, PodrozPracownikQuery, PodrozQuery,
+    PodrozZakwaterowanieQuery,
+};
 use crate::language::{
     delete_certain_language_json, get_all_languages_json, get_certain_languages_json, JezykDelete,
     JezykQuery,
@@ -104,9 +115,9 @@ pub fn urls(request: HashMap<String, String>) -> String {
                         "all_etaps" => {
                             response.extend(get_all_etap_json());
                         }
-                        //"all_journeys" => {
-                        //response.extend(get_all_journeys_json());
-                        //}
+                        "all_journey" => {
+                            response.extend(get_all_journey_json());
+                        }
                         "all_pilots" => {
                             response.extend(get_all_pilots_json());
                         }
@@ -259,6 +270,17 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "certain_journey" => {
+                            match serde_json::from_str::<RequestBody<PodrozQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => response.extend(get_certain_journeys_json(params)),
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
                         _ => response.extend(not_found()),
                     },
                     "push" => match url
@@ -346,6 +368,19 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "journey" => {
+                            match serde_json::from_str::<RequestBody<PodrozInsert>>(
+                                request.get("content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("wrong query".to_owned()));
+                                }
+                            };
+                        }
 
                         "transport_company" => {
                             match serde_json::from_str::<RequestBody<FirmaTransportowaInsert>>(
@@ -415,6 +450,84 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             };
                         }
 
+                        "journey_pilot" => {
+                            match serde_json::from_str::<RequestBody<PodrozPilotQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_pilot_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_client" => {
+                            match serde_json::from_str::<RequestBody<PodrozKlientQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_client_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_attraction" => {
+                            match serde_json::from_str::<RequestBody<PodrozAttractionQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_attraction_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_worker" => {
+                            match serde_json::from_str::<RequestBody<PodrozPracownikQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_worker_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_etap" => {
+                            match serde_json::from_str::<RequestBody<PodrozEtapQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_etap_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_accommodation" => {
+                            match serde_json::from_str::<RequestBody<PodrozZakwaterowanieQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(add_accommodation_to_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
                         _ => {
                             response.extend(not_found());
                         }
@@ -523,6 +636,19 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             ) {
                                 Ok(params) => {
                                     response.extend(update_certain_transport_company_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "certain_journey" => {
+                            match serde_json::from_str::<RequestBody<PodrozBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(update_certain_journey_json(params));
                                 }
                                 Err(error) => {
                                     println!("{}", error);
@@ -685,7 +811,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
-                        "transport_firma_transportowa" => {
+                        "transport_transport_company" => {
                             match serde_json::from_str::<RequestBody<TransportFirmaTransportowaQuery>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
@@ -700,6 +826,99 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "journey" => {
+                            match serde_json::from_str::<RequestBody<PodrozDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+
+                        "journey_pilot" => {
+                            match serde_json::from_str::<RequestBody<PodrozPilotQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_pilot_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_client" => {
+                            match serde_json::from_str::<RequestBody<PodrozKlientQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_client_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_attraction" => {
+                            match serde_json::from_str::<RequestBody<PodrozAttractionQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_attraction_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_worker" => {
+                            match serde_json::from_str::<RequestBody<PodrozPracownikQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_worker_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_etap" => {
+                            match serde_json::from_str::<RequestBody<PodrozEtapQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_etap_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "journey_accommodation" => {
+                            match serde_json::from_str::<RequestBody<PodrozZakwaterowanieQuery>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(remove_accommodation_from_journey_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+
                         _ => {
                             response.extend(not_found());
                         }
