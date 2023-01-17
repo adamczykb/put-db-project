@@ -144,7 +144,7 @@ pub fn update_certain_worker_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-            .execute("UPDATE pracownik SET imie=$2, nazwisko=$3, adres=$4, numer_telefonu=$5 where id=$1", &[&params.params.id,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefon])
+            .execute("UPDATE pracownik SET imie=$2, nazwisko=$3, adres=$4, numer_telefon=$5 where id=$1", &[&params.params.id,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefon])
             .unwrap()
             };
         connection.close();
@@ -175,7 +175,7 @@ pub fn insert_certain_worker_json<'a>(
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefonu) values ($1,$2,$3,$4)",
+                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefon) values ($1,$2,$3,$4)",
                 &[
                     &params.params.imie,
                     &params.params.nazwisko,
