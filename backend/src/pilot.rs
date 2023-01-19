@@ -79,8 +79,8 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefonu: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new()),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new()),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(5)  ).unwrap_or(Vec::new()),
+                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(6)  ).unwrap_or(Vec::new()),
                             atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
             }).collect::<Vec<Pilot>>()

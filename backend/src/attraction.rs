@@ -7,13 +7,12 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Atrakcja {
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
-    pub sezon: String,
+    pub sezon: Vec<String>,
     pub opis: String,
     pub koszt: i64,
     pub przewodnicy: Vec<PilotBasic>,
@@ -23,7 +22,7 @@ pub struct AtrakcjaBasic {
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
-    pub sezon: String,
+    pub sezon: Vec<String>,
     pub opis: String,
     pub koszt: i64,
 }
@@ -33,7 +32,7 @@ pub struct AtrakcjaInsert {
     pub imie: String,
     pub nazwa: String,
     pub adres: String,
-    pub sezon: String,
+    pub sezon: Vec<String>,
     pub opis: String,
     pub koszt: i64,
 }
