@@ -7,6 +7,7 @@ import TravelForm from "../components/Travels/Travel_Form";
 import PilotsView from "../components/Pilots/Pilots";
 import AddPilot from "../components/Pilots/AddPilot";
 import UpdatePilot from "../components/Pilots/UpdatePilot";
+import AccomodationView from "../components/Accomodation/Accomodation";
 
 const IndexRouter: React.FC = (): ReactElement => {
     return (
@@ -19,6 +20,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
                 <Route path={"/przewodnicy/edycja/:id"} element={<UpdatePilot />} />
+                <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
             </Routes>
         </BrowserRouter>
     );

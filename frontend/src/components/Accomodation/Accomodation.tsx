@@ -2,64 +2,53 @@ import { render } from "@testing-library/react";
 import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
-import getClientsData from "../../utils/adapter/getClientsData";
-import getPilotData from "../../utils/adapter/getPilotData";
+import getAccomodationData from "../../utils/adapter/getAccomodationData";
 const { Panel } = Collapse;
 
-const ClientsView = () => {
+const AccomodationView = () => {
     const handleDelete = (key: React.Key) => {
 
     };
 
     const [data, setData] = useState([]);
     useEffect(() => {
-        getClientsData(setData)
+        getAccomodationData(setData)
     }, [])
     const columns = [
         {
-            title: 'Pesel',
-            key: 'pesel',
-            render: (text: any, record: any) => <>{record.pesel}</>,
+            title: 'Nazwa',
+            key: 'nazwa',
+            render: (text: any, record: any) => <>{record.nazwa}</>,
         },
         {
-            title: 'Imie',
-            key: 'imie',
-            render: (text: any, record: any) => <>{record.imie}</>,
+            title: 'Koszt',
+            key: 'koszt',
+            render: (text: any, record: any) => <>{record.koszt}</>,
         },
         {
-            title: 'Nazwisko',
-            key: 'nazwisko',
-            render: (text: any, record: any) => <>{record.nazwisko}</>,
+            title: 'Ilosc miejsc',
+            key: 'ilosc_miejsc',
+            render: (text: any, record: any) => <>{record.ilosc_miejsc}</>,
         },
         {
-            title: 'Numer telefonu',
-            key: 'telefon',
-            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            title: 'Standard zakwaterowania',
+            key: 'standard_zakwaterowania',
+            render: (text: any, record: any) => <>{record.standard_zakwaterowania}</>,
         },
         {
-            title: 'Addres',
+            title: 'Adres',
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'adres',
         },
 
-        {
-            title: 'Data_urodzenia',
-            key: 'data_urodzenia',
-            render: (text: any, record: any) => <>{record.data_urodzenia}</>,
-        },
 
-        {
-            title: 'Numer telefonu',
-            key: 'numer_telefonu',
-            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-        },
         {
             title: 'Podróże',
             key: 'podroze',
             render: (text: any, record: any) =>
                 <>{record.podroze.length > 0 ?
                     <Collapse >
-                        <Panel header={record.podroze.length > 4 ? "Uczęsniczy w " + record.atrakcje.length + " podróżach" : "Uczęsniczy w " + record.podroze.length + " podróżach"} key="1">
+                        <Panel header={record.podroze.length > 4 ? "Przepisano " + record.podroze.length + " podróżom" : "Przepisano " + record.podroze.length + " podróżom"} key="1">
                             <List
                                 bordered
                                 dataSource={record.podroze}
@@ -79,8 +68,8 @@ const ClientsView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/klienty/edycja/" + record.pesel}>Edytuj</a><br />
-                <a href={"/klienty/dodaj/"}>dodaj</a><br />
+                <a href={"/zakwaterowanie/edycja/" + record.id}>Edytuj</a><br />
+                <a href={"/zakwaterowanie/dodaj/"}>dodaj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.pesel)}>
                     <a>Usuń</a>
                 </Popconfirm>
@@ -89,9 +78,9 @@ const ClientsView = () => {
     ]
     return (
         <div>
-            <h2>Klienty</h2>
+            <h2>Clienty</h2>
             <Table columns={columns} dataSource={data} />
         </div>
     )
 }
-export default ClientsView
+export default AccomodationView
