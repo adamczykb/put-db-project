@@ -3,12 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{map::Values, Value};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Jezyk {
-    pub kod: String,
-    pub nazwa: String,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct ResponseArray<T> {
     pub status: i32,

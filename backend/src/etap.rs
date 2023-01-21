@@ -1,69 +1,76 @@
 use crate::{
-    journey::{Podroz, PodrozBasic},
     urls::RequestBody,
     utils::get_postgres_client,
-    views::{Response, ResponseArray},
+    views::{Response, ResponseArray}, transport::{TransportBasic, TransportInsert},
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Zakwaterowanie {
+pub struct Etap {
     pub id: i64,
-    pub nazwa: String,
+    pub punkt_poczatkowy: String,
+    pub punkt_konczowy: String,
     pub koszt: i64,
-    pub ilosc_miejsc: i64,
-    pub standard_zakwaterowania: String,
-    pub adres: String,
-    pub podroze: Vec<PodrozBasic>,
+    pub data_poczatkowa: String,
+    pub data_koncowa: String,
+    pub transport: TransportBasic,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ZakwaterowanieBasic {
+pub struct EtapBasic {
     pub id: i64,
-    pub nazwa: String,
+    pub punkt_poczatkowy: String,
+    pub punkt_konczowy: String,
     pub koszt: i64,
-    pub ilosc_miejsc: i64,
-    pub standard_zakwaterowania: String,
-    pub adres: String,
+    pub data_poczatkowa: String,
+    pub data_koncowa: String,
+    pub transport: TransportBasic,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ZakwaterowanieInsert {
-    pub nazwa: String,
+pub struct EtapInsert {
+    pub punkt_poczatkowy: String,
+    pub punkt_konczowy: String,
     pub koszt: i64,
-    pub ilosc_miejsc: i64,
-    pub standard_zakwaterowania: String,
-    pub adres: String,
-    pub podroze: Vec<PodrozBasic>,
+    pub data_poczatkowa: String,
+    pub data_koncowa: String,
+    pub transport: TransportInsert,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ZakwaterowanieDelete {
-    pub id: String,
+pub struct EtapDelete {
+    pub id: i64,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ZakwaterowanieQuery {
+pub struct EtapQuery {
     pub id_list: Vec<i64>,
 }
-pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
+//
+pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Zakwaterowanie> = ResponseArray {
+        let result: ResponseArray<Etap> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query("select z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres", &[])
+                .query(
+                    "select e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar),json_agg(t) from etap e
+                        join transport t on t.id = e.id
+                        group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa",
+                    &[],
+                )
                 .unwrap()
                 .iter()
-                .map(|row| Zakwaterowanie {
-                    id:row.get(0),
-                            nazwa: row.get(1),
-                            koszt:row.get(2),
-                            ilosc_miejsc: row.get(3),
-                            standard_zakwaterowania: row.get(4),
-                            adres: row.get(5),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new())
+                .map(|row| Etap {
+                    id: row.get(0),
+                    punkt_poczatkowy: row.get(1),
+                    punkt_konczowy: row.get(2),
+                    koszt: row.get(3),
+                    data_poczatkowa: row.get(4),
+                    data_koncowa: row.get(5),
+                    transport: serde_json::from_str::<TransportBasic>(row.get(6))
+                        .unwrap_or(TransportBasic { id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
-                .collect::<Vec<Zakwaterowanie>>(),
+                .collect::<Vec<Etap>>(),
         };
         connection.close();
         return HashMap::from([
@@ -84,41 +91,33 @@ pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_accommodation_json<'a>(
-    params: RequestBody<ZakwaterowanieQuery>,
-) -> HashMap<&'a str, String> {
+pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
-    let params_query: Vec<String> = params
-        .params
-        .id_list
-        .iter()
-        .map(|v| v.to_string())
-        .collect();
-    let mut query: String = "select z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
+    let params_query: Vec<String> = params.params.id_list.iter().map(|v| v.to_string()).collect();
+    let mut query: String = "select e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t) from etap e
+            join transport t on t.id = e.id  e.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(
-        ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres",
-    );
+    query.push_str(") group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa");
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Zakwaterowanie> = ResponseArray {
+        let result: ResponseArray<Etap> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(&query, &[])
                 .unwrap()
                 .iter()
-                .map(|row| Zakwaterowanie {
+                .map(|row| Etap {
                     id: row.get(0),
-                    nazwa: row.get(1),
-                    koszt: row.get(2),
-                    ilosc_miejsc: row.get(3),
-                    standard_zakwaterowania: row.get(4),
-                    adres: row.get(5),
-                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
-                        .unwrap_or(Vec::new()),
+                    punkt_poczatkowy: row.get(1),
+                    punkt_konczowy: row.get(2),
+                    koszt: row.get(3),
+                    data_poczatkowa: row.get(4),
+                    data_koncowa: row.get(5),
+                    transport: serde_json::from_str::<TransportBasic>(row.get(6))
+                        .unwrap_or(TransportBasic { id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
-                .collect::<Vec<Zakwaterowanie>>(),
+                .collect::<Vec<Etap>>(),
         };
         connection.close();
         return HashMap::from([
@@ -139,33 +138,56 @@ pub fn get_certain_accommodation_json<'a>(
     }
 }
 
-pub fn insert_certain_accommodation_json<'a>(
-    params: RequestBody<ZakwaterowanieInsert>,
-) -> HashMap<&'a str, String> {
+pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
-        let query_result = connection
-            .execute(
-                "INSERT INTO zakwaterowanie (nazwa,koszt,ilosc_miejsc,standard_zakwaterowania,adres) values ($1,$2,$3,$4,$5)",
-                &[&params.params.nazwa, &params.params.koszt, &params.params.ilosc_miejsc, &params.params.standard_zakwaterowania, &params.params.adres],
+        let mut query_result: i64 = 0;
+        connection
+            .query(
+                "INSERT INTO etap (punkt_poczatkowy, punkt_konczowy,koszt,data_poczatkowa,data_koncowa) values ($1,$2,$3,TO_DATE($4,'DD-MM-YYYY'),TO_DATE($5,'DD-MM-YYYY')) returning id",
+                &[
+                    &params.params.punkt_poczatkowy,
+                    &params.params.punkt_konczowy,
+                    &params.params.koszt,
+                    &params.params.data_poczatkowa,
+                    &params.params.data_koncowa,
+                ],
+            )
+            .unwrap()
+                .iter()
+                .map(|row|
+                    { 
+                        query_result= row.get(0)
+                        
+                    });
+        if query_result > 0 {
+            let query_result_second = connection
+                .execute(
+                    "INSERT INTO transport (nazwa, liczba_jednostek,liczba_miejsc) values ($1,$2,$3,$4) returning id",
+                &[
+                    &query_result,
+                    &params.params.transport.nazwa,
+                    &params.params.transport.liczba_jednostek,
+                    &params.params.transport.liczba_miejsc,
+                ],
             )
             .unwrap_or(0);
 
-        if query_result > 0 {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result_second,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Nie mozna dodac zakwaterowania".to_owned(),
-                result: query_result,
+                message: "Nie mozna dodac nowego etapu".to_owned(),
+                result: 0,
             };
         }
+
         let mut response = HashMap::from([
             (
                 "Content",
@@ -189,9 +211,8 @@ pub fn insert_certain_accommodation_json<'a>(
         ]);
     }
 }
-
-pub fn update_certain_accommodation_json<'a>(
-    params: RequestBody<ZakwaterowanieBasic>,
+pub fn update_certain_etap_json<'a>(
+    params: RequestBody<EtapBasic>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -200,7 +221,7 @@ pub fn update_certain_accommodation_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .execute("UPDATE zakwaterowanie SET nazwa=$1,koszt=$2,ilosc_miejsc=$3,standard_zakwaterowania=$4,adres=$5 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.koszt,&params.params.ilosc_miejsc,&params.params.standard_zakwaterowania,&params.params.adres])
+                .execute("UPDATE Etap SET punkt_poczatkowy=$2, punkt_konczowy=$3, koszt=$4, data_poczatkowa=TO_DATE($5,'DD-MM-YYYY'), data_koncowa=TO_DATE($6,'DD-MM-YYYY') where id=$1", &[&params.params.id,&params.params.punkt_poczatkowy,&params.params.punkt_konczowy,&params.params.koszt,&params.params.data_poczatkowa,&params.params.data_koncowa])
                 .unwrap()
         };
         connection.close();
@@ -221,9 +242,8 @@ pub fn update_certain_accommodation_json<'a>(
         ]);
     }
 }
-
-pub fn delete_certain_accommodation_json<'a>(
-    params: RequestBody<ZakwaterowanieDelete>,
+pub fn delete_certain_etap_json<'a>(
+    params: RequestBody<EtapDelete>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -231,27 +251,36 @@ pub fn delete_certain_accommodation_json<'a>(
         let result: Response<u64>;
         connection
             .execute(
-                "Delete from zakwaterowanie_podroz where zakwaterowanie_id=$1",
+                "Delete from etap_podroz where etap_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+        connection
+            .execute(
+                "Delete from transport_firma_transportowa where transport_id=$1",
                 &[&params.params.id],
             )
             .unwrap_or(0);
 
-        let query_result = connection
+        connection
             .execute(
-                "Delete from zakwaterowanie where kod=$1",
+                "Delete from etap where id=$1",
                 &[&params.params.id],
             )
+            .unwrap_or(0);
+        let query_result = connection
+            .execute("Delete from transport where id=$1", &[&params.params.id])
             .unwrap_or(0);
         if query_result > 0 {
             result = Response {
                 status: 200,
-                message: "Zakwaterowanie usuniete".to_owned(),
+                message: "Etap zostal usuniety".to_owned(),
                 result: query_result,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Nie mozna usunac zakwaterowania".to_owned(),
+                message: "Nie mozna usunac etapu".to_owned(),
                 result: query_result,
             };
         }

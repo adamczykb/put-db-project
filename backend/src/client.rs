@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{map::Values, Value};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Klient {
     pub pesel: i64,
     pub imie: String,
@@ -19,7 +19,7 @@ pub struct Klient {
     pub podroze: Vec<PodrozBasic>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct KlientBasic {
     pub pesel: i64,
     pub imie: String,

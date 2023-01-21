@@ -55,7 +55,7 @@ return max(coalesce(
  (select (select sum(z."koszt")  from "zakwaterowanie_podroz"  zp left join "zakwaterowanie" as z on z."id" =zp."zakwaterowanie_id" where zp."podroz_id"=id  )+
   (select sum(a."koszt") from "podroz_atrakcja"  pa   left join "atrakcja" a on a."id" = pa."atrakcja_id" where pa."podroz_id"=id ) +
   (select sum(e."koszt")  from "etap_podroz"  ep   left join "etap" e on e."id" = ep."etap_id" where ep."podroz_id"=id )-
-  (select sum(p."cena") from "podroz" as p where p."id" = id))), money(0))); 
+  (select sum(p."cena") from "podroz" as p where p."id" = id))), 0)); 
 end;
 $$;
 
@@ -77,7 +77,7 @@ create table if not exists public."atrakcja" (
     "sezon" character varying(255)[] not null,
     "opis" text,
     "adres" character varying(255) not null,
-    "koszt" money not null
+    "koszt" bigint not null
 );
 
 
@@ -136,7 +136,7 @@ create table if not exists public."etap" (
     "id" bigint not null,
     "punkt_poczatkowy" character varying(255) not null,
     "punkt_konczowy" character varying(255) not null,
-    "koszt" money not null,
+    "koszt" bigint not null,
     "data_poczatkowa" timestamp with time zone not null,
     "data_koncowa" timestamp with time zone not null
 );
@@ -361,7 +361,7 @@ create table if not exists public."podroz" (
     "data_rozpoczęcia" timestamp with time zone not null,
     "data_ukonczenia" timestamp with time zone not null,
     "opis" text,
-    "cena" money not null
+    "cena" bigint not null
 );
 
 
@@ -598,7 +598,7 @@ alter table public."transport" alter column "id" add generated always as identit
 create table if not exists public."zakwaterowanie" (
     "id" bigint not null,
     "nazwa" character varying(255) not null,
-    "koszt" money,
+    "koszt" bigint, 
     "ilosc_miejsc" bigint,
     "standard_zakwaterowania" character varying(255) not null,
     "adres" character varying(255) not null

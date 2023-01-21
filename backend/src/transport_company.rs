@@ -1,85 +1,68 @@
 use crate::{
-    language::Jezyk,
-    pilot::PilotBasic,
+    transport::TransportBasic,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Atrakcja {
-    pub id: i64,
-    pub nazwa: String,
-    pub adres: String,
-    pub sezon: Vec<String>,
-    pub opis: String,
-    pub koszt: i64,
-    pub przewodnicy: Vec<PilotBasic>,
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaBasic {
-    pub id: i64,
-    pub nazwa: String,
-    pub adres: String,
-    pub sezon: Vec<String>,
-    pub opis: String,
-    pub koszt: i64,
-}
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaInsert {
-    pub imie: String,
+pub struct FirmaTransportowa {
+    pub id: i64,
     pub nazwa: String,
     pub adres: String,
-    pub sezon: Vec<String>,
-    pub opis: String,
-    pub koszt: i64,
+    pub telefon: String,
+    pub transporty: Vec<TransportBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaPilotQuery {
-    pub przewodnik_id: i64,
-    pub atrakcja_id: i64,
+pub struct FirmaTransportowaBasic {
+    pub id: i64,
+    pub nazwa: String,
+    pub adres: String,
+    pub telefon: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaQuery {
+pub struct FirmaTransportowaInsert {
+    pub nazwa: String,
+    pub adres: String,
+    pub telefon: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FirmaTransportowaDelete {
+    pub id: i64,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FirmaTransportowaQuery {
     pub id_list: Vec<i64>,
 }
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AtrakcjaDeleteQuery {
-    pub id: i64,
-}
-
-pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
+pub fn get_all_transport_company_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Atrakcja> = ResponseArray {
+        let result: ResponseArray<FirmaTransportowa> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
-                        from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
-                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt",
+                    "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
+                    from firma_transportowa ft 
+                    left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
+                    left join transport t on t.id = fft.transport_id
+                    group by ft.id, ft.nazwa, ft.adres, ft.telefon",
                     &[],
                 )
                 .unwrap()
                 .iter()
-                .map(|row| Atrakcja {
+                .map(|row| FirmaTransportowa {
                     id: row.get(0),
                     nazwa: row.get(1),
                     adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
+                    telefon: row.get(3),
+                    transporty: serde_json::from_str::<Vec<TransportBasic>>(row.get(4))
                         .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Atrakcja>>(),
+                .collect::<Vec<FirmaTransportowa>>(),
         };
         connection.close();
         return HashMap::from([
@@ -100,8 +83,8 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
     }
 }
 
-pub fn get_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaQuery>,
+pub fn get_certain_transport_company_json<'a>(
+    params: RequestBody<FirmaTransportowaQuery>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     let params_query: Vec<String> = params
@@ -110,34 +93,30 @@ pub fn get_certain_attraction_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
-                        from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
-                        where a.id in ("
-        .to_owned();
+    let mut query: String = "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
+                             from firma_transportowa ft 
+                             left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
+                             left join transport t on t.id = fft.transport_id where fr.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt");
+    query.push_str(") group by ft.id, ft.nazwa, ft.adres, ft.telefon");
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: ResponseArray<Atrakcja> = ResponseArray {
+        let result: ResponseArray<FirmaTransportowa> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .query(&query, &[])
                 .unwrap()
                 .iter()
-                .map(|row| Atrakcja {
+                .map(|row| FirmaTransportowa {
                     id: row.get(0),
                     nazwa: row.get(1),
                     adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
+                    telefon: row.get(3),
+                    transporty: serde_json::from_str::<Vec<TransportBasic>>(row.get(4))
                         .unwrap_or(Vec::new()),
                 })
-                .collect::<Vec<Atrakcja>>(),
+                .collect::<Vec<FirmaTransportowa>>(),
         };
         connection.close();
         return HashMap::from([
@@ -157,9 +136,8 @@ pub fn get_certain_attraction_json<'a>(
         ]);
     }
 }
-
-pub fn update_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaBasic>,
+pub fn update_certain_transport_company_json<'a>(
+    params: RequestBody<FirmaTransportowaBasic>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -168,9 +146,17 @@ pub fn update_certain_attraction_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-            .execute("UPDATE atrakcja SET nazwa=$2, adres=$3, sezon=$4, opis=$5, koszt=$6 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.adres,&params.params.sezon,&params.params.opis,&params.params.koszt])
-            .unwrap()
-            };
+                .execute(
+                    "UPDATE firma_transportowa SET nazwa=$2, telefon=$3, adres=$4 where id=$1",
+                    &[
+                        &params.params.id,
+                        &params.params.nazwa,
+                        &params.params.telefon,
+                        &params.params.adres,
+                    ],
+                )
+                .unwrap(),
+        };
         connection.close();
         return HashMap::from([
             ("Status", "200 OK".to_owned()),
@@ -189,9 +175,8 @@ pub fn update_certain_attraction_json<'a>(
         ]);
     }
 }
-
-pub fn insert_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaInsert>,
+pub fn insert_certain_transport_company_json<'a>(
+    params: RequestBody<FirmaTransportowaInsert>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -199,13 +184,11 @@ pub fn insert_certain_attraction_json<'a>(
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "INSERT INTO pracownik ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
+                "INSERT INTO firma_transportowa (nazwa, adres, telefon) values ($1,$2,$3)",
                 &[
                     &params.params.nazwa,
                     &params.params.adres,
-                    &params.params.sezon,
-                    &params.params.opis,
-                    &params.params.koszt,
+                    &params.params.telefon,
                 ],
             )
             .unwrap_or(0);
@@ -219,7 +202,7 @@ pub fn insert_certain_attraction_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new worker".to_owned(),
+                message: "Nie mozna dodac nowej firmy transportowej".to_owned(),
                 result: query_result,
             };
         }
@@ -247,40 +230,35 @@ pub fn insert_certain_attraction_json<'a>(
     }
 }
 
-pub fn delete_certain_attraction_json<'a>(
-    params: RequestBody<AtrakcjaDeleteQuery>,
+pub fn delete_certain_transport_company_json<'a>(
+    params: RequestBody<FirmaTransportowaDelete>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
-
         connection
             .execute(
-                "Delete from atrakcja_przewodnik where atrakcja_id=$1",
+                "Delete from transport_firma_transportowa where firma_transportowa_id=$1",
                 &[&params.params.id],
             )
             .unwrap_or(0);
-        connection
-            .execute(
-                "Delete from podroz_atrakcja where atrakcja_id=$1",
-                &[&params.params.id],
-            )
-            .unwrap_or(0);
-
         let query_result = connection
-            .execute("Delete from atrakcja where id=$1", &[&params.params.id])
+            .execute(
+                "Delete from firma_transportowa where id=$1",
+                &[&params.params.id],
+            )
             .unwrap_or(0);
         if query_result > 0 {
             result = Response {
                 status: 200,
-                message: "Atrakcja usunieta".to_owned(),
+                message: "Firma transportowa zostala usunieta".to_owned(),
                 result: query_result,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Atrakcja does not exist".to_owned(),
+                message: "Nie mozna usunac firmy transportowej".to_owned(),
                 result: query_result,
             };
         }

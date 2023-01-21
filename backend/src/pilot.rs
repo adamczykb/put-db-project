@@ -41,6 +41,11 @@ pub struct PilotLanguageQuery {
     pub language_kod: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
+pub struct PilotAttractionQuery {
+    pub przewodnik_id: i64,
+    pub atrakcja_id: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PilotQuery {
     pub id_list: Vec<i64>,
 }
@@ -74,8 +79,8 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefonu: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new()),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new()),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(5)  ).unwrap_or(Vec::new()),
+                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(6)  ).unwrap_or(Vec::new()),
                             atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
             }).collect::<Vec<Pilot>>()
@@ -379,7 +384,141 @@ pub fn remove_language_from_pilot_json<'a>(
         ]);
     }
 }
+pub fn add_attraction_to_pilot_json<'a>(
+    params: RequestBody<PilotAttractionQuery>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        if connection
+            .query(
+                "select * from atrakcja where id=$1",
+                &[&params.params.atrakcja_id],
+            )
+            .unwrap()
+            .len()
+            != 1
+        {
+            return HashMap::from([
+                ("Status", "500 Internal Server Error".to_owned()),
+                (
+                    "Content",
+                    "{result:'Id atrakcji nie jest jednoznaczne'}".to_owned(),
+                ),
+                ("Content-Type", "application/json".to_owned()),
+            ]);
+        }
+        if connection
+            .query(
+                "select * from przewodnik where id=$1",
+                &[&params.params.przewodnik_id],
+            )
+            .unwrap()
+            .len()
+            != 1
+        {
+            return HashMap::from([
+                ("Status", "500 Internal Server Error".to_owned()),
+                (
+                    "Content",
+                    "{result:'Id pracownika nie jest jednoznaczne'}".to_owned(),
+                ),
+                ("Content-Type", "application/json".to_owned()),
+            ]);
+        }
+        let result: Response<u64>;
+        let query_result = connection
+            .execute(
+                "insert into atrakcja_przewodnik (atrakcja_id, przewodnik_id) values ($1,$2)",
+                &[&params.params.atrakcja_id, &params.params.przewodnik_id],
+            )
+            .unwrap_or(0);
+        if query_result > 0 {
+            result = Response {
+                status: 200,
+                message: "OK".to_owned(),
+                result: query_result,
+            };
+        } else {
+            result = Response {
+                status: 500,
+                message: "Wystapil blad podczas dodwania powiazania".to_owned(),
+                result: query_result,
+            };
+        }
+        let mut response = HashMap::from([
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
 
+pub fn remove_attraction_from_pilot_json<'a>(
+    params: RequestBody<PilotAttractionQuery>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64>;
+        let query_result = connection
+            .execute(
+                "DELETE from atrakcja_przewodnik where przewodnik_id=$1 and atrakcja_id=$2",
+                &[&params.params.przewodnik_id, &params.params.atrakcja_id],
+            )
+            .unwrap_or(0);
+        if query_result > 0 {
+            result = Response {
+                status: 200,
+                message: "OK".to_owned(),
+                result: query_result,
+            };
+        } else {
+            result = Response {
+                status: 500,
+                message: "Wystapil blad podczas usuwania powiazania".to_owned(),
+                result: query_result,
+            };
+        }
+        let mut response = HashMap::from([
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
 pub fn delete_certain_pilot_json<'a>(
     params: RequestBody<PilotDeleteQuery>,
 ) -> HashMap<&'a str, String> {
@@ -407,7 +546,7 @@ pub fn delete_certain_pilot_json<'a>(
             )
             .unwrap_or(0);
         let query_result = connection
-            .execute("Delete from pracownik where id=$1", &[&params.params.id])
+            .execute("Delete from przewodnik where id=$1", &[&params.params.id])
             .unwrap_or(0);
         if query_result > 0 {
             result = Response {
