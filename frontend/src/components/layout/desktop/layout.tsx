@@ -49,11 +49,19 @@ const Frontend: React.FC = () => {
                             label: (<a href="/pracowniki">
                                 Pracownicy
                             </a>),
-                        }, {
+                        }, 
+                        {
                             key: '4',
                             icon: <FolderViewOutlined />,
                             label: (<a href="/przewodnicy">
                                 Przewodnicy
+                            </a>),
+                        },
+                        {
+                            key: '5',
+                            icon: <FolderViewOutlined />,
+                            label: (<a href="/zakwaterowanie">
+                                Zakwaterowanie
                             </a>),
                         },
 
