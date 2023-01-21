@@ -82,6 +82,7 @@ const PilotsView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
+                <a href={"/przewodnicy/dodaj/"}>dodaj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.id)}>
                     <a>Usuń</a>
                 </Popconfirm>
