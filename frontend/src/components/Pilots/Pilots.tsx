@@ -1,12 +1,10 @@
-import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
+import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
 import { useEffect, useState } from "react";
 import getPilotData from "../../utils/adapter/getPilotData";
+import removePilot from "../../utils/adapter/removePilot";
 const { Panel } = Collapse;
 
 const PilotsView = () => {
-    const handleDelete = (key: React.Key) => {
-
-    };
 
     const [data, setData] = useState([]);
     useEffect(() => {
@@ -59,7 +57,7 @@ const PilotsView = () => {
             title: 'Podróże',
             key: 'podroze',
             render: (text: any, record: any) =>
-                <>{record.atrakcje.length > 0 ?
+                <>{record.podroze.length > 0 ?
                     <Collapse >
                         <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.atrakcje.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
                             <List
@@ -82,7 +80,7 @@ const PilotsView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.id)}>
+                <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -91,6 +89,9 @@ const PilotsView = () => {
     return (
         <div>
             <h2>Przewodnicy</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/przewodnicy/dodaj') }}>Dodaj przewodnika</Button></Space>
+            <br />
+            <br />
             <Table columns={columns} dataSource={data} />
         </div>
     )

@@ -9,6 +9,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transport {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub liczba_jednostek: i64,
@@ -17,6 +18,7 @@ pub struct Transport {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransportBasic {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub liczba_jednostek: i64,
@@ -50,7 +52,7 @@ pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
+                    "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
                     from transport t 
                     left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
                     left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
@@ -60,6 +62,7 @@ pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
                 .unwrap()
                 .iter()
                 .map(|row| Transport {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     liczba_jednostek: row.get(2),
@@ -100,7 +103,7 @@ pub fn get_certain_transport_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
+    let mut query: String = "select  t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
                             from transport t 
                             left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
                             left join firma_transportowa ft on ft.id = fft.firma_transportowa_id  t.id in (".to_owned();
@@ -116,6 +119,7 @@ pub fn get_certain_transport_json<'a>(
                 .unwrap()
                 .iter()
                 .map(|row| Transport {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     liczba_jednostek: row.get(2),

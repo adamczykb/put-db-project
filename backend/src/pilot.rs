@@ -1,7 +1,7 @@
 use crate::{
     attraction::AtrakcjaBasic,
     journey::PodrozBasic,
-    language::Jezyk,
+    language::{Jezyk, JezykBasic},
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -11,17 +11,19 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pilot {
+    pub key: i64,
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
     pub numer_telefonu: String,
-    pub jezyki: Vec<Jezyk>,
+    pub jezyki: Vec<JezykBasic>,
     pub podroze: Vec<PodrozBasic>,
     pub atrakcje: Vec<AtrakcjaBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PilotBasic {
+    pub key: i64,
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,
@@ -43,7 +45,7 @@ pub struct PilotLanguageQuery {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PilotAttractionQuery {
     pub przewodnik_id: i64,
-    pub atrakcja_id: String,
+    pub atrakcja_id: i64,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PilotQuery {
@@ -63,7 +65,7 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text  
+                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text  
                         from przewodnik p
                         left join przewodnik_podroz pp on pp.przewodnik_id=p.id 
                         left join podroz po on po.id=pp.podroz_id 
@@ -74,13 +76,14 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
                         group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu", &[]
                     ).unwrap().iter().map(|row| {
                         Pilot{
+                    key: row.get(0),
                             id:row.get(0),
                             imie: row.get(1),
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefonu: row.get(4),
                             podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(5)  ).unwrap_or(Vec::new()),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(6)  ).unwrap_or(Vec::new()),
+                            jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(6)  ).unwrap_or(Vec::new()),
                             atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
             }).collect::<Vec<Pilot>>()
@@ -133,12 +136,13 @@ pub fn get_certain_pilots_json<'a>(params: RequestBody<PilotQuery>) -> HashMap<&
                 .unwrap()
                 .iter()
                 .map(|row| Pilot {
+                    key: row.get(0),
                     id: row.get(0),
                     imie: row.get(1),
                     nazwisko: row.get(2),
                     adres: row.get(3),
                     numer_telefonu: row.get(4),
-                    jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)).unwrap_or(Vec::new()),
+                    jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5)).unwrap_or(Vec::new()),
                     podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
                         .unwrap_or(Vec::new()),
                     atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7))
@@ -199,30 +203,41 @@ pub fn insert_certain_pilot_json<'a>(params: RequestBody<PilotInsert>) -> HashMa
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-            .execute(
-                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefonu) values ($1,$2,$3,$4)",
+        let result: Response<i64>;
+        let mut query_result:Vec<PilotDeleteQuery>=
+        match connection.query(
+                "INSERT INTO przewodnik ( imie, nazwisko, adres, numer_telefonu) values ($1,$2,$3,$4) returning id",
                 &[
                     &params.params.imie,
                     &params.params.nazwisko,
                     &params.params.adres,
                     &params.params.numer_telefonu,
                 ],
-            )
-            .unwrap_or(0);
+            ){
+            Ok(result)=>
+                result
+                .iter()
+                .map(|row|
+                    {
+                        PilotDeleteQuery{ 
+                            id:row.get(0)
+                        }
+                    })
+                .collect::<Vec<PilotDeleteQuery>>(),
+                Err(result)=> Vec::new()
+        }; 
 
-        if query_result > 0 {
+        if query_result.get(0).unwrap_or(&PilotDeleteQuery { id: 0 }).id > 0 {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result.get(0).unwrap_or(&PilotDeleteQuery { id: 0 }).id,
             };
         } else {
             result = Response {
                 status: 500,
                 message: "Cannot add new worker".to_owned(),
-                result: query_result,
+                result: 0,
             };
         }
         let mut response = HashMap::from([

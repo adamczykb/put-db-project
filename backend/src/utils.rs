@@ -83,9 +83,11 @@ fn parse_request(stream: &TcpStream) -> HashMap<String, String> {
                         splited_line.get(1).unwrap().to_string(),
                     );
                 } else {
-                    request.insert(
-                        "Content".to_string(),
-                        line.trim_matches(char::from(0)).to_string(),
+                    let content: String = line.trim_matches(char::from(0)).to_owned();
+                    request.insert("Content".to_string(), content);
+                    println!(
+                        "{:?}",
+                        line.trim_matches(char::from(0)).to_string().trim_start()
                     );
                     break;
                 }

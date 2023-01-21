@@ -3,7 +3,7 @@ use crate::{
     attraction::AtrakcjaBasic,
     client::KlientBasic,
     etap::EtapBasic,
-    pilot::PilotBasic,
+    pilot::{PilotBasic, PilotDeleteQuery},
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -23,6 +23,7 @@ pub struct PodrozBasic {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Podroz {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub cena: i64,
@@ -117,6 +118,7 @@ pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
                 .unwrap()
                 .iter()
                 .map(|row| Podroz {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     data_rozpoczecia: row.get(2),
@@ -165,7 +167,7 @@ pub fn get_certain_journeys_json<'a>(params: RequestBody<PodrozQuery>) -> HashMa
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select p.id,p.nazwa,p.data_rozpoczęcia, p.data_ukonczenia, p.opis, p.cena, json_agg(prz), json_agg(kl), json_agg(at), json_agg(pra), json_agg(et), json_agg(za)
+    let mut query: String = "select  p.id,p.nazwa,p.data_rozpoczęcia, p.data_ukonczenia, p.opis, p.cena, json_agg(prz), json_agg(kl), json_agg(at), json_agg(pra), json_agg(et), json_agg(za)
             from podroz p
             left join przewodnik_podroz pp on pp.podroz_id = p.id
             left join klient_podroz kp on kp.podroz_id = p.id
@@ -192,6 +194,7 @@ pub fn get_certain_journeys_json<'a>(params: RequestBody<PodrozQuery>) -> HashMa
                 .unwrap()
                 .iter()
                 .map(|row| Podroz {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     data_rozpoczecia: row.get(2),
@@ -238,10 +241,10 @@ pub fn insert_certain_journey_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let mut query_result: u64 = connection
-            .execute(
-                "INSERT INTO podroz (nazwa, data_rozpoczecia,data_ukonczenia,opis,cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5)",
+        let result: Response<i64>;
+
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO podroz (nazwa, data_rozpoczecia,data_ukonczenia,opis,cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5)",
                 &[
                     &params.params.nazwa,
                     &params.params.data_rozpoczecia,
@@ -249,22 +252,35 @@ pub fn insert_certain_journey_json<'a>(
                     &params.params.opis,
                     &params.params.cena,
                 ],
-            )
-            .unwrap_or(0);
-        if query_result > 0 {
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => Vec::new(),
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Nie mozna dodac nowej podrozy".to_owned(),
+                message: "Cannot add new accommodation".to_owned(),
                 result: 0,
             };
         }
-
         let mut response = HashMap::from([
             (
                 "Content",

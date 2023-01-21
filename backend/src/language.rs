@@ -8,6 +8,12 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Jezyk {
+    pub key: String,
+    pub kod: String,
+    pub nazwa: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JezykBasic {
     pub kod: String,
     pub nazwa: String,
 }
@@ -27,10 +33,11 @@ pub fn get_all_languages_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query("select kod, nazwa from jezyk", &[])
+                .query("select  kod, nazwa from jezyk", &[])
                 .unwrap()
                 .iter()
                 .map(|row| Jezyk {
+                    key: row.get(0),
                     kod: row.get(0),
                     nazwa: row.get(1),
                 })
@@ -58,7 +65,7 @@ pub fn get_all_languages_json<'a>() -> HashMap<&'a str, String> {
 pub fn get_certain_languages_json<'a>(params: RequestBody<JezykQuery>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     let params_query: Vec<String> = params.params.kody.iter().map(|v| v.to_string()).collect();
-    let mut query: String = "select kod nazwa from jezyk where kod in (".to_owned();
+    let mut query: String = "select kod, nazwa from jezyk where kod in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(") ");
     if client.is_ok() {
@@ -71,6 +78,7 @@ pub fn get_certain_languages_json<'a>(params: RequestBody<JezykQuery>) -> HashMa
                 .unwrap()
                 .iter()
                 .map(|row| Jezyk {
+                    key: row.get(0),
                     kod: row.get(0),
                     nazwa: row.get(1),
                 })

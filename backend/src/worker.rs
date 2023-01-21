@@ -1,5 +1,6 @@
 use crate::{
-    language::Jezyk,
+    language::{Jezyk, JezykBasic},
+    pilot::PilotDeleteQuery,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -9,12 +10,13 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Worker {
+    pub key: i64,
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
     pub numer_telefon: String,
-    pub jezyki: Vec<Jezyk>,
+    pub jezyki: Vec<JezykBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerBasic {
@@ -54,15 +56,16 @@ pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon", &[]
+                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon", &[]
                     ).unwrap().iter().map(|row| {
                         Worker{
+                    key: row.get(0),
                             id:row.get(0),
                             imie: row.get(1),
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefon: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)  ).unwrap_or(Vec::new())
+                            jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5)  ).unwrap_or(Vec::new())
                         }
             }).collect::<Vec<Worker>>()
         };
@@ -93,7 +96,7 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod where p.id in (".to_owned() ;
+    let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
     query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon");
     if client.is_ok() {
@@ -107,11 +110,13 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
                 .iter()
                 .map(|row| Worker {
                     id: row.get(0),
+                    key: row.get(0),
                     imie: row.get(1),
                     nazwisko: row.get(2),
                     adres: row.get(3),
                     numer_telefon: row.get(4),
-                    jezyki: serde_json::from_str::<Vec<Jezyk>>(row.get(5)).unwrap_or(Vec::new()),
+                    jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5))
+                        .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Worker>>(),
         };
@@ -172,32 +177,48 @@ pub fn insert_certain_worker_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-            .execute(
-                "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefon) values ($1,$2,$3,$4)",
+        let result: Response<i64>;
+        let result: Response<i64>;
+
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO pracownik ( imie, nazwisko, adres, numer_telefon) values ($1,$2,$3,$4) returning id",
                 &[
                     &params.params.imie,
                     &params.params.nazwisko,
                     &params.params.adres,
                     &params.params.numer_telefon,
                 ],
-            )
-            .unwrap_or(0);
 
-        if query_result > 0 {
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => Vec::new(),
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new worker".to_owned(),
-                result: query_result,
+                message: "Cannot add new accommodation".to_owned(),
+                result: 0,
             };
         }
+
         let mut response = HashMap::from([
             (
                 "Content",

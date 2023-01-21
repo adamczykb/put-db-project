@@ -1,4 +1,5 @@
 use crate::{
+    pilot::PilotDeleteQuery,
     transport::TransportBasic,
     urls::RequestBody,
     utils::get_postgres_client,
@@ -9,6 +10,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmaTransportowa {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
@@ -17,6 +19,7 @@ pub struct FirmaTransportowa {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmaTransportowaBasic {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
@@ -55,6 +58,7 @@ pub fn get_all_transport_company_json<'a>() -> HashMap<&'a str, String> {
                 .unwrap()
                 .iter()
                 .map(|row| FirmaTransportowa {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     adres: row.get(2),
@@ -93,7 +97,7 @@ pub fn get_certain_transport_company_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
+    let mut query: String = "select  ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
                              from firma_transportowa ft 
                              left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
                              left join transport t on t.id = fft.transport_id where fr.id in (".to_owned();
@@ -109,6 +113,7 @@ pub fn get_certain_transport_company_json<'a>(
                 .unwrap()
                 .iter()
                 .map(|row| FirmaTransportowa {
+                    key: row.get(0),
                     id: row.get(0),
                     nazwa: row.get(1),
                     adres: row.get(2),
@@ -181,31 +186,45 @@ pub fn insert_certain_transport_company_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-            .execute(
-                "INSERT INTO firma_transportowa (nazwa, adres, telefon) values ($1,$2,$3)",
-                &[
-                    &params.params.nazwa,
-                    &params.params.adres,
-                    &params.params.telefon,
-                ],
-            )
-            .unwrap_or(0);
+        let result: Response<i64>;
 
-        if query_result > 0 {
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO firma_transportowa (nazwa, adres, telefon) values ($1,$2,$3)",
+            &[
+                &params.params.nazwa,
+                &params.params.adres,
+                &params.params.telefon,
+            ],
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => Vec::new(),
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Nie mozna dodac nowej firmy transportowej".to_owned(),
-                result: query_result,
+                message: "Cannot add new accommodation".to_owned(),
+                result: 0,
             };
         }
+
         let mut response = HashMap::from([
             (
                 "Content",

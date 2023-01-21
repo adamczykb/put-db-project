@@ -1,6 +1,6 @@
 use crate::{
     language::Jezyk,
-    pilot::PilotBasic,
+    pilot::{PilotBasic, PilotDeleteQuery},
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Atrakcja {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
@@ -29,7 +30,6 @@ pub struct AtrakcjaBasic {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AtrakcjaInsert {
-    pub imie: String,
     pub nazwa: String,
     pub adres: String,
     pub sezon: Vec<String>,
@@ -60,7 +60,7 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
+                    "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p)::text 
                         from atrakcja a
                         left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
                         left join przewodnik p on p.id = ap.przewodnik_id
@@ -70,13 +70,14 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
                 .unwrap()
                 .iter()
                 .map(|row| Atrakcja {
-                    id: row.get(0),
-                    nazwa: row.get(1),
-                    adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
+                    key: row.get(0),
+                    id: row.get(1),
+                    nazwa: row.get(2),
+                    adres: row.get(3),
+                    sezon: row.get(4),
+                    opis: row.get(5),
+                    koszt: row.get(6),
+                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(7))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Atrakcja>>(),
@@ -110,7 +111,7 @@ pub fn get_certain_attraction_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
+    let mut query: String = "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
                         from atrakcja a
                         left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
                         left join przewodnik p on p.id = ap.przewodnik_id
@@ -128,13 +129,14 @@ pub fn get_certain_attraction_json<'a>(
                 .unwrap()
                 .iter()
                 .map(|row| Atrakcja {
-                    id: row.get(0),
-                    nazwa: row.get(1),
-                    adres: row.get(2),
-                    sezon: row.get(3),
-                    opis: row.get(4),
-                    koszt: row.get(5),
-                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
+                    key: row.get(0),
+                    id: row.get(1),
+                    nazwa: row.get(2),
+                    adres: row.get(3),
+                    sezon: row.get(4),
+                    opis: row.get(5),
+                    koszt: row.get(6),
+                    przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(7))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Atrakcja>>(),
@@ -196,33 +198,47 @@ pub fn insert_certain_attraction_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-            .execute(
-                "INSERT INTO pracownik ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
-                &[
-                    &params.params.nazwa,
-                    &params.params.adres,
-                    &params.params.sezon,
-                    &params.params.opis,
-                    &params.params.koszt,
-                ],
-            )
-            .unwrap_or(0);
+        let result: Response<i64>;
 
-        if query_result > 0 {
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO pracownik ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
+            &[
+                &params.params.nazwa,
+                &params.params.adres,
+                &params.params.sezon,
+                &params.params.opis,
+                &params.params.koszt,
+            ],
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => Vec::new(),
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new worker".to_owned(),
-                result: query_result,
+                message: "Cannot add new accommodation".to_owned(),
+                result: 0,
             };
         }
+
         let mut response = HashMap::from([
             (
                 "Content",

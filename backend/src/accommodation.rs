@@ -2,13 +2,14 @@ use crate::{
     journey::{Podroz, PodrozBasic},
     urls::RequestBody,
     utils::get_postgres_client,
-    views::{Response, ResponseArray},
+    views::{Response, ResponseArray}, pilot::PilotDeleteQuery,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Zakwaterowanie {
+    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub koszt: i64,
@@ -51,17 +52,18 @@ pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query("select z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres", &[])
+                .query("select z.id, z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres", &[])
                 .unwrap()
                 .iter()
                 .map(|row| Zakwaterowanie {
                     id:row.get(0),
-                            nazwa: row.get(1),
-                            koszt:row.get(2),
-                            ilosc_miejsc: row.get(3),
-                            standard_zakwaterowania: row.get(4),
-                            adres: row.get(5),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new())
+                    key: row.get(1),
+                            nazwa: row.get(2),
+                            koszt:row.get(3),
+                            ilosc_miejsc: row.get(4),
+                            standard_zakwaterowania: row.get(5),
+                            adres: row.get(6),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                 })
                 .collect::<Vec<Zakwaterowanie>>(),
         };
@@ -94,7 +96,7 @@ pub fn get_certain_accommodation_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
+    let mut query: String = "select z.id, z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(
         ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres",
@@ -109,7 +111,8 @@ pub fn get_certain_accommodation_json<'a>(
                 .unwrap()
                 .iter()
                 .map(|row| Zakwaterowanie {
-                    id: row.get(0),
+                    key: row.get(0),
+                    id: row.get(1),
                     nazwa: row.get(1),
                     koszt: row.get(2),
                     ilosc_miejsc: row.get(3),
@@ -145,25 +148,36 @@ pub fn insert_certain_accommodation_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-            .execute(
+        let result: Response<i64>;
+        let mut query_result:Vec<PilotDeleteQuery>=
+        match connection.query(
                 "INSERT INTO zakwaterowanie (nazwa,koszt,ilosc_miejsc,standard_zakwaterowania,adres) values ($1,$2,$3,$4,$5)",
-                &[&params.params.nazwa, &params.params.koszt, &params.params.ilosc_miejsc, &params.params.standard_zakwaterowania, &params.params.adres],
-            )
-            .unwrap_or(0);
+                &[&params.params.nazwa, &params.params.koszt, &params.params.ilosc_miejsc, &params.params.standard_zakwaterowania, &params.params.adres]
+            ){
+            Ok(result)=>
+                result
+                .iter()
+                .map(|row|
+                    {
+                        PilotDeleteQuery{ 
+                            id:row.get(0)
+                        }
+                    })
+                .collect::<Vec<PilotDeleteQuery>>(),
+                Err(result)=> Vec::new()
+        }; 
 
-        if query_result > 0 {
+        if query_result.get(0).unwrap_or(&PilotDeleteQuery { id: 0 }).id > 0 {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result.get(0).unwrap_or(&PilotDeleteQuery { id: 0 }).id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Nie mozna dodac zakwaterowania".to_owned(),
-                result: query_result,
+                message: "Cannot add new accommodation".to_owned(),
+                result: 0,
             };
         }
         let mut response = HashMap::from([

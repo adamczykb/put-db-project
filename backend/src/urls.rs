@@ -9,7 +9,7 @@ use crate::accommodation::{
 use crate::attraction::{
     delete_certain_attraction_json, get_all_attractions_json, get_certain_attraction_json,
     insert_certain_attraction_json, update_certain_attraction_json, AtrakcjaBasic,
-    AtrakcjaDeleteQuery, AtrakcjaInsert, AtrakcjaQuery,
+    AtrakcjaDeleteQuery, AtrakcjaInsert, AtrakcjaPilotQuery, AtrakcjaQuery,
 };
 use crate::client::{
     delete_certain_client_json, get_all_clients_json, get_certain_clients_json,
@@ -79,7 +79,7 @@ fn not_found() -> HashMap<&'static str, String> {
 
 fn server_error(message: String) -> HashMap<&'static str, String> {
     let mut message_output: String = String::new();
-    message_output.push_str("{result:'");
+    message_output.push_str("{\"result\":'");
     message_output.push_str(message.as_str());
     message_output.push_str("'}");
     HashMap::from([
@@ -357,7 +357,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                         }
                         "pilot" => {
                             match serde_json::from_str::<RequestBody<PilotInsert>>(
-                                request.get("content").unwrap_or(&"".to_owned()),
+                                request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
                                 Ok(params) => {
                                     response.extend(insert_certain_pilot_json(params));
@@ -370,7 +370,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                         }
                         "journey" => {
                             match serde_json::from_str::<RequestBody<PodrozInsert>>(
-                                request.get("content").unwrap_or(&"".to_owned()),
+                                request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
                                 Ok(params) => {
                                     response.extend(insert_certain_journey_json(params));
@@ -384,7 +384,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
 
                         "transport_company" => {
                             match serde_json::from_str::<RequestBody<FirmaTransportowaInsert>>(
-                                request.get("content").unwrap_or(&"".to_owned()),
+                                request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
                                 Ok(params) => {
                                     response.extend(insert_certain_transport_company_json(params));

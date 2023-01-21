@@ -1,5 +1,6 @@
 use crate::{
     journey::PodrozBasic,
+    pilot::PilotDeleteQuery,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -10,6 +11,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Klient {
+    pub key: i64,
     pub pesel: i64,
     pub imie: String,
     pub nazwisko: String,
@@ -46,16 +48,17 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia", &[]
+                    "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia", &[]
                     ).unwrap().iter().map(|row| {
                         Klient{
-                            pesel:row.get(0),
-                            imie: row.get(1),
-                            nazwisko: row.get(2),
-                            adres: row.get(3),
-                            numer_telefonu: row.get(4),
-                            data_urodzenia: row.get(5),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6)  ).unwrap_or(Vec::new())
+                    key: row.get(0),
+                            pesel:row.get(1),
+                            imie: row.get(2),
+                            nazwisko: row.get(3),
+                            adres: row.get(4),
+                            numer_telefonu: row.get(5),
+                            data_urodzenia: row.get(6),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
                     }).collect::<Vec<Klient>>()
         };
@@ -86,7 +89,7 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
+    let mut query:String = "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
     query
         .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia");
@@ -100,13 +103,14 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
                 .unwrap()
                 .iter()
                 .map(|row| Klient {
-                    pesel: row.get(0),
-                    imie: row.get(1),
-                    nazwisko: row.get(2),
-                    adres: row.get(3),
-                    numer_telefonu: row.get(4),
-                    data_urodzenia: row.get(5),
-                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
+                    key: row.get(0),
+                    pesel: row.get(1),
+                    imie: row.get(2),
+                    nazwisko: row.get(3),
+                    adres: row.get(4),
+                    numer_telefonu: row.get(5),
+                    data_urodzenia: row.get(6),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(7))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Klient>>(),
@@ -168,24 +172,40 @@ pub fn insert_certain_client_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64>;
-        let query_result = connection
-                .execute("INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY'))", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia])
-                .unwrap_or(0);
+        let result: Response<i64>;
 
-        if query_result > 0 {
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY'))", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia]
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => Vec::new(),
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
-                result: query_result,
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
             };
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new client, client with certain PESEL exists".to_owned(),
-                result: query_result,
+                message: "Cannot add new accommodation".to_owned(),
+                result: 0,
             };
         }
+
         let mut response = HashMap::from([
             (
                 "Content",
