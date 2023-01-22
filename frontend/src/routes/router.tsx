@@ -8,6 +8,10 @@ import PilotsView from "../components/Pilots/Pilots";
 import AddPilot from "../components/Pilots/AddPilot";
 import UpdatePilot from "../components/Pilots/UpdatePilot";
 import AccomodationView from "../components/Accomodation/Accomodation";
+import AddClients from "../components/home/AddClient";
+import UpdateClient from "../components/home/UpdateClient";
+
+
 
 const IndexRouter: React.FC = (): ReactElement => {
     return (
@@ -15,6 +19,8 @@ const IndexRouter: React.FC = (): ReactElement => {
             <Routes>
                 <Route path={"/"} element={<Travel />} />
                 <Route path={"/klienty"} element={<Home />} />
+                <Route path={"/klienty/dodaj"} element={<AddClients />} />
+                <Route path={"/klienty/edycja/:pesel"} element={<UpdateClient />} />
                 <Route path={"/pracowniki"} element={<Employee />} />
                 <Route path={"/podrozy/dodaniePodrozy"} element={<TravelForm />} />
                 <Route path={"/przewodnicy"} element={<PilotsView />} />

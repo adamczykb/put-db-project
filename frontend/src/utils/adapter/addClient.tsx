@@ -1,20 +1,22 @@
+import AddClients from "../../components/home/AddClient";
 import config from "../../config.json";
 
-const getClientsData = (setData: any) => {
+const addClients = (attraction_id: any, pilot_id: any) => {
     const requestOptions = {
-        method: "GET",
+        method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        
+        body: JSON.stringify({ params: { atrakcja_id: attraction_id, przewodnik_id: pilot_id } })
     };
-    fetch(config.SERVER_URL + "/api/get/all_clients", requestOptions)
+
+    fetch(config.SERVER_URL + "/api/update/certain_client", requestOptions)
         .then((response) => response.json())
         .then((response) => {
-            setData(response.result);
+
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };
 
-export default getClientsData;
+export default addClients;

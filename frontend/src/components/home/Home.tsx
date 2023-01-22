@@ -1,9 +1,10 @@
 import { render } from "@testing-library/react";
-import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
+import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
 import getClientsData from "../../utils/adapter/getClientsData";
 import getPilotData from "../../utils/adapter/getPilotData";
+import removeClient from "../../utils/adapter/removeClient";
 const { Panel } = Collapse;
 
 const ClientsView = () => {
@@ -80,8 +81,7 @@ const ClientsView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 <a href={"/klienty/edycja/" + record.pesel}>Edytuj</a><br />
-                <a href={"/klienty/dodaj/"}>dodaj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.pesel)}>
+                <Popconfirm title="Sure to delete?" onConfirm={() => removeClient(record.pesel)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -90,6 +90,9 @@ const ClientsView = () => {
     return (
         <div>
             <h2>Klienty</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/klienty/dodaj') }}>Dodaj klienta</Button></Space>
+            <br />
+            <br />
             <Table columns={columns} dataSource={data} />
         </div>
     )
