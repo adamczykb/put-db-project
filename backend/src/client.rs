@@ -174,20 +174,20 @@ pub fn insert_certain_client_json<'a>(
         let mut connection = client.unwrap();
         let result: Response<i64>;
 
-        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
-            "INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY'))", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia]
+        let mut query_result: Vec<KlientDeleteQuery> = match connection.query(
+            "INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY')) returning pesel;", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia]
         ) {
             Ok(result) => result
                 .iter()
-                .map(|row| PilotDeleteQuery { id: row.get(0) })
-                .collect::<Vec<PilotDeleteQuery>>(),
+                .map(|row| KlientDeleteQuery { pesel: row.get(0) })
+                .collect::<Vec<KlientDeleteQuery>>(),
             Err(result) => Vec::new(),
         };
 
         if query_result
             .get(0)
-            .unwrap_or(&PilotDeleteQuery { id: 0 })
-            .id
+            .unwrap_or(&KlientDeleteQuery { pesel: 0 })
+            .pesel
             > 0
         {
             result = Response {
@@ -195,8 +195,8 @@ pub fn insert_certain_client_json<'a>(
                 message: "OK".to_owned(),
                 result: query_result
                     .get(0)
-                    .unwrap_or(&PilotDeleteQuery { id: 0 })
-                    .id,
+                    .unwrap_or(&KlientDeleteQuery { pesel: 0 })
+                    .pesel,
             };
         } else {
             result = Response {
