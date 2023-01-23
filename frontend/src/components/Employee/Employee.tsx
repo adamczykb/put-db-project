@@ -1,238 +1,78 @@
-// import { UseAppContext } from "../../AppContextProvider";
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import type { InputRef } from 'antd';
-import { Button, Form, Input, Popconfirm, Table } from 'antd';
-import type { FormInstance } from 'antd/es/form';
+import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
+import { useEffect, useState } from "react";
+import getEmployeeData from "../../utils/adapter/getEmployeeData";
+import getPilotData from "../../utils/adapter/getPilotData";
+import removePilot from "../../utils/adapter/removePilot";
+const { Panel } = Collapse;
 
+const WorkerView = () => {
 
-const EditableContext = React.createContext<FormInstance<any> | null>(null);
+    const [data, setData] = useState([]);
+    useEffect(() => {
+        getEmployeeData(setData)
+    }, [])
+    const columns = [
+        {
+            title: 'Pracownik',
+            key: 'pilot',
+            render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
+        },
+        {
+            title: 'Numer telefonu',
+            key: 'telefon',
+            render: (text: any, record: any) => <>{record.numer_telefon}</>,
+        },
+        {
+            title: 'Adres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'addres',
+        },
+        {
+            title: 'Znane języki',
+            render: (text: any, record: any) =>
+                <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
+        },
+        // {
+        //     title: 'Podróże',
+        //     key: 'podroze',
+        //     render: (text: any, record: any) =>
+        //         <>{record.podroze.length > 0 ?
+        //             <Collapse >
+        //                 <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.podroze.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
+        //                     <List
+        //                         bordered
+        //                         dataSource={record.podroze}
+        //                         renderItem={(item: any) => (
+        //                             <List.Item>
+        //                                 {item.nazwa}
+        //                             </List.Item>
+        //                         )}
+        //                     />
+        //                 </Panel>
+        //             </Collapse >
+        //             :
+        //             <>Brak danych</>
 
-interface Item {
-  key: string;
-  Imie: string;
-  Nazwisko: string;
-  Adres: string;
-  Number_telefonu: string;
+        //         }</>
+        // },
+        {
+            title: 'Akcja',
+            render: (text: any, record: any) => <>
+                <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
+                    <a>Usuń</a>
+                </Popconfirm>
+            </>
+        },
+    ]
+    return (
+        <div>
+            <h2>Pracownicy</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/pracownicy/dodaj') }}>Dodaj pracownika</Button></Space>
+            <br />
+            <br />
+            <Table columns={columns} dataSource={data} />
+        </div>
+    )
 }
-interface EditableRowProps {
-  index: number;
-}
-
-const EditableRow: React.FC<EditableRowProps> = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
-
-interface EditableCellProps {
-  title: React.ReactNode;
-  editable: boolean;
-  children: React.ReactNode;
-  dataIndex: keyof Item;
-  record: Item;
-  handleSave: (record: Item) => void;
-}
-
-const EditableCell: React.FC<EditableCellProps> = ({
-  title,
-  editable,
-  children,
-  dataIndex,
-  record,
-  handleSave,
-  ...restProps
-}) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<InputRef>(null);
-  const form = useContext(EditableContext)!;
-
-  useEffect(() => {
-    if (editing) {
-      inputRef.current!.focus();
-    }
-  }, [editing]);
-
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({ [dataIndex]: record[dataIndex] });
-  };
-
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-
-      toggleEdit();
-      handleSave({ ...record, ...values });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
-
-  let childNode = children;
-
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{ margin: 0 }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
-        {children}
-      </div>
-    );
-  }
-
-  return <td {...restProps}>{childNode}</td>;
-};
-
-type EditableTableProps = Parameters<typeof Table>[0];
-
-interface DataType {
-  key: React.Key;
-  Imie: string;
-  Nazwisko: string;
-  Adres: string;
-  Numer_telefonu: string;
-}
-
-type ColumnTypes = Exclude<EditableTableProps['columns'], undefined>;
-
-const Employee: React.FC = () => {
-  const [dataSource, setDataSource] = useState<DataType[]>([
-    {
-      key: '0',
-      Imie: 'QQ',
-      Nazwisko: '345',
-      Adres: '890',
-      Numer_telefonu: '1234'
-    },
-    
-  ]);
-
-  const [count, setCount] = useState(2);
-
-  const handleDelete = (key: React.Key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
-  };
-
-  const defaultColumns: (ColumnTypes[number] & { editable?: boolean; dataIndex: string })[] = [
-    {
-      title: 'Imie',
-      dataIndex: 'Imie',
-      editable: true,
-    },
-    {
-      title: 'Nazwisko',
-      dataIndex: 'Nazwisko',
-      editable: true,
-      
-    },
-    {
-      title: 'Adres',
-      dataIndex: 'Adres',
-      editable: true,
-    },
-    {
-      title: 'Numer telefonu',
-      dataIndex: 'Numer_telefonu',
-      editable: true,
-      
-    },
-    {
-      title: 'Data urodzenia',
-      dataIndex: 'Data_urodzenia',
-      editable: true,
-      
-    },
-    {
-      title: 'Operation',
-      dataIndex: 'Operation',
-      render: (_, record: any) =>
-        dataSource.length >= 1 ? (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-            <a>Delete</a>
-          </Popconfirm>
-        ) : null,
-      
-    },
-  ];
-
-  const handleAdd = () => {
-    const newData: DataType = {
-      key: count,
-      Imie: 'Edward',
-      Nazwisko: 'King',
-      Adres: `London, Park Lane no. ${count}0`,
-      Numer_telefonu: '1234'
-      //address: `London, Park Lane no. ${count}`,
-    };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
-  };
-
-  const handleSave = (row: DataType) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    setDataSource(newData);
-  };
-
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
-
-  const columns = defaultColumns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record: DataType) => ({
-        record,
-        editable: col.editable,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        handleSave,
-      }),
-    };
-  });
-
-  return (
-    <div>
-      <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-        Dodaj pracownika
-      </Button>
-      <Table
-        components={components}
-        rowClassName={() => 'editable-row'}
-        bordered
-        dataSource={dataSource}
-        columns={columns as ColumnTypes}
-      />
-    </div>
-  );
-};
-
-export default Employee;
+export default WorkerView

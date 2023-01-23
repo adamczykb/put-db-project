@@ -10,6 +10,7 @@ import UpdatePilot from "../components/Pilots/UpdatePilot";
 import AccomodationView from "../components/Accomodation/Accomodation";
 import AddClients from "../components/home/AddClient";
 import UpdateClient from "../components/home/UpdateClient";
+import AddAccommodanion from "../components/Accomodation/AddAccomodation";
 
 
 
@@ -27,6 +28,8 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
                 <Route path={"/przewodnicy/edycja/:id"} element={<UpdatePilot />} />
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
+                <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
+                <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
             </Routes>
         </BrowserRouter>
     );

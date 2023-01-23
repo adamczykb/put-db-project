@@ -78,7 +78,7 @@ const AccomodationView = () => {
     ]
     return (
         <div>
-            <h2>Clienty</h2>
+            <h2>Zakwaterowanie</h2>
             <Table columns={columns} dataSource={data} />
         </div>
     )

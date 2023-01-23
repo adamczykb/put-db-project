@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Table } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
 import getAllLanguages from "../../utils/adapter/getAllLanguages";
@@ -6,8 +6,6 @@ import getAllLanguages from "../../utils/adapter/getAllLanguages";
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
-import { useParams } from "react-router-dom";
-import getCertainPilot from "../../utils/adapter/getCertainPilotData";
 
 const onFinish = (values: any) => {
 };
@@ -62,11 +60,8 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-
-const UpdatePilot = () => {
-    const { id } = useParams();
+const AddAccommodanion = () => {
     const [form] = Form.useForm();
-    const [data, setData] = useState({ key: 0, id: 0, imie: '', nazwisko: "", adres: '', numer_telefonu: '', jezyki: [], podroze: [], atrakcje: [] });
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
     const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
@@ -74,10 +69,8 @@ const UpdatePilot = () => {
         setSelectedAttractionKeys(newSelectedRowKeys);
     };
     const rowAttractionSelection = {
-        selectedRowKeys: selectedAttractionKeys,
-        preserveSelectedRowKeys: true,
+        selectedAttractionKeys,
         onChange: onSelectAttractionChange,
-
     };
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
     const [languagesData, setLanguagesData] = useState();
@@ -86,34 +79,15 @@ const UpdatePilot = () => {
         setSelectedLanguagesKeys(newSelectedRowKeys);
     };
     const rowLanguagesSelection = {
-        selectedRowKeys: selectedLanguagesKeys,
-        preserveSelectedRowKeys: true,
+        selectedLanguagesKeys,
         onChange: onSelectLanguagesChange,
     };
 
+    // useEffect(() => {
+    //     getAllAttractions(setAttractionData)
+    //     getAllLanguages(setLanguagesData)
+    // }, [])
 
-    useEffect(() => {
-        getAllAttractions(setAttractionData)
-        getAllLanguages(setLanguagesData)
-        getCertainPilot(id, setData)
-    }, [])
-    useEffect(() => {
-        form.setFieldsValue(data)
-        //setSelectedLanguagesKeys([])
-        //setSelectedAttractionKeys([])
-        let atrakcje: any = []
-        let jezyki: any = []
-        data.jezyki.map((value: any) => {
-            jezyki.push(value.id)
-            console.log(value.id)
-        })
-        data.atrakcje.map((value: any) => {
-            atrakcje.push(value.id)
-            console.log(value.id)
-        })
-        setSelectedAttractionKeys(atrakcje)
-        setSelectedLanguagesKeys(jezyki)
-    }, [data])
     const onFinish = (values: any) => {
         const requestOptions = {
             method: "POST",
@@ -124,7 +98,7 @@ const UpdatePilot = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/update/certain_pilot", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/accommodations", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
@@ -140,12 +114,12 @@ const UpdatePilot = () => {
                 }
 
             }).then(() => {
-                window.open('/przewodnicy')
+                window.open('/klienty')
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Edycja przewodnika</h2>
+        <h2>Dodawanie nowego klienta</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -154,30 +128,69 @@ const UpdatePilot = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            <Form.Item
-                name="imie"
-                label="Imię"
-                //initialValue={data.imie}
+            {/* <Form.Item
+                name="id"
+                label="Pesel"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole imię nie może być puste!',
+                        message: 'Pole pesel nie może być puste!',
+                    },
+                ]}
+            >
+                <InputNumber />
+            </Form.Item> */}
+            <Form.Item
+                name="nazwa"
+                label="Nazwa"
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole nazwa nie może być puste!',
                     },
                 ]}
             >
                 <Input />
             </Form.Item>
             <Form.Item
-                name="nazwisko"
-                label="Nazwisko"
+                name="koszt"
+                label="Koszt"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwisko nie może być puste!',
+                        message: 'Pole koszt nie może być puste!',
                     },
                 ]}
             >
-                <Input value={data.nazwisko} />
+                <InputNumber />
+            </Form.Item>
+            
+
+    
+            <Form.Item
+                name="ilosc_miejsc"
+                label="Ilosc miejsc"
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole ilosc miejsc nie może być puste!',
+                    },
+                ]}
+            >
+                <InputNumber />
+            </Form.Item>
+
+            <Form.Item
+                name="standard_zakwaterowania"
+                label="Standard zakwaterowania"
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole nazwa nie może być puste!',
+                    },
+                ]}
+            >
+                <Input />
             </Form.Item>
             <Form.Item
                 name="adres"
@@ -189,46 +202,16 @@ const UpdatePilot = () => {
                     },
                 ]}
             >
-                <Input value={data.adres} />
+                <Input />
             </Form.Item>
-            <Form.Item
-                name="numer_telefonu"
-                label="Numer telefonu"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole numer telefonu nie może być puste!',
-                    },
-                ]}
-            >
-                <Input value={data.numer_telefonu} />
-            </Form.Item>
-            <Form.Item
-                label="Powiązany z atrakcjami"
-            >
-                <Table
-                    rowSelection={rowAttractionSelection}
-                    columns={attraction_columns}
-                    dataSource={attractionData}
-                />
-            </Form.Item>
-            <Form.Item
-                label="Zna języki"
-            >
-                <Table
-
-                    rowSelection={rowLanguagesSelection}
-                    columns={languages_columns}
-                    dataSource={languagesData}
-                />
-            </Form.Item>
+           
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Zgłoś zmiany
+                    Dodaj klienta
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default UpdatePilot
+export default AddAccommodanion
