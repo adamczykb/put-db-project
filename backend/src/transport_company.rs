@@ -48,7 +48,7 @@ pub fn get_all_transport_company_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
+                    "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t)::text 
                     from firma_transportowa ft 
                     left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
                     left join transport t on t.id = fft.transport_id
@@ -220,7 +220,7 @@ pub fn insert_certain_transport_company_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new transport company".to_owned(),
                 result: 0,
             };
         }
