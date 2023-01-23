@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 
 import removePilot from "../../utils/adapter/removePilot";
+import removeTransportCompany from "../../utils/adapter/removeTransportCompany";
 const { Panel } = Collapse;
 
 const TransportCompanyView = () => {
@@ -32,7 +33,7 @@ const TransportCompanyView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 <a href={"/firma_transportowa/edycja/" + record.id}>Edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
+                <Popconfirm title="Sure to delete?" onConfirm={() => removeTransportCompany(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>

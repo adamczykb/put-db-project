@@ -52,7 +52,7 @@ pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
+                    "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft)::text 
                     from transport t 
                     left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
                     left join firma_transportowa ft on ft.id = fft.firma_transportowa_id

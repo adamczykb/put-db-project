@@ -8,9 +8,9 @@ import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 import { useParams } from "react-router-dom";
 import getCertainPilot from "../../utils/adapter/getCertainPilotData";
+import { clear } from "console";
 
-const onFinish = (values: any) => {
-};
+
 const attraction_columns = [
     {
         title: 'Atrakcja',
@@ -73,9 +73,11 @@ const UpdatePilot = () => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedAttractionKeys(newSelectedRowKeys);
     };
+    
     const rowAttractionSelection = {
+        
         selectedRowKeys: selectedAttractionKeys,
-        preserveSelectedRowKeys: true,
+        preserveSelectedRowKeys: false,
         onChange: onSelectAttractionChange,
 
     };
@@ -87,11 +89,14 @@ const UpdatePilot = () => {
     };
     const rowLanguagesSelection = {
         selectedRowKeys: selectedLanguagesKeys,
-        preserveSelectedRowKeys: true,
+        preserveSelectedRowKeys: false,
         onChange: onSelectLanguagesChange,
     };
 
-
+    function getUniqueValues(arr: Array<unknown>): Array<unknown> | unknown {
+        if (arr === undefined || !Array.isArray(arr)) return;
+        return Array.from(new Set(arr));
+    }
     useEffect(() => {
         getAllAttractions(setAttractionData)
         getAllLanguages(setLanguagesData)
@@ -115,6 +120,7 @@ const UpdatePilot = () => {
         setSelectedLanguagesKeys(jezyki)
     }, [data])
     const onFinish = (values: any) => {
+        //console.log(values);
         values.id = Number(id)
         values.key = Number(id)
         const requestOptions = {
@@ -130,6 +136,10 @@ const UpdatePilot = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
+                    console.log(response.result)
+                    console.log(selectedLanguagesKeys);
+                    console.log(selectedAttractionKeys);
+                    console.log(values);
                     selectedLanguagesKeys.map((value: any) => {
                         addLanguageToPilot(value, response.result)
                     })
@@ -140,13 +150,16 @@ const UpdatePilot = () => {
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
+                //window.open("/przewodnicy")
+                //window.close();
                 return response
             }).then((response) => {
-                if (response.status == 200) {
-                   
-                }
+
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
+            
+        // window.open("/przewodnicy")
+        // window.close();
     };
     return <>
         <h2>Edycja przewodnika</h2>
@@ -211,6 +224,7 @@ const UpdatePilot = () => {
                 label="Powiązany z atrakcjami"
             >
                 <Table
+                    
                     rowSelection={rowAttractionSelection}
                     columns={attraction_columns}
                     dataSource={attractionData}
