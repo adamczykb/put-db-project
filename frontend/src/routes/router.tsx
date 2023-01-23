@@ -13,6 +13,7 @@ import UpdateClient from "../components/home/UpdateClient";
 import AddAccommodanion from "../components/Accomodation/AddAccomodation";
 import TransportCompanyView from "../components/TransportCompany/TransportCompany";
 import AddEmployee from "../components/Employee/AddEmployee";
+import TransportyView from "../components/TransportCompany/Transport";
 
 
 
@@ -34,6 +35,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
+                <Route path={"/transporty"} element={<TransportyView/>}/>
             </Routes>
         </BrowserRouter>
     );
