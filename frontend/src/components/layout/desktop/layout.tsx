@@ -46,7 +46,7 @@ const Frontend: React.FC = () => {
                         {
                             key: '3',
                             icon: <UserOutlined />,
-                            label: (<a href="/pracowniki">
+                            label: (<a href="/pracownicy">
                                 Pracownicy
                             </a>),
                         }, 
@@ -64,6 +64,13 @@ const Frontend: React.FC = () => {
                                 Zakwaterowanie
                             </a>),
                         },
+                        {
+                            key: '6',
+                            icon: <FolderViewOutlined/>,
+                            label: (<a href='/firma_transportowa'>
+                                Firma transportowa
+                            </a>)
+                        }
 
                     ]}
                 />

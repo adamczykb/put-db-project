@@ -1,6 +1,7 @@
 import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
 import { useEffect, useState } from "react";
-import getPilotData from "../../utils/adapter/getPilotData";
+import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
+
 import removePilot from "../../utils/adapter/removePilot";
 const { Panel } = Collapse;
 
@@ -8,7 +9,7 @@ const TransportCompanyView = () => {
 
     const [data, setData] = useState([]);
     useEffect(() => {
-        getPilotData(setData)
+        getTransportCompanyData(setData)
     }, [])
     const columns = [
         {

@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
+import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
 import getAllLanguages from "../../utils/adapter/getAllLanguages";
@@ -6,26 +6,27 @@ import getAllLanguages from "../../utils/adapter/getAllLanguages";
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import addLanguageToWorker from "../../utils/adapter/addLanguageToWorker";
 
 const onFinish = (values: any) => {
 };
-const attraction_columns = [
-    {
-        title: 'Atrakcja',
-        key: 'atrakcja',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-    {
-        title: 'Opis',
-        key: 'opis',
-        render: (text: any, record: any) => <>{record.opis}</>,
-    },
-]
+// const attraction_columns = [
+//     {
+//         title: 'Atrakcja',
+//         key: 'atrakcja',
+//         render: (text: any, record: any) => <>{record.nazwa}</>,
+//     },
+//     {
+//         title: 'Adres',
+//         key: 'adres',
+//         render: (text: any, record: any) => <>{record.adres}</>,
+//     },
+//     {
+//         title: 'Opis',
+//         key: 'opis',
+//         render: (text: any, record: any) => <>{record.opis}</>,
+//     },
+// ]
 const languages_columns = [
     {
         title: 'Kod języka',
@@ -60,18 +61,11 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const AddClients = () => {
+const AddEmployee = () => {
     const [form] = Form.useForm();
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
-    };
-    const rowAttractionSelection = {
-        selectedAttractionKeys,
-        onChange: onSelectAttractionChange,
-    };
+    
+    
+    
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
     const [languagesData, setLanguagesData] = useState();
     const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
@@ -83,10 +77,9 @@ const AddClients = () => {
         onChange: onSelectLanguagesChange,
     };
 
-    // useEffect(() => {
-    //     getAllAttractions(setAttractionData)
-    //     getAllLanguages(setLanguagesData)
-    // }, [])
+    useEffect(() => {
+        getAllLanguages(setLanguagesData)
+    }, [])
 
     const onFinish = (values: any) => {
         const requestOptions = {
@@ -98,23 +91,27 @@ const AddClients = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/pilot", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/worker", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                   
+                    selectedLanguagesKeys.map((value: any) => {
+                        addLanguageToWorker(value, response.result)
+                    })
                     console.log(response)
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(()=>{
-                window.open('/klienty')
+                if(message.error.length==0){
+                window.open('/pracownicy')
+                }
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Dodawanie nowego pracownika</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -123,18 +120,6 @@ const AddClients = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            <Form.Item
-                name="pesel"
-                label="Pesel"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole pesel nie może być puste!',
-                    },
-                ]}
-            >
-                <InputNumber />
-            </Form.Item>
             <Form.Item
                 name="imie"
                 label="Imię"
@@ -172,7 +157,7 @@ const AddClients = () => {
                 <Input />
             </Form.Item>
             <Form.Item
-                name="numer_telefonu"
+                name="numer_telefon"
                 label="Numer telefonu"
                 rules={[
                     {
@@ -183,9 +168,6 @@ const AddClients = () => {
             >
                 <Input />
             </Form.Item>
-            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}>
-                    <DatePicker format="DD-MM-YYYY" />
-            </Form.Item> 
             {/* <Form.Item
                 label="Powiązany z atrakcjami"
             >
@@ -194,7 +176,7 @@ const AddClients = () => {
                     columns={attraction_columns}
                     dataSource={attractionData}
                 />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
                 label="Zna języki"
             >
@@ -203,14 +185,14 @@ const AddClients = () => {
                     columns={languages_columns}
                     dataSource={languagesData}
                 />
-            </Form.Item> */}
+            </Form.Item>
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Dodaj klienta
+                    Dodaj pracownika
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddClients
+export default AddEmployee;

@@ -11,6 +11,8 @@ import AccomodationView from "../components/Accomodation/Accomodation";
 import AddClients from "../components/home/AddClient";
 import UpdateClient from "../components/home/UpdateClient";
 import AddAccommodanion from "../components/Accomodation/AddAccomodation";
+import TransportCompanyView from "../components/TransportCompany/TransportCompany";
+import AddEmployee from "../components/Employee/AddEmployee";
 
 
 
@@ -22,7 +24,8 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/klienty"} element={<Home />} />
                 <Route path={"/klienty/dodaj"} element={<AddClients />} />
                 <Route path={"/klienty/edycja/:pesel"} element={<UpdateClient />} />
-                <Route path={"/pracowniki"} element={<Employee />} />
+                <Route path={"/pracownicy"} element={<Employee />} />
+                <Route path={"/pracownicy/dodaj"} element={<AddEmployee />} />
                 <Route path={"/podrozy/dodaniePodrozy"} element={<TravelForm />} />
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
@@ -30,6 +33,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
+                <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
             </Routes>
         </BrowserRouter>
     );

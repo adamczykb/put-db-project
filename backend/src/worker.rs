@@ -214,7 +214,7 @@ pub fn insert_certain_worker_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new worker".to_owned(),
                 result: 0,
             };
         }
@@ -269,7 +269,7 @@ pub fn add_language_to_worker_json<'a>(
         }
         if connection
             .query(
-                "select * from Pracowik where id=$1",
+                "select * from Pracownik where id=$1",
                 &[&params.params.pracownik_id],
             )
             .unwrap()
