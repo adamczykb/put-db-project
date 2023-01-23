@@ -115,6 +115,8 @@ const UpdatePilot = () => {
         setSelectedLanguagesKeys(jezyki)
     }, [data])
     const onFinish = (values: any) => {
+        values.id = Number(id)
+        values.key = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -138,9 +140,11 @@ const UpdatePilot = () => {
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
-
-            }).then(() => {
-                window.open('/przewodnicy')
+                return response
+            }).then((response) => {
+                if (response.status == 200) {
+                   
+                }
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };

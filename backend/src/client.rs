@@ -201,7 +201,7 @@ pub fn insert_certain_client_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new klient".to_owned(),
                 result: 0,
             };
         }

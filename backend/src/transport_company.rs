@@ -189,7 +189,7 @@ pub fn insert_certain_transport_company_json<'a>(
         let result: Response<i64>;
 
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
-            "INSERT INTO firma_transportowa (nazwa, adres, telefon) values ($1,$2,$3)",
+            "INSERT INTO firma_transportowa (nazwa, adres, telefon) values ($1,$2,$3) returning id",
             &[
                 &params.params.nazwa,
                 &params.params.adres,

@@ -179,7 +179,12 @@ pub fn update_certain_pilot_json<'a>(params: RequestBody<PilotBasic>) -> HashMap
             result: connection
             .execute("UPDATE przewodnik SET imie=$2, nazwisko=$3, adres=$4, numer_telefonu=$5 where id=$1", &[&params.params.id,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu])
             .unwrap()
+            
             };
+        connection
+            .execute("delete from jezyk_przewodnik where przewodnik_id=$1",&[&params.params.id] ).unwrap(); 
+        connection
+            .execute("delete from atrakcja_przewodnik where przewodnik_id=$1",&[&params.params.id] ).unwrap();
         connection.close();
         return HashMap::from([
             ("Status", "200 OK".to_owned()),
