@@ -27,60 +27,11 @@ const TransportCompanyView = () => {
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'adres',
         },
-        {
-            title: 'Atrakcje',
-            key: 'atrakcje',
-            render: (text: any, record: any) =>
-                <>{record.atrakcje.length > 0 ?
-
-                    <Collapse >
-                        <Panel header={record.atrakcje.length > 4 ? "Obsługuje " + record.atrakcje.length + " atrkacji" : "Obsługuje " + record.atrakcje.length + " atrakcje"} key="1">
-                            <List
-                                bordered
-                                dataSource={record.atrakcje}
-                                renderItem={(item: any) => (
-                                    <List.Item>
-                                        {item.nazwa}
-                                    </List.Item>
-                                )}
-                            />
-                        </Panel>
-                    </Collapse > :
-                    <>Brak danych</>
-                }</>
-        },
-        {
-            title: 'Znane języki',
-            render: (text: any, record: any) =>
-                <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
-        },
-        {
-            title: 'Podróże',
-            key: 'podroze',
-            render: (text: any, record: any) =>
-                <>{record.podroze.length > 0 ?
-                    <Collapse >
-                        <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.atrakcje.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
-                            <List
-                                bordered
-                                dataSource={record.podroze}
-                                renderItem={(item: any) => (
-                                    <List.Item>
-                                        {item.nazwa}
-                                    </List.Item>
-                                )}
-                            />
-                        </Panel>
-                    </Collapse >
-                    :
-                    <>Brak danych</>
-
-                }</>
-        },
+        
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
+                <a href={"/firma_transportowa/edycja/" + record.id}>Edytuj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
@@ -89,8 +40,8 @@ const TransportCompanyView = () => {
     ]
     return (
         <div>
-            <h2>Przewodnicy</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/przewodnicy/dodaj') }}>Dodaj przewodnika</Button></Space>
+            <h2>Firma transportowa</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/firma_transportowa/dodaj') }}>Dodaj firmę transportową</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />
