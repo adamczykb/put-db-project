@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import getEmployeeData from "../../utils/adapter/getEmployeeData";
 import getPilotData from "../../utils/adapter/getPilotData";
 import removePilot from "../../utils/adapter/removePilot";
+import removeWorker from "../../utils/adapter/removeWorker";
 const { Panel } = Collapse;
 
 const WorkerView = () => {
@@ -59,7 +60,7 @@ const WorkerView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
+                <Popconfirm title="Sure to delete?" onConfirm={() => removeWorker(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
