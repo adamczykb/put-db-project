@@ -65,27 +65,27 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection.query(
                     "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, 
-json_agg(po)::text, 
-json_agg(je)::text, 
-json_agg(a)::text  
+po, 
+je, 
+a  
                         from przewodnik p
 						left join lateral (
-    						select json_agg(prz) as po
+    						select COALESCE(json_agg(prz)::text,'[]') as po
     						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
     						where pp.przewodnik_id = p.id
     					) pr on true
 						left join lateral (
-    						select json_agg(att) as a
+    						select COALESCE(json_agg(att)::text,'[]')  as a
     						from atrakcja att left join atrakcja_przewodnik pp on pp.atrakcja_id = att.id
     						where pp.przewodnik_id = p.id
     					) at on true
 						left join lateral (
-    						select json_agg(att) as je
+    						select COALESCE(json_agg(att)::text,'[]')  as je
     						from jezyk att left join jezyk_przewodnik pp on pp.jezyk_kod = att.kod
     						where pp.przewodnik_id = p.id
     					) je on true
 
-                        group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu", &[]
+                        group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a", &[]
                     ).unwrap().iter().map(|row| {
                         Pilot{
                     key: row.get(0),
@@ -128,28 +128,29 @@ pub fn get_certain_pilots_json<'a>(params: RequestBody<PilotQuery>) -> HashMap<&
         .map(|v| v.to_string())
         .collect();
     let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, 
-json_agg(po)::text, 
-json_agg(je)::text, 
-json_agg(a)::text  
+po, 
+je, 
+a  
                         from przewodnik p
 						left join lateral (
-    						select json_agg(prz) as po
+    						select COALESCE(json_agg(prz)::text,'[]') as po
     						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
     						where pp.przewodnik_id = p.id
     					) pr on true
 						left join lateral (
-    						select json_agg(att) as a
+    						select COALESCE(json_agg(att)::text,'[]')  as a
     						from atrakcja att left join atrakcja_przewodnik pp on pp.atrakcja_id = att.id
     						where pp.przewodnik_id = p.id
     					) at on true
 						left join lateral (
-    						select json_agg(att) as je
+    						select COALESCE(json_agg(att)::text,'[]')  as je
     						from jezyk att left join jezyk_przewodnik pp on pp.jezyk_kod = att.kod
     						where pp.przewodnik_id = p.id
     					) je on true
+
                         where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu");
+    query.push_str(")  group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Pilot> = ResponseArray {

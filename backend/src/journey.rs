@@ -97,44 +97,49 @@ pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
             result: connection
                 .query(
                         "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
-json_agg(przewodnik)::text ,
-json_agg(klient)::text ,
-json_agg(atrakcja)::text ,
-json_agg(pracownik)::text ,
-json_agg(etap)::text ,
-json_agg(zakwaterowanie)::text 
+przewodnik ,
+klient ,
+atrakcja ,
+pracownik ,
+etap ,
+zakwaterowanie 
                         from podroz p
 						left join lateral (
-    						select json_agg(prz) as przewodnik
+    						select COALESCE(json_agg(prz)::text,'[]')  as przewodnik
     						from przewodnik prz left join przewodnik_podroz pp on pp.przewodnik_id = prz.id
     						where pp.podroz_id = p.id
     					) pr on true
 						left join lateral (
-    						select json_agg(kl) as klient
+    						select  COALESCE(json_agg(kl)::text,'[]')   as klient
     						from klient kl left join klient_podroz pp on pp.klient_pesel = kl.pesel
     						where pp.podroz_id = p.id
     					) kl on true
 						left join lateral (
-    						select json_agg(att) as atrakcja
+    						select  COALESCE(json_agg(att)::text,'[]')   as atrakcja
     						from atrakcja att left join podroz_atrakcja pp on pp.atrakcja_id = att.id
     						where pp.podroz_id = p.id
     					) att on true
 						left join lateral (
-    						select json_agg(prac) as pracownik
+    						select  COALESCE(json_agg(prac)::text,'[]')   as pracownik
     						from pracownik prac left join pracownik_podroz pp on pp.pracownik_id = prac.id
     						where pp.podroz_id = p.id
     					) prac on true
 						left join lateral (
-    						select json_agg(et) as etap
+    						select  COALESCE(json_agg(et)::text,'[]')   as etap
     						from etap et left join etap_podroz pp on pp.etap_id = et.id
     						where pp.podroz_id = p.id
     					) et on true
 						left join lateral (
-    						select json_agg(et) as zakwaterowanie
+    						select   COALESCE(json_agg(et)::text,'[]')   as zakwaterowanie
     						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
     						where pp.podroz_id = p.id
     					) zak on true
-                        group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena",
+                        group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+klient ,
+atrakcja ,
+pracownik ,
+etap ,
+zakwaterowanie",
                     &[],
                 )
                 .unwrap()
@@ -190,46 +195,53 @@ pub fn get_certain_journeys_json<'a>(params: RequestBody<PodrozQuery>) -> HashMa
         .map(|v| v.to_string())
         .collect();
     let mut query: String = "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
-json_agg(przewodnik)::text ,
-json_agg(klient)::text ,
-json_agg(atrakcja)::text ,
-json_agg(pracownik)::text ,
-json_agg(etap)::text ,
-json_agg(zakwaterowanie)::text 
+przewodnik ,
+klient ,
+atrakcja ,
+pracownik ,
+etap ,
+zakwaterowanie 
                         from podroz p
-						left join lateral (
-    						select json_agg(prz) as przewodnik
+												left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as przewodnik
     						from przewodnik prz left join przewodnik_podroz pp on pp.przewodnik_id = prz.id
     						where pp.podroz_id = p.id
     					) pr on true
 						left join lateral (
-    						select json_agg(kl) as klient
+    						select  COALESCE(json_agg(kl)::text,'[]')   as klient
     						from klient kl left join klient_podroz pp on pp.klient_pesel = kl.pesel
     						where pp.podroz_id = p.id
     					) kl on true
 						left join lateral (
-    						select json_agg(att) as atrakcja
+    						select  COALESCE(json_agg(att)::text,'[]')   as atrakcja
     						from atrakcja att left join podroz_atrakcja pp on pp.atrakcja_id = att.id
     						where pp.podroz_id = p.id
     					) att on true
 						left join lateral (
-    						select json_agg(prac) as pracownik
+    						select  COALESCE(json_agg(prac)::text,'[]')   as pracownik
     						from pracownik prac left join pracownik_podroz pp on pp.pracownik_id = prac.id
     						where pp.podroz_id = p.id
     					) prac on true
 						left join lateral (
-    						select json_agg(et) as etap
+    						select  COALESCE(json_agg(et)::text,'[]')   as etap
     						from etap et left join etap_podroz pp on pp.etap_id = et.id
     						where pp.podroz_id = p.id
     					) et on true
 						left join lateral (
-    						select json_agg(et) as zakwaterowanie
+    						select   COALESCE(json_agg(et)::text,'[]')   as zakwaterowanie
     						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
     						where pp.podroz_id = p.id
     					) zak on true
                              where p.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena");
+    query.push_str(
+        ") group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+klient ,
+atrakcja ,
+pracownik ,
+etap ,
+zakwaterowanie ",
+    );
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Podroz> = ResponseArray {
