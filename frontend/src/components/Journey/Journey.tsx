@@ -39,11 +39,7 @@ const JourneysView = () => {
         },
         
         
-        // {
-        //     title: 'Addres',
-        //     render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        //     key: 'addres',
-        // },
+        
         {
             title: 'Atrakcje',
             key: 'atrakcje',
@@ -94,34 +90,7 @@ const JourneysView = () => {
                     <>Brak danych</>
                 }</>
         },
-        // {
-        //     title: 'Znane języki',
-        //     render: (text: any, record: any) =>
-        //         <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
-        // },
-        // {
-        //     title: 'Podróże',
-        //     key: 'podroze',
-        //     render: (text: any, record: any) =>
-        //         <>{record.podroze.length > 0 ?
-        //             <Collapse >
-        //                 <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.atrakcje.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
-        //                     <List
-        //                         bordered
-        //                         dataSource={record.podroze}
-        //                         renderItem={(item: any) => (
-        //                             <List.Item>
-        //                                 {item.nazwa}
-        //                             </List.Item>
-        //                         )}
-        //                     />
-        //                 </Panel>
-        //             </Collapse >
-        //             :
-        //             <>Brak danych</>
-
-        //         }</>
-        // },
+       
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
@@ -135,7 +104,7 @@ const JourneysView = () => {
     return (
         <div>
             <h2>Podróży</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj') }}>Dodaj przewodnika</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj') }}>Dodaj podróż</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />
