@@ -45,6 +45,8 @@ pub struct EtapDelete {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapQuery {
     pub id_list: Vec<i64>,
+    pub from: String,
+    pub to: String,
 }
 //
 pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
@@ -104,16 +106,20 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
         .map(|v| v.to_string())
         .collect();
     let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t) from etap e
-            join transport t on t.id = e.id  e.id in (".to_owned();
+            join transport t on t.id = e.id where  e.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa");
+    query.push_str(")");
+    if !params.params.from.is_empty() && !params.params.to.is_empty() {
+        query.push_str(" or (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ")
+    }
+    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Etap> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query(&query, &[])
+                .query(&query, &[&params.params.from, &params.params.to])
                 .unwrap()
                 .iter()
                 .map(|row| Etap {
