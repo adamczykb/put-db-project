@@ -42,27 +42,22 @@ const EtapView = () => {
             key: 'data_koncowa',
             render: (text: any, record: any) => <>{record.data_koncowa}</>,
         },
+        
         {
             title: 'Transport',
             key: 'transport',
             render: (text: any, record: any) =>
-                <>{record.transport.length > 0 ?
-
+               
+                   
                     <Collapse >
                         <Panel header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1">
-                            <List
-                                bordered
-                                dataSource={record.transport}
-                                renderItem={(item: any) => (
-                                    <List.Item>
-                                        Nazwa: {item.nazwa}  
-                                    </List.Item>
-                                )}
-                            />
+                            Nazwa: {record.transport.liczba_jednostek
+        }
+                               
+                           
                         </Panel>
-                    </Collapse > :
-                    <>Brak danych</>
-                }</>
+                    </Collapse > 
+                    
         },
         
         

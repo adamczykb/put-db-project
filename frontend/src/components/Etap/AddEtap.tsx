@@ -68,26 +68,43 @@ const AddEtap = () => {
     const onFinish = (values: any) => {
         values.data_poczatkowa = values.data_poczatkowa.format('DD-MM-YYYY');
         values.data_koncowa = values.data_koncowa.format('DD-MM-YYYY');
-        values.transport.nazwa = values.transport.nazwa;
+        const transport={
+            nazwa: values.nazwa,
+            liczba_jednostek: values.liczba_jednostek,
+            liczba_miejsc: values.liczba_miejsc,
+
+        }
+        const out={
+            punkt_poczatkowy: values.punkt_poczatkowy,
+            punkt_konczowy: values.punkt_konczowy,
+            koszt: values.koszt,
+            data_poczatkowa: values.data_poczatkowa,
+            data_koncowa: values.data_koncowa,
+            
+            transport
+        }
+        console.log(out)
+        // values.transport=[nazwa : values.nazwa,liczba_jednostek,liczba_miejsc];
+        console.log(values);
         const requestOptions = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({ params: values })
+            body: JSON.stringify({ params: out })
         };
 
         fetch(config.SERVER_URL + "/api/push/etap", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
-                        // addLanguageToPilot(value, response.result)
-                    })
-                    selectedAttractionKeys.map((value: any) => {
-                        // addAttractionToPilot(value, response.result)
-                    })
+                    // selectedLanguagesKeys.map((value: any) => {
+                    //     // addLanguageToPilot(value, response.result)
+                    // })
+                    // selectedAttractionKeys.map((value: any) => {
+                    //     // addAttractionToPilot(value, response.result)
+                    // })
                     console.log(response)
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
@@ -160,7 +177,7 @@ const AddEtap = () => {
             <Form.Item name="data_koncowa" label="Data koncowa" {...config}>
                 <DatePicker format="DD-MM-YYYY" />
             </Form.Item>
-
+           
             <Form.Item
                 label='Nazwa transportu'
                 name={'nazwa'}
@@ -181,7 +198,7 @@ const AddEtap = () => {
                 ]
                 }
             >
-                <Input />
+                <InputNumber />
             </Form.Item>
             <Form.Item
                 label='Liczba miejsc'
@@ -197,8 +214,9 @@ const AddEtap = () => {
                 ]
                 }
             >
-                <Input />
+                <InputNumber />
             </Form.Item>
+            
             {/* <Table
                     rowSelection={rowTransportSelection}
                     columns={transport_columns}

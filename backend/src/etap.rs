@@ -72,7 +72,7 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
                     data_poczatkowa: row.get(5),
                     data_koncowa: row.get(6),
                     transport: serde_json::from_str::<TransportBasic>(row.get(7))
-                        .unwrap_or(TransportBasic {                    key: row.get(0),                            id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
+                        .unwrap_or(TransportBasic {                                          id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
                 .collect::<Vec<Etap>>(),
         };
@@ -126,7 +126,6 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
                     data_koncowa: row.get(5),
                     transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
                         TransportBasic {
-                            key: row.get(0),
                             id: row.get(0),
                             nazwa: "".to_string(),
                             liczba_jednostek: 0,
@@ -183,7 +182,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
             > 0
         {
             connection.execute(
-                    "INSERT INTO transport (nazwa, liczba_jednostek,liczba_miejsc) values ($1,$2,$3,$4) returning id",
+                    "INSERT INTO transport (id, nazwa, liczba_jednostek,liczba_miejsc) values ($1,$2,$3,$4) returning id",
                 &[
                     &query_result
             .get(0)
