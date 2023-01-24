@@ -23,7 +23,6 @@ pub struct Pilot {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PilotBasic {
-    pub key: i64,
     pub id: i64,
     pub imie: String,
     pub nazwisko: String,

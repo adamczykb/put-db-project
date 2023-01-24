@@ -56,7 +56,7 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar),json_agg(t) from etap e
+                    "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar),json_agg(t)::text from etap e
                         join transport t on t.id = e.id
                         group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa",
                     &[],

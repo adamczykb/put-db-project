@@ -234,7 +234,7 @@ pub fn insert_certain_attraction_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new attraction".to_owned(),
                 result: 0,
             };
         }

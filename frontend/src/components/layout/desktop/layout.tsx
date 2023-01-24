@@ -77,6 +77,13 @@ const Frontend: React.FC = () => {
                             label: (<a href='/transporty'>
                                 Transporty
                             </a>)
+                        },
+                        {
+                            key: '8',
+                            icon: <FolderViewOutlined/>,
+                            label: (<a href='/atrakcje'>
+                                Atrakcje
+                            </a>)
                         }
 
                     ]}
