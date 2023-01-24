@@ -64,14 +64,27 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text  
+                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, 
+json_agg(po)::text, 
+json_agg(je)::text, 
+json_agg(a)::text  
                         from przewodnik p
-                        left join przewodnik_podroz pp on pp.przewodnik_id=p.id 
-                        left join podroz po on po.id=pp.podroz_id 
-                        left join jezyk_przewodnik jp on jp.przewodnik_id=p.id 
-                        left join jezyk je on je.kod=jp.jezyk_kod
-                        left join atrakcja_przewodnik ap on ap.przewodnik_id=p.id 
-                        left join atrakcja a on a.id=ap.atrakcja_id 
+						left join lateral (
+    						select json_agg(prz) as po
+    						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
+    						where pp.przewodnik_id = p.id
+    					) pr on true
+						left join lateral (
+    						select json_agg(att) as a
+    						from atrakcja att left join atrakcja_przewodnik pp on pp.atrakcja_id = att.id
+    						where pp.przewodnik_id = p.id
+    					) at on true
+						left join lateral (
+    						select json_agg(att) as je
+    						from jezyk att left join jezyk_przewodnik pp on pp.jezyk_kod = att.kod
+    						where pp.przewodnik_id = p.id
+    					) je on true
+
                         group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu", &[]
                     ).unwrap().iter().map(|row| {
                         Pilot{
@@ -114,14 +127,26 @@ pub fn get_certain_pilots_json<'a>(params: RequestBody<PilotQuery>) -> HashMap<&
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, json_agg(po)::text, json_agg(je)::text, json_agg(a)::text
+    let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, 
+json_agg(po)::text, 
+json_agg(je)::text, 
+json_agg(a)::text  
                         from przewodnik p
-                        left join przewodnik_podroz pp on pp.przewodnik_id=p.id 
-                        left join podroz po on po.id=pp.podroz_id 
-                        left join jezyk_przewodnik jp on jp.przewodnik_id=p.id 
-                        left join jezyk je on je.kod=jp.jezyk_kod  
-                        left join atrakcja_przewodnik ap on ap.przewodnik_id=p.id 
-                        left join atrakcja a on a.id=ap.atrakcja_id
+						left join lateral (
+    						select json_agg(prz) as po
+    						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
+    						where pp.przewodnik_id = p.id
+    					) pr on true
+						left join lateral (
+    						select json_agg(att) as a
+    						from atrakcja att left join atrakcja_przewodnik pp on pp.atrakcja_id = att.id
+    						where pp.przewodnik_id = p.id
+    					) at on true
+						left join lateral (
+    						select json_agg(att) as je
+    						from jezyk att left join jezyk_przewodnik pp on pp.jezyk_kod = att.kod
+    						where pp.przewodnik_id = p.id
+    					) je on true
                         where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
     query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu");

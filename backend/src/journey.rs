@@ -96,23 +96,45 @@ pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                        "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, json_agg(prz)::text, json_agg(kl)::text, json_agg(at)::text, json_agg(pra)::text, json_agg(et)::text, json_agg(za)::text
+                        "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
+json_agg(przewodnik)::text ,
+json_agg(klient)::text ,
+json_agg(atrakcja)::text ,
+json_agg(pracownik)::text ,
+json_agg(etap)::text ,
+json_agg(zakwaterowanie)::text 
                         from podroz p
-                        left join przewodnik_podroz pp on pp.podroz_id = p.id
-                        left join klient_podroz kp on kp.podroz_id = p.id
-                        left join podroz_atrakcja pa on pa.podroz_id = p.id
-                        left join pracownik_podroz prapo on prapo.podroz_id = p.id
-                        left join etap_podroz ep on ep.podroz_id = p.id
-                        left join zakwaterowanie_podroz zp on zp.podroz_id = p.id
-
-                        left join przewodnik prz on pp.przewodnik_id = prz.id
-                        left join klient kl on kp.klient_pesel = kl.pesel
-                        left join atrakcja at on pa.atrakcja_id = at.id
-                        left join pracownik pra on prapo.pracownik_id = pra.id
-                        left join etap et on ep.etap_id = et.id
-                        left join zakwaterowanie za on zp.zakwaterowanie_id = za.id
-
-                        group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena ",
+						left join lateral (
+    						select json_agg(prz) as przewodnik
+    						from przewodnik prz left join przewodnik_podroz pp on pp.przewodnik_id = prz.id
+    						where pp.podroz_id = p.id
+    					) pr on true
+						left join lateral (
+    						select json_agg(kl) as klient
+    						from klient kl left join klient_podroz pp on pp.klient_pesel = kl.pesel
+    						where pp.podroz_id = p.id
+    					) kl on true
+						left join lateral (
+    						select json_agg(att) as atrakcja
+    						from atrakcja att left join podroz_atrakcja pp on pp.atrakcja_id = att.id
+    						where pp.podroz_id = p.id
+    					) att on true
+						left join lateral (
+    						select json_agg(prac) as pracownik
+    						from pracownik prac left join pracownik_podroz pp on pp.pracownik_id = prac.id
+    						where pp.podroz_id = p.id
+    					) prac on true
+						left join lateral (
+    						select json_agg(et) as etap
+    						from etap et left join etap_podroz pp on pp.etap_id = et.id
+    						where pp.podroz_id = p.id
+    					) et on true
+						left join lateral (
+    						select json_agg(et) as zakwaterowanie
+    						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
+    						where pp.podroz_id = p.id
+    					) zak on true
+                        group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena",
                     &[],
                 )
                 .unwrap()
@@ -167,21 +189,45 @@ pub fn get_certain_journeys_json<'a>(params: RequestBody<PodrozQuery>) -> HashMa
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select  p.id,p.nazwa,p.data_rozpoczęcia, p.data_ukonczenia, p.opis, p.cena, json_agg(prz), json_agg(kl), json_agg(at), json_agg(pra), json_agg(et), json_agg(za)
-            from podroz p
-            left join przewodnik_podroz pp on pp.podroz_id = p.id
-            left join klient_podroz kp on kp.podroz_id = p.id
-            left join podroz_atrakcja pa on pa.podroz_id = p.id
-            left join pracownik_podroz prapo on prapo.podroz_id = p.id
-            left join etap_podroz ep on ep.podroz_id = p.id
-            left join zakwaterowanie_podroz zp on zp.podroz_id = p.id
-
-            left join przewodnik prz on pp.przewodnik_id = prz.id
-            left join klient kl on kp.klient_pesel = kl.pesel
-            left join atrakcja at on pa.atrakcja_id = at.id
-            left join pracownik pra on prapo.pracownik_id = pra.id
-            left join etap et on ep.etap_id = et.id
-            left join zakwaterowanie za on zp.zakwaterowanie_id = za.id where p.id in (".to_owned();
+    let mut query: String = "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
+json_agg(przewodnik)::text ,
+json_agg(klient)::text ,
+json_agg(atrakcja)::text ,
+json_agg(pracownik)::text ,
+json_agg(etap)::text ,
+json_agg(zakwaterowanie)::text 
+                        from podroz p
+						left join lateral (
+    						select json_agg(prz) as przewodnik
+    						from przewodnik prz left join przewodnik_podroz pp on pp.przewodnik_id = prz.id
+    						where pp.podroz_id = p.id
+    					) pr on true
+						left join lateral (
+    						select json_agg(kl) as klient
+    						from klient kl left join klient_podroz pp on pp.klient_pesel = kl.pesel
+    						where pp.podroz_id = p.id
+    					) kl on true
+						left join lateral (
+    						select json_agg(att) as atrakcja
+    						from atrakcja att left join podroz_atrakcja pp on pp.atrakcja_id = att.id
+    						where pp.podroz_id = p.id
+    					) att on true
+						left join lateral (
+    						select json_agg(prac) as pracownik
+    						from pracownik prac left join pracownik_podroz pp on pp.pracownik_id = prac.id
+    						where pp.podroz_id = p.id
+    					) prac on true
+						left join lateral (
+    						select json_agg(et) as etap
+    						from etap et left join etap_podroz pp on pp.etap_id = et.id
+    						where pp.podroz_id = p.id
+    					) et on true
+						left join lateral (
+    						select json_agg(et) as zakwaterowanie
+    						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
+    						where pp.podroz_id = p.id
+    					) zak on true
+                             where p.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(") group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena");
     if client.is_ok() {
