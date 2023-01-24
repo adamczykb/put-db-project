@@ -17,6 +17,7 @@ import TransportyView from "../components/TransportCompany/Transport";
 import AddTransportCompany from "../components/TransportCompany/AddTransportCompany";
 import AddTransport from "../components/TransportCompany/AddTransport";
 import AttractionView from "../components/Attraction/Attraction";
+import EtapView from "../components/Etap/Etap";
 
 
 
@@ -42,6 +43,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/transporty"} element={<TransportyView/>}/>
                 <Route path={"/transporty/dodaj"} element={<AddTransport/>}/>
                 <Route path={"/atrakcje"} element={<AttractionView/>}/>
+                <Route path={"/etapy"} element={<EtapView/>}/>
             </Routes>
         </BrowserRouter>
     );

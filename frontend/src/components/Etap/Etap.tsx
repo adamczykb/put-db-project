@@ -1,45 +1,61 @@
 import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
 import { useEffect, useState } from "react";
-import getPilotData from "../../utils/adapter/getPilotData";
-import removePilot from "../../utils/adapter/removePilot";
+import getEtapyData from "../../utils/adapter/getEtapyData";
+import removeEtap from "../../utils/adapter/removeEtap";
+
 const { Panel } = Collapse;
 
 const EtapView = () => {
 
     const [data, setData] = useState([]);
     useEffect(() => {
-        //getPilotData(setData)
+        getEtapyData(setData)
     }, [])
     const columns = [
         {
-            title: 'Przewodnik',
-            key: 'pilot',
-            render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
+            title: 'ID',
+            key: 'id',
+            render: (text: any, record: any) => <>{record.id}</>,
         },
         {
-            title: 'Numer telefonu',
-            key: 'telefon',
-            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            title: 'Punkt poczatkowy',
+            key: 'punkt_poczatkowy',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.punkt_poczatkowy.replace(' ', '+')}>{record.punkt_poczatkowy}</a>,
         },
         {
-            title: 'Addres',
-            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-            key: 'addres',
+            title: 'Punkt konczowy',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.punkt_konczowy.replace(' ', '+')}>{record.punkt_konczowy}</a>,
+            key: 'punkt_konczowy',
         },
         {
-            title: 'Atrakcje',
-            key: 'atrakcje',
+            title: 'Koszt',
+            key: 'koszt',
+            render: (text: any, record: any) => <>{record.koszt}</>,
+        },
+        {
+            title: 'Data poczatkowa',
+            key: 'data_poczatkowa',
+            render: (text: any, record: any) => <>{record.data_poczatkowa}</>,
+        },
+        {
+            title: 'Data koncowa',
+            key: 'data_koncowa',
+            render: (text: any, record: any) => <>{record.data_koncowa}</>,
+        },
+        {
+            title: 'Transport',
+            key: 'transport',
             render: (text: any, record: any) =>
-                <>{record.atrakcje.length > 0 ?
+                <>{record.transport.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.atrakcje.length > 4 ? "Obsługuje " + record.atrakcje.length + " atrkacji" : "Obsługuje " + record.atrakcje.length + " atrakcje"} key="1">
+                        <Panel header={record.transport.length > 4 ? "Obsługuje " + record.transport.length + " atrkacji" : "Obsługuje " + record.transport.length + " atrakcje"} key="1">
                             <List
                                 bordered
-                                dataSource={record.atrakcje}
+                                dataSource={record.transport}
                                 renderItem={(item: any) => (
                                     <List.Item>
-                                        {item.nazwa}
+                                        Nazwa: {item.nazwa}  
                                     </List.Item>
                                 )}
                             />
@@ -48,39 +64,13 @@ const EtapView = () => {
                     <>Brak danych</>
                 }</>
         },
-        {
-            title: 'Znane języki',
-            render: (text: any, record: any) =>
-                <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
-        },
-        {
-            title: 'Podróże',
-            key: 'podroze',
-            render: (text: any, record: any) =>
-                <>{record.podroze.length > 0 ?
-                    <Collapse >
-                        <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.atrakcje.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
-                            <List
-                                bordered
-                                dataSource={record.podroze}
-                                renderItem={(item: any) => (
-                                    <List.Item>
-                                        {item.nazwa}
-                                    </List.Item>
-                                )}
-                            />
-                        </Panel>
-                    </Collapse >
-                    :
-                    <>Brak danych</>
-
-                }</>
-        },
+        
+        
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removePilot(record.key)}>
+                <a href={"/etapy/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Sure to delete?" onConfirm={() => removeEtap(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
