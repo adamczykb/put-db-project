@@ -100,18 +100,21 @@ const AddClients = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/pilot", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/client", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
                    
                     console.log(response)
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania clienta, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(()=>{
-                window.open('/klienty')
+                window.open(
+                    "/klienty"
+                )
+                
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -181,6 +184,14 @@ const AddClients = () => {
                         required: true,
                         message: 'Pole numer telefonu nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            return Promise.reject('Numer telefonu jest nieprawidłowy');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                 ]}
             >
                 <Input />

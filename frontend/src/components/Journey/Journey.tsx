@@ -37,8 +37,31 @@ const JourneysView = () => {
             key: 'opis',
             render: (text: any, record: any) => <>{record.opis}</>,
         },
-        
-        
+        {
+            title: 'Kierowane przez pracowników',
+            key: 'pracownicy',
+            render: (text: any, record: any) =>
+                <>{record.pracownicy.length > 0 ?
+
+                    <Collapse >
+                        <Panel header={record.pracownicy.length > 4 ? "Kierowane przez" + record.pracownicy.length + " pracowników" : "Kierowane przez " + record.pracownicy.length + " pracowników"} key="1">
+                            <List
+                                bordered
+                                dataSource={record.pracownicy}
+                               
+                                renderItem={(item: any) => (
+                                    
+                                    <List.Item>
+                                        Pracownik: {item.imie+ ' '+ item.nazwisko}, Adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        , Numer telefonu: {item.numer_telefon}.
+                                    </List.Item>
+                                )}
+                            />
+                        </Panel>
+                    </Collapse > :
+                    <>Brak danych</>
+                }</>
+        },
         
         {
             title: 'Atrakcje',
@@ -66,22 +89,22 @@ const JourneysView = () => {
                 }</>
         },
         {
-            title: 'Etapy',
-            key: 'etapy',
+            title: 'Klienty',
+            key: 'klienci',
             render: (text: any, record: any) =>
-                <>{record.etapy.length > 0 ?
+                <>{record.klienci.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.etapy.length > 4 ? "Obsługuje " + record.etapy.length + " atracje" : "Obsługuje " + record.etapy.length + " atrakcje"} key="1">
+                        <Panel header={record.klienci.length > 4 ? "Przepisano " + record.klienci.length + " klientów" : "Przepisano " + record.klienci.length + " klientów"} key="1">
                             <List
                                 bordered
-                                dataSource={record.etapy}
+                                dataSource={record.klienci}
                                
                                 renderItem={(item: any) => (
                                     
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
-                                        , opis: {item.opis}, koszt: {item.koszt}.
+                                        Klient: {item.imie+' '+ item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        , Numer telefonu: {item.numer_telefonu}, Data urodzenia: {item.data_urodzenia}.
                                     </List.Item>
                                 )}
                             />
@@ -90,6 +113,83 @@ const JourneysView = () => {
                     <>Brak danych</>
                 }</>
         },
+
+        {
+            title: 'Przewodnicy',
+            key: 'przewodnicy',
+            render: (text: any, record: any) =>
+                <>{record.klienci.length > 0 ?
+
+                    <Collapse >
+                        <Panel header={record.przewodnicy.length > 4 ? "Jest pilotowana przez " + record.przewodnicy.length + " przewodników" : "Jest pilotowana przez " + record.przewodnicy.length + " przewodników"} key="1">
+                            <List
+                                bordered
+                                dataSource={record.przewodnicy}
+                               
+                                renderItem={(item: any) => (
+                                    
+                                    <List.Item>
+                                        Klient: {item.imie+' '+ item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        , Numer telefonu: {item.numer_telefonu}.
+                                    </List.Item>
+                                )}
+                            />
+                        </Panel>
+                    </Collapse > :
+                    <>Brak danych</>
+                }</>
+        },
+        {
+            title: 'Zakwaterowania',
+            key: 'zakwaterowania',
+            render: (text: any, record: any) =>
+                <>{record.klienci.length > 0 ?
+
+                    <Collapse >
+                        <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length  : "Zakwaterowań używano  " + record.zakwaterowania.length } key="1">
+                            <List
+                                bordered
+                                dataSource={record.zakwaterowania}
+                               
+                                renderItem={(item: any) => (
+                                    
+                                    <List.Item>
+                                        Nazwa: {item.nazwa}, Koszt {item.koszt}, Ilość miejsc: {item.ilosc_miejsc}, Standard zakwaterowania: {item.standard_zakwaterowania}
+                                        , Ilosc miejsc: {item.ilosc_miejsc}
+                                        , adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> .
+                                    </List.Item>
+                                )}
+                            />
+                        </Panel>
+                    </Collapse > :
+                    <>Brak danych</>
+                }</>
+        },
+        // {
+        //     title: 'Etapy',
+        //     key: 'etapy',
+        //     render: (text: any, record: any) =>
+        //         <>{record.etapy.length > 0 ?
+
+        //             <Collapse >
+        //                 <Panel header={record.etapy.length > 4 ? "Obsługuje " + record.etapy.length + " atracje" : "Obsługuje " + record.etapy.length + " atrakcje"} key="1">
+        //                     <List
+        //                         bordered
+        //                         dataSource={record.etapy}
+                               
+        //                         renderItem={(item: any) => (
+                                    
+        //                             <List.Item>
+        //                                 Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+        //                                 , opis: {item.opis}, koszt: {item.koszt}.
+        //                             </List.Item>
+        //                         )}
+        //                     />
+        //                 </Panel>
+        //             </Collapse > :
+        //             <>Brak danych</>
+        //         }</>
+        // },
        
         {
             title: 'Akcja',
