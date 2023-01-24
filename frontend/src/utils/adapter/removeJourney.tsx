@@ -15,10 +15,10 @@ const removeJourney = (id: any) => {
         .then((response) => response.json())
         .then((response) => {
             if (response.status == 200) {
-                message.success("Przewodnik został usunięty")
+                message.success("Podróż została usunięta")
                 window.open('/podrozy', '_self')
             } else {
-                message.success("Wystąpił błąd podczas usuwania przewodnika, odśwież strone i spróbuj ponownie")
+                message.success("Wystąpił błąd podczas usuwania podróży, odśwież strone i spróbuj ponownie")
             }
 
         })
