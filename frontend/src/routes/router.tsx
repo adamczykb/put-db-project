@@ -15,6 +15,7 @@ import TransportCompanyView from "../components/TransportCompany/TransportCompan
 import AddEmployee from "../components/Employee/AddEmployee";
 import TransportyView from "../components/TransportCompany/Transport";
 import AddTransportCompany from "../components/TransportCompany/AddTransportCompany";
+import AddTransport from "../components/TransportCompany/AddTransport";
 
 
 
@@ -38,6 +39,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
                 <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany/>}/>
                 <Route path={"/transporty"} element={<TransportyView/>}/>
+                <Route path={"/transporty/dodaj"} element={<AddTransport/>}/>
             </Routes>
         </BrowserRouter>
     );

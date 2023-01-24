@@ -62,7 +62,9 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-
+function onlyUnique(value: any, index: any, self: any) {
+    return self.indexOf(value) === index;
+  }
 const UpdatePilot = () => {
     const { id } = useParams();
     const [form] = Form.useForm();
@@ -71,7 +73,7 @@ const UpdatePilot = () => {
     const [attractionData, setAttractionData] = useState();
     const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
+        setSelectedAttractionKeys(newSelectedRowKeys.filter(onlyUnique));
     };
     
     const rowAttractionSelection = {
@@ -81,11 +83,13 @@ const UpdatePilot = () => {
         onChange: onSelectAttractionChange,
 
     };
+
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
     const [languagesData, setLanguagesData] = useState();
     const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedLanguagesKeys(newSelectedRowKeys);
+    
     };
     const rowLanguagesSelection = {
         selectedRowKeys: selectedLanguagesKeys,
@@ -140,10 +144,10 @@ const UpdatePilot = () => {
                     console.log(selectedLanguagesKeys);
                     console.log(selectedAttractionKeys);
                     console.log(values);
-                    selectedLanguagesKeys.map((value: any) => {
+                    selectedLanguagesKeys.filter(onlyUnique).map((value: any) => {
                         addLanguageToPilot(value, response.result)
                     })
-                    selectedAttractionKeys.map((value: any) => {
+                    selectedAttractionKeys.filter(onlyUnique).map((value: any) => {
                         addAttractionToPilot(value, response.result)
                     })
                     console.log(response)

@@ -1,43 +1,39 @@
 import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
+
 
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 
 const onFinish = (values: any) => {
 };
-const attraction_columns = [
+const transport_company_columns = [
     {
-        title: 'Atrakcja',
-        key: 'atrakcja',
+        title: 'ID',
+        key: 'id',
+        render: (record:any)=> <>{record.id}</>,
+    },
+    {
+        title: 'Firma transportowa',
+        key: 'nazwa',
         render: (text: any, record: any) => <>{record.nazwa}</>,
     },
+    {
+        title: 'Numer telefonu',
+        key: 'telefon',
+        render: (text: any, record: any) => <>{record.telefon}</>,
+    },
+   
     {
         title: 'Adres',
         key: 'adres',
         render: (text: any, record: any) => <>{record.adres}</>,
     },
-    {
-        title: 'Opis',
-        key: 'opis',
-        render: (text: any, record: any) => <>{record.opis}</>,
-    },
 ]
-const languages_columns = [
-    {
-        title: 'Kod języka',
-        key: 'kod',
-        render: (text: any, record: any) => <>{record.kod}</>,
-    },
-    {
-        title: 'Język',
-        key: 'jezyk',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-]
+    
+
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -62,14 +58,14 @@ const formItemLayout = {
 };
 const AddTransport = () => {
     const [form] = Form.useForm();
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
+    const [selectedTransportCompanyKeys, setSelectedTransportCompanyKeys] = useState<React.Key[]>([]);
+    const [transportCompanyData, setTransportCompanyData] = useState();
     const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
+        setSelectedTransportCompanyKeys(newSelectedRowKeys);
     };
-    const rowAttractionSelection = {
-        selectedAttractionKeys,
+    const rowTransportCompanySelection = {
+        selectedAttractionKeys: selectedTransportCompanyKeys,
         onChange: onSelectAttractionChange,
     };
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
@@ -84,11 +80,15 @@ const AddTransport = () => {
     };
 
     useEffect(() => {
-        getAllAttractions(setAttractionData)
-        getAllLanguages(setLanguagesData)
+        //getTransportCompanyData(setTransportCompanyKeys)
+        getTransportCompanyData(setTransportCompanyData)
+        
+        // getAllAttractions(setAttractionData)
+        // getAllLanguages(setLanguagesData)
     }, [])
 
     const onFinish = (values: any) => {
+        values.id=selectedTransportCompanyKeys[0];
         const requestOptions = {
             method: "POST",
             headers: {
@@ -98,28 +98,28 @@ const AddTransport = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/transport", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/transport_company_transport", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
-                        addLanguageToPilot(value, response.result)
-                    })
-                    selectedAttractionKeys.map((value: any) => {
-                        addAttractionToPilot(value, response.result)
-                    })
+                    // selectedLanguagesKeys.map((value: any) => {
+                    //     addLanguageToPilot(value, response.result)
+                    // })
+                    // selectedTransportCompanyKeys.map((value: any) => {
+                    //     addAttractionToPilot(value, response.result)
+                    // })
                     console.log(response)
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania transporu, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(()=>{
-                window.open('/przewodnicy')
+                window.open('/transporty')
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego przewodnika</h2>
+        <h2>Dodawanie nowego transportu</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -177,23 +177,15 @@ const AddTransport = () => {
                 <Input />
             </Form.Item>
             <Form.Item
-                label="Powiązany z atrakcjami"
+                label="Powiązany z firmami"
             >
                 <Table
-                    rowSelection={rowAttractionSelection}
-                    columns={attraction_columns}
-                    dataSource={attractionData}
+                    rowSelection={rowTransportCompanySelection}
+                    columns={transport_company_columns}
+                    dataSource={transportCompanyData}
                 />
             </Form.Item>
-            <Form.Item
-                label="Zna języki"
-            >
-                <Table
-                    rowSelection={rowLanguagesSelection}
-                    columns={languages_columns}
-                    dataSource={languagesData}
-                />
-            </Form.Item>
+          
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
