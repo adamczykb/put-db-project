@@ -86,10 +86,17 @@ const Frontend: React.FC = () => {
                             </a>)
                         },
                         {
-                            key: '8',
+                            key: '9',
                             icon: <FolderViewOutlined/>,
                             label: (<a href='/etapy'>
                                 Etapy
+                            </a>)
+                        },
+                        {
+                            key: '10',
+                            icon: <FolderViewOutlined/>,
+                            label: (<a href='/podrozy'>
+                                Podróży
                             </a>)
                         }
 

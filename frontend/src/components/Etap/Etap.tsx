@@ -49,7 +49,7 @@ const EtapView = () => {
                 <>{record.transport.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.transport.length > 4 ? "Obsługuje " + record.transport.length + " atrkacji" : "Obsługuje " + record.transport.length + " atrakcje"} key="1">
+                        <Panel header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1">
                             <List
                                 bordered
                                 dataSource={record.transport}
@@ -79,7 +79,7 @@ const EtapView = () => {
     return (
         <div>
             <h2>Etapy</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/przewodnicy/dodaj') }}>Dodaj etap</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/etapy/dodaj') }}>Dodaj etap</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

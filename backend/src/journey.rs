@@ -96,7 +96,7 @@ pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                        "select p.id,p.nazwa,p.data_rozpoczęcia, p.data_ukonczenia, p.opis, p.cena, json_agg(prz), json_agg(kl), json_agg(at), json_agg(pra), json_agg(et), json_agg(za)
+                        "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, json_agg(prz)::text, json_agg(kl)::text, json_agg(at)::text, json_agg(pra)::text, json_agg(et)::text, json_agg(za)::text
                         from podroz p
                         left join przewodnik_podroz pp on pp.podroz_id = p.id
                         left join klient_podroz kp on kp.podroz_id = p.id
