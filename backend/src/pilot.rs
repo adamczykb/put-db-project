@@ -71,7 +71,7 @@ a
                         from przewodnik p
 						left join lateral (
     						select COALESCE(json_agg(prz)::text,'[]') as po
-    						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
+    						from podroz prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
     						where pp.przewodnik_id = p.id
     					) pr on true
 						left join lateral (
@@ -134,7 +134,7 @@ a
                         from przewodnik p
 						left join lateral (
     						select COALESCE(json_agg(prz)::text,'[]') as po
-    						from przewodnik prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
+    						from podroz prz left join przewodnik_podroz pp on pp.podroz_id = prz.id
     						where pp.przewodnik_id = p.id
     					) pr on true
 						left join lateral (

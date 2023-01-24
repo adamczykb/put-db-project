@@ -153,9 +153,18 @@ const UpdateClient = () => {
             <Form.Item
                 name="pesel"
                 label="Pesel"
-                
+                rules={[
+                    {
+                        validator: (rule, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
+                ]}
                 >
-                    <Input  readOnly value={data.pesel}/>
+                <Input  readOnly value={data.pesel}/>
             </Form.Item>
             <Form.Item
                 name="imie"
@@ -205,6 +214,14 @@ const UpdateClient = () => {
                         required: true,
                         message: 'Pole numer telefonu nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            return Promise.reject('Numer telefonu jest nieprawidłowy');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                 ]}
             >
                 <Input value={data.numer_telefonu} />

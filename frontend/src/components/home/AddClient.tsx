@@ -90,7 +90,7 @@ const AddClients = () => {
 
     const onFinish = (values: any) => {
 
-        values.data_urodzenia=values.data_urodzenia.format('DD-MM-YYYY');
+        values.data_urodzenia=values.data_urodzenia.format('DD-MM-  YYYY');
         const requestOptions = {
             method: "POST",
             headers: {
@@ -136,6 +136,14 @@ const AddClients = () => {
                         required: true,
                         message: 'Pole pesel nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Pesel musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
                 ]}
             >
                 <InputNumber />

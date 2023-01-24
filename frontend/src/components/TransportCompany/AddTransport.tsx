@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
 import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 
 const onFinish = (values: any) => {
@@ -98,13 +99,13 @@ const AddTransport = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/transport_company_transport", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/transport_company", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    // selectedLanguagesKeys.map((value: any) => {
-                    //     addLanguageToPilot(value, response.result)
-                    // })
+                     selectedLanguagesKeys.map((value: any) => {
+                         addTransportCompanyToTransport(value, response.result)
+                     })
                     // selectedTransportCompanyKeys.map((value: any) => {
                     //     addAttractionToPilot(value, response.result)
                     // })
@@ -129,61 +130,59 @@ const AddTransport = () => {
             scrollToFirstError
         >
             <Form.Item
-                name="imie"
-                label="Imię"
+                name="nazwa"
+                label="Nazwa"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole imię nie może być puste!',
+                        message: 'Pole nazwa nie może być puste!',
                     },
                 ]}
             >
                 <Input />
             </Form.Item>
             <Form.Item
-                name="nazwisko"
-                label="Nazwisko"
+                name="liczba_jednostek"
+                label="Liczba jednostek"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwisko nie może być puste!',
-                    },
-                ]}
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item
-                name="adres"
-                label="Adres"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole adres nie może być puste!',
-                    },
-                ]}
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item
-                name="numer_telefonu"
-                label="Numer telefonu"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole numer telefonu nie może być puste!',
+                        message: 'Pole liczba jednostek nie może być puste!',
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
-                        }
-                      }
+                            if (value <= 0) {
+                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
                 ]}
             >
                 <Input />
             </Form.Item>
+
+            <Form.Item
+                name="liczba_miejsc"
+                label="Liczba miejsc"
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole liczba miejsc nie może być puste!',
+                    },
+                    {
+                        validator: (rule, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
+                ]}
+            >
+                <Input />
+            </Form.Item>
+
             <Form.Item
                 label="Powiązany z firmami"
             >

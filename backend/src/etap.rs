@@ -206,7 +206,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new etap".to_owned(),
                 result: 0,
             };
         }

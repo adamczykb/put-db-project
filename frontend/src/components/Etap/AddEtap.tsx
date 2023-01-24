@@ -1,43 +1,19 @@
 import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
+// import getAllAttractions from "../../utils/adapter/getAllAttractions";
+// import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import getTransportData from "../../utils/adapter/getTransportData";
+// import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
+// import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+const transport = {
 
+}
 const onFinish = (values: any) => {
 };
-const attraction_columns = [
-    {
-        title: 'Atrakcja',
-        key: 'atrakcja',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-    {
-        title: 'Opis',
-        key: 'opis',
-        render: (text: any, record: any) => <>{record.opis}</>,
-    },
-]
-const languages_columns = [
-    {
-        title: 'Kod języka',
-        key: 'kod',
-        render: (text: any, record: any) => <>{record.kod}</>,
-    },
-    {
-        title: 'Język',
-        key: 'jezyk',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-]
+
+
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -60,17 +36,17 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const AddAccommodanion = () => {
+const AddEtap = () => {
     const [form] = Form.useForm();
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
+    const [selectedAttractionKeys, setSelectedTransportKeys] = useState<React.Key[]>([]);
+    const [transportData, setTransportData] = useState();
+    const onSelectTransportChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
+        setSelectedTransportKeys(newSelectedRowKeys);
     };
-    const rowAttractionSelection = {
+    const rowTransportSelection = {
         selectedAttractionKeys,
-        onChange: onSelectAttractionChange,
+        onChange: onSelectTransportChange,
     };
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
     const [languagesData, setLanguagesData] = useState();
@@ -83,12 +59,16 @@ const AddAccommodanion = () => {
         onChange: onSelectLanguagesChange,
     };
 
-    // useEffect(() => {
-    //     getAllAttractions(setAttractionData)
-    //     getAllLanguages(setLanguagesData)
-    // }, [])
+    useEffect(() => {
+        getTransportData(setTransportData)
+        // getAllAttractions(setTransportData)
+        // getAllLanguages(setLanguagesData)
+    }, [])
 
     const onFinish = (values: any) => {
+        values.data_poczatkowa = values.data_poczatkowa.format('DD-MM-YYYY');
+        values.data_koncowa = values.data_koncowa.format('DD-MM-YYYY');
+        values.transport.nazwa = values.transport.nazwa;
         const requestOptions = {
             method: "POST",
             headers: {
@@ -98,15 +78,15 @@ const AddAccommodanion = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/accommodations", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/etap", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
                     selectedLanguagesKeys.map((value: any) => {
-                        addLanguageToPilot(value, response.result)
+                        // addLanguageToPilot(value, response.result)
                     })
                     selectedAttractionKeys.map((value: any) => {
-                        addAttractionToPilot(value, response.result)
+                        // addAttractionToPilot(value, response.result)
                     })
                     console.log(response)
                 } else {
@@ -114,12 +94,12 @@ const AddAccommodanion = () => {
                 }
 
             }).then(() => {
-                window.open('/klienty')
+                window.open('/przewodnicy')
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Dodawanie nowego etapu</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -128,25 +108,27 @@ const AddAccommodanion = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            {/* <Form.Item
-                name="id"
-                label="Pesel"
+
+
+            <Form.Item
+                name="punkt_poczatkowy"
+                label="Punkt poczatkowy"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole pesel nie może być puste!',
+                        message: 'Pole punkt poczatkowy nie może być puste!',
                     },
                 ]}
             >
-                <InputNumber />
-            </Form.Item> */}
+                <Input />
+            </Form.Item>
             <Form.Item
-                name="nazwa"
-                label="Nazwa"
+                name="punkt_konczowy"
+                label="Punkt konczowy"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwa nie może być puste!',
+                        message: 'Pole punkt konczowy nie może być puste!',
                     },
                 ]}
             >
@@ -158,7 +140,7 @@ const AddAccommodanion = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole koszt nie może być puste!',
+                        message: 'Pole adres nie może być puste!',
                     },
                     {
                         validator: (rule, value) => {
@@ -172,62 +154,64 @@ const AddAccommodanion = () => {
             >
                 <InputNumber />
             </Form.Item>
-
-
-
-            
-            <Form.Item
-                name="ilosc_miejsc"
-                label="Ilosc miejsc"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole ilosc miejsc nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
-                            }
-                            return Promise.resolve();
-                        },
-                    }
-                ]}
-            >
-                <InputNumber />
+            <Form.Item name="data_poczatkowa" label="Data poczatkowa" {...config}>
+                <DatePicker format="DD-MM-YYYY" />
             </Form.Item>
+            <Form.Item name="data_koncowa" label="Data koncowa" {...config}>
+                <DatePicker format="DD-MM-YYYY" />
+            </Form.Item>
+
             <Form.Item
-                name="standard_zakwaterowania"
-                label="Standard zakwaterowania"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole nazwa nie może być puste!',
-                    },
-                ]}
+                label='Nazwa transportu'
+                name={'nazwa'}
             >
                 <Input />
             </Form.Item>
             <Form.Item
-                name="adres"
-                label="Adres"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole adres nie może być puste!',
+                label='Liczba jednostek'
+                name={'liczba_jednostek'}
+                rules={[{
+                    validator: (rule, value) => {
+                        if (value <= 0) {
+                            return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                        }
+                        return Promise.resolve();
                     },
-                ]}
+                }
+                ]
+                }
             >
                 <Input />
             </Form.Item>
+            <Form.Item
+                label='Liczba miejsc'
+                name='liczba_miejsc'
+                rules={[{
+                    validator: (rule, value) => {
+                        if (value <= 0) {
+                            return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                        }
+                        return Promise.resolve();
+                    },
+                }
+                ]
+                }
+            >
+                <Input />
+            </Form.Item>
+            {/* <Table
+                    rowSelection={rowTransportSelection}
+                    columns={transport_columns}
+                    dataSource={transportData}
+                /> */}
 
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Dodaj klienta
+                    Dodaj etap
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddAccommodanion
+export default AddEtap
