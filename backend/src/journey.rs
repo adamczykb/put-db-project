@@ -96,7 +96,7 @@ pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                        "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
+                        "select p.id,p.nazwa, cast(p.data_rozpoczecia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
 przewodnik ,
 klient ,
 atrakcja ,
@@ -134,7 +134,7 @@ zakwaterowanie
     						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
     						where pp.podroz_id = p.id
     					) zak on true
-                        group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+                        group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
 klient ,
 atrakcja ,
 pracownik ,
@@ -194,7 +194,7 @@ pub fn get_certain_journeys_json<'a>(params: RequestBody<PodrozQuery>) -> HashMa
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select p.id,p.nazwa, cast(p.data_rozpoczęcia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
+    let mut query: String = "select p.id,p.nazwa, cast(p.data_rozpoczecia as varchar), cast(p.data_ukonczenia as varchar), p.opis, p.cena, 
 przewodnik ,
 klient ,
 atrakcja ,
@@ -235,7 +235,7 @@ zakwaterowanie
                              where p.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(
-        ") group by p.id,p.nazwa,p.data_rozpoczęcia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+        ") group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
 klient ,
 atrakcja ,
 pracownik ,

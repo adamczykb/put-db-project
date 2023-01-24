@@ -94,7 +94,7 @@ a
                             nazwisko:row.get(2),
                             adres: row.get(3),
                             numer_telefonu: row.get(4),
-                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(5)  ).unwrap_or(Vec::new()),
+                            podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(5)  ).unwrap_or(Vec::new()), 
                             jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(6)  ).unwrap_or(Vec::new()),
                             atrakcje: serde_json::from_str::<Vec<AtrakcjaBasic>>(row.get(7)  ).unwrap_or(Vec::new())
                         }
