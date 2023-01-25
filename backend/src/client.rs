@@ -94,7 +94,6 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
     }
     query.push_str(query_parmas.join(",").as_str());
     query.push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia order by z.nazwisko");
-    println!("{}", query);
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Klient> = ResponseArray {
@@ -142,7 +141,17 @@ pub fn update_certain_client_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64> = Response {
+        let mut result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "delete from klient_podroz where klient_pesel=$1",
+                    &[&params.params.pesel],
+                )
+                .unwrap_or(0),
+        };
+        result = Response {
             status: 200,
             message: "OK".to_owned(),
             result: connection
