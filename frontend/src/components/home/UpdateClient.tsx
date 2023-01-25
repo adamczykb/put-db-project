@@ -183,6 +183,7 @@ const UpdateClient = () => {
                     },
                 ]}
             >
+                
                 <Input value={data.nazwisko} />
             </Form.Item>
             <Form.Item

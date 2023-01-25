@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
+import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
 import getAttraction from "../../utils/adapter/getAttractionData";
@@ -62,8 +62,7 @@ const AttractionView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
-                <a href={"/atrakcje/dodaj/"}>dodaj</a><br />
+                <a href={"/atrakcje/edytuj/"}>edytuj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeAttraction(record.id)}>
                     <a>Usuń</a>
                 </Popconfirm>
@@ -73,6 +72,9 @@ const AttractionView = () => {
     return (
         <div>
             <h2>Atrakcje</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/atrakcje/dodaj') }}>Dodaj atrakcje</Button></Space>
+            <br />
+            <br />
             <Table columns={columns} dataSource={data} />
         </div>
     )
