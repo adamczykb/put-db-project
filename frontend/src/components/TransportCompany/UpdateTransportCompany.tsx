@@ -39,10 +39,10 @@ const formItemLayout = {
 function onlyUnique(value: any, index: any, self: any) {
     return self.indexOf(value) === index;
   }
-const UpdateAccommodation = () => {
+const UpdateTransportCompany = () => {
     const { id } = useParams();
     const [form] = Form.useForm();
-    const [data, setData] = useState({ id: 0, nazwa: '', koszt: "", ilosc_miejsc: '', standard_zakwaterowania: '', adres: ''});
+    const [data, setData] = useState({ id: 0, nazwa: '', numer_telefonu: '', adres: ''});
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
     const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
@@ -88,7 +88,7 @@ const UpdateAccommodation = () => {
     const onFinish = (values: any) => {
         //console.log(values);
         values.id = Number(id)
-  
+        values.key = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -98,7 +98,7 @@ const UpdateAccommodation = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/update/certain_accommodation", requestOptions)
+        fetch(config.SERVER_URL + "/api/update/certain_transport_company", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
@@ -106,8 +106,13 @@ const UpdateAccommodation = () => {
                     console.log(values);
                    
                     console.log(response)
+
+                    setTimeout(function () {
+                        window.open('/firma_transportowa', '_self')
+                      }, 2.0 * 1000);
+
                 } else {
-                    message.error("Wystąpił błąd podczas edycję zakwaterowania, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas edycję firmy transportowej, odśwież strone i spróbuj ponownie")
                 }
                
                 return response
@@ -119,7 +124,7 @@ const UpdateAccommodation = () => {
        
     };
     return <>
-        <h2>Edycja zakwaterowania</h2>
+        <h2>Edycja firmy transportowej</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -135,23 +140,31 @@ const UpdateAccommodation = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole imię nie może być puste!',
+                        message: 'Pole nazwa nie może być puste!',
                     },
                 ]}
             >
                 <Input value={data.nazwa}/>
             </Form.Item>
             <Form.Item
-                name="koszt"
-                label="Koszt"
+                name="telefon"
+                label="Numer telefonu"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwisko nie może być puste!',
+                        message: 'Pole numer telefonu nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            return Promise.reject('Numer telefonu jest nieprawidłowy');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                 ]}
             >
-                <InputNumber value={data.koszt} />
+                <Input />
             </Form.Item>
             <Form.Item
                 name="adres"
@@ -165,33 +178,7 @@ const UpdateAccommodation = () => {
             >
                 <Input value={data.adres} />
             </Form.Item>
-            <Form.Item
-                name="ilosc_miejsc"
-                label="Ilosc miejsc"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole numer telefonu nie może być puste!',
-                    },
-                    
-                ]}
-            >
-                <InputNumber value={data.ilosc_miejsc} />
-            </Form.Item>
-
-            <Form.Item
-                name="standard_zakwaterowania"
-                label="Standard zakwaterowania"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole standard zakwaterowania nie może być puste!',
-                    },
-                    
-                ]}
-            >
-                <Input value={data.standard_zakwaterowania} />
-            </Form.Item>
+            
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
@@ -201,4 +188,4 @@ const UpdateAccommodation = () => {
         </Form>
     </>
 }
-export default UpdateAccommodation
+export default UpdateTransportCompany

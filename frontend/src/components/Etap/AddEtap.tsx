@@ -272,7 +272,7 @@ const AddEtap = () => {
             
             
             <Form.Item
-                label="Powiązany z atrakcjami"
+                label="Powiązać z firmami"
             >
                 <Table
                     rowSelection={rowFirmaSelection}

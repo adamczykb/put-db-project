@@ -32,7 +32,7 @@ const TransportCompanyView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
+                <a href={"/firma_transportowa/edytuj/"+ record.id}>edytuj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeTransportCompany(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

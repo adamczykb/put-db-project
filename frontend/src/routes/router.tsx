@@ -25,6 +25,7 @@ import LangView from "../components/Languages/LangView";
 import AddLang from "../components/Languages/AddLang";
 import AddAttraction from "../components/Attraction/AddAttraction";
 import UpdateAccommodation from "../components/Accomodation/UpdateAccommodation";
+import UpdateTransportCompany from "../components/TransportCompany/UpdateTransportCompany";
 
 
 
@@ -46,9 +47,10 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
-                <Route path={"/zakwaterowanie/edytuj"} element={<UpdateAccommodation/>} />
+                <Route path={"/zakwaterowanie/edytuj/:id"} element={<UpdateAccommodation/>} />
 
-
+                
+                <Route path={"/firma_transportowa/edytuj/:id"} element={<UpdateTransportCompany/>}/>
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
                 <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany/>}/>
                 <Route path={"/transporty"} element={<TransportyView/>}/>
