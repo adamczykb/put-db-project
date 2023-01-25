@@ -38,7 +38,7 @@ pub struct ZakwaterowanieInsert {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ZakwaterowanieDelete {
-    pub id: String,
+    pub id: i64,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ZakwaterowanieQuery {
@@ -252,7 +252,7 @@ pub fn delete_certain_accommodation_json<'a>(
 
         let query_result = connection
             .execute(
-                "Delete from zakwaterowanie where kod=$1",
+                "Delete from zakwaterowanie where id=$1",
                 &[&params.params.id],
             )
             .unwrap_or(0);

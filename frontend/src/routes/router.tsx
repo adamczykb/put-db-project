@@ -23,6 +23,7 @@ import AddEtap from "../components/Etap/AddEtap";
 import AddJourney from "../components/Journey/addJourney";
 import LangView from "../components/Languages/LangView";
 import AddLang from "../components/Languages/AddLang";
+import AddAttraction from "../components/Attraction/AddAttraction";
 
 
 
@@ -48,6 +49,8 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/transporty"} element={<TransportyView/>}/>
                
                 <Route path={"/atrakcje"} element={<AttractionView/>}/>
+                <Route path={"/atrakcje/dodaj"} element={<AddAttraction />}/>
+                
                 <Route path={"/etapy"} element={<EtapView/>}/>
                 <Route path={"/etapy/dodaj"} element={<AddEtap/>}/>
                 <Route path={"/podrozy"} element={<JourneysView/>}/>

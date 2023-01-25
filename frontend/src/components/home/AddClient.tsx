@@ -35,7 +35,7 @@ const AddClients = () => {
 
     const onFinish = (values: any) => {
 
-        values.data_urodzenia = values.data_urodzenia.format('DD-MM-  YYYY');
+        values.data_urodzenia=values.data_urodzenia.format('DD-MM-YYYY');
         const requestOptions = {
             method: "POST",
             headers: {

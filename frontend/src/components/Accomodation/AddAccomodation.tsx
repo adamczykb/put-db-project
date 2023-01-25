@@ -227,7 +227,7 @@ const AddAccommodanion = () => {
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Dodaj klienta
+                    Dodaj zakwaterowanie
                 </Button>
             </Form.Item>
         </Form>

@@ -220,6 +220,14 @@ const UpdatePilot = () => {
                         required: true,
                         message: 'Pole numer telefonu nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            return Promise.reject('Numer telefonu jest nieprawidłowy');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                 ]}
             >
                 <Input value={data.numer_telefonu} />

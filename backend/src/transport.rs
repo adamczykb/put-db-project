@@ -40,7 +40,7 @@ pub struct TransportQuery {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransportFirmaTransportowaQuery {
     pub transport_id: i64,
-    pub firma_transportowa_id: String,
+    pub firma_transportowa_id: i64,
 }
 pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
