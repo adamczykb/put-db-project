@@ -56,7 +56,7 @@ pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
                     from transport t 
                     left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
                     left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
-                    group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc",
+                    group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc order by t.nazwa ",
                     &[],
                 )
                 .unwrap()
@@ -108,7 +108,8 @@ pub fn get_certain_transport_json<'a>(
                             left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
                             left join firma_transportowa ft on ft.id = fft.firma_transportowa_id  t.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc");
+    query
+        .push_str(") group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc order by t.nazwa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Transport> = ResponseArray {

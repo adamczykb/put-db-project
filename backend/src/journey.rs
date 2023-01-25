@@ -58,7 +58,7 @@ pub struct PodrozPilotQuery {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PodrozKlientQuery {
     pub podroz_id: i64,
-    pub klient_pesel: i64,
+    pub klient_pesel: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -139,7 +139,7 @@ klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie",
+zakwaterowanie order by p.data_rozpoczecia",
                     &[],
                 )
                 .unwrap()
@@ -240,7 +240,7 @@ klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie ",
+zakwaterowanie order by p.data_rozpoczecia",
     );
     if client.is_ok() {
         let mut connection = client.unwrap();

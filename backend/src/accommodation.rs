@@ -52,7 +52,7 @@ pub fn get_all_accommodations_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query("select z.id, z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres", &[])
+                .query("select z.id, z.id,z.nazwa,z.koszt ,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres order by z.koszt", &[])
                 .unwrap()
                 .iter()
                 .map(|row| Zakwaterowanie {
@@ -99,7 +99,7 @@ pub fn get_certain_accommodation_json<'a>(
     let mut query: String = "select z.id, z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(
-        ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres",
+        ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres order by z.koszt",
     );
     if client.is_ok() {
         let mut connection = client.unwrap();

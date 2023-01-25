@@ -64,7 +64,7 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
                         from atrakcja a
                         left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
                         left join przewodnik p on p.id = ap.przewodnik_id
-                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt",
+                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt order by a.nazwa",
                     &[],
                 )
                 .unwrap()
@@ -118,7 +118,7 @@ pub fn get_certain_attraction_json<'a>(
                         where a.id in ("
         .to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt");
+    query.push_str(") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt order by a.nazwa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Atrakcja> = ResponseArray {

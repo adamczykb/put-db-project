@@ -60,7 +60,7 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
                 .query(
                     "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar),json_agg(t)::text from etap e
                         join transport t on t.id = e.id
-                        group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa",
+                        group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa order by e.data_poczatkowa",
                     &[],
                 )
                 .unwrap()
@@ -106,13 +106,25 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
         .map(|v| v.to_string())
         .collect();
     let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t) from etap e
-            join transport t on t.id = e.id where  e.id in (".to_owned();
-    query.push_str(params_query.join(",").as_str());
-    query.push_str(")");
-    if !params.params.from.is_empty() && !params.params.to.is_empty() {
-        query.push_str(" or (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ")
+            join transport t on t.id = e.id".to_owned();
+
+    if (!params.params.from.is_empty() && !params.params.to.is_empty())
+        || !params.params.id_list.is_empty()
+    {
+        query.push_str("where")
     }
-    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa");
+    if !params.params.id_list.is_empty() {
+        query.push_str(" e.id in (");
+        query.push_str(params_query.join(",").as_str());
+        query.push_str(") and ");
+    }
+
+    if !params.params.from.is_empty() && !params.params.to.is_empty() {
+        query.push_str(" (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ");
+    } else {
+        query.push_str(" 1=1");
+    }
+    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa order by e.data_poczatkowa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Etap> = ResponseArray {

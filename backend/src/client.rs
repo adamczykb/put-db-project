@@ -11,8 +11,8 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Klient {
-    pub key: i64,
-    pub pesel: i64,
+    pub key: String,
+    pub pesel: String,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
@@ -32,12 +32,12 @@ pub struct KlientBasic {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KlientQuery {
-    pub pesel_list: Vec<i64>,
+    pub pesel_list: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KlientDeleteQuery {
-    pub pesel: i64,
+    pub pesel: String,
 }
 
 pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
@@ -48,7 +48,7 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia", &[]
+                    "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia  order by z.nazwisko", &[]
                     ).unwrap().iter().map(|row| {
                         Klient{
                     key: row.get(0),
@@ -92,7 +92,7 @@ pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap
     let mut query:String = "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
     query
-        .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia");
+        .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia order by z.nazwisko");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Klient> = ResponseArray {
@@ -172,7 +172,7 @@ pub fn insert_certain_client_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<i64>;
+        let result: Response<String>;
 
         let mut query_result: Vec<KlientDeleteQuery> = match connection.query(
             "INSERT INTO KLIENT (pesel, imie, nazwisko, adres, numer_telefonu, data_urodzenia) values ($1,$2,$3,$4,$5,TO_DATE($6,'DD-MM-YYYY')) returning pesel;", &[&params.params.pesel,&params.params.imie,&params.params.nazwisko,&params.params.adres,&params.params.numer_telefonu,&params.params.data_urodzenia]
@@ -186,23 +186,28 @@ pub fn insert_certain_client_json<'a>(
 
         if query_result
             .get(0)
-            .unwrap_or(&KlientDeleteQuery { pesel: 0 })
+            .unwrap_or(&KlientDeleteQuery {
+                pesel: "0".to_owned(),
+            })
             .pesel
-            > 0
+            != "0"
         {
             result = Response {
                 status: 200,
                 message: "OK".to_owned(),
                 result: query_result
                     .get(0)
-                    .unwrap_or(&KlientDeleteQuery { pesel: 0 })
-                    .pesel,
+                    .unwrap_or(&KlientDeleteQuery {
+                        pesel: "0".to_owned(),
+                    })
+                    .pesel
+                    .to_string(),
             };
         } else {
             result = Response {
                 status: 500,
                 message: "Cannot add new klient".to_owned(),
-                result: 0,
+                result: "0".to_owned(),
             };
         }
 

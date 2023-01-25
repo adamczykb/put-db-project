@@ -56,7 +56,7 @@ pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection.query(
-                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon", &[]
+                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon order by p.nazwisko", &[]
                     ).unwrap().iter().map(|row| {
                         Worker{
                     key: row.get(0),
@@ -98,7 +98,8 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
         .collect();
     let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon");
+    query
+        .push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon  order by p.nazwisko");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Worker> = ResponseArray {
