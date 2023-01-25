@@ -26,3 +26,4 @@ const removeTransportCompany = (id: any) => {
 };
 
 export default removeTransportCompany;
+//
