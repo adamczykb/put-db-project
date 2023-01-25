@@ -115,7 +115,7 @@ const AddAttraction = () => {
                         window.open('/atrakcje', '_self')
                     }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania atrakcji, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(() => {
@@ -161,6 +161,19 @@ const AddAttraction = () => {
                 <Input />
             </Form.Item>
             <Form.Item
+            name="sezon"
+            label="Sezon"
+            >
+            <Select
+                mode="multiple"
+                showArrow
+                tagRender={tagRender}
+              
+                style={{ width: '100%' }}
+                options={options}
+            />
+            </Form.Item>
+            <Form.Item
                 name="opis"
                 label="Opis"
                 rules={[
@@ -172,8 +185,9 @@ const AddAttraction = () => {
             >
                 <Input />
             </Form.Item>
-
-            <Form.Item
+            
+            
+            {/* <Form.Item
                 name="sezon"
                 label="Sezon"
                 rules={[
@@ -184,7 +198,7 @@ const AddAttraction = () => {
                 ]}
             >
                 <Input />
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item
                 name="koszt"
@@ -206,19 +220,7 @@ const AddAttraction = () => {
             >
                 <InputNumber />
             </Form.Item>
-            <Form.Item
-            name="sezon"
-            label="Sezon"
-            >
-            <Select
-                mode="multiple"
-                showArrow
-                tagRender={tagRender}
-              
-                style={{ width: '100%' }}
-                options={options}
-            />
-            </Form.Item>
+            
             {/* <Form.Item
                 label="Powiązany z atrakcjami"
             >
