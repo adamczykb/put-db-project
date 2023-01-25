@@ -62,7 +62,7 @@ const ClientsView = () => {
             render: (text: any, record: any) =>
                 <>{record.podroze.length > 0 ?
                     <Collapse >
-                        <Panel header={record.podroze.length > 1 ? "Uczęsniczy w " + record.atrakcje.length + " podróżach" : "Uczęsniczy w " + record.podroze.length + " podróży"} key="1">
+                        <Panel header={record.podroze.length > 1 ? "Uczestniczy w " + record.atrakcje.length + " podróżach" : "Uczestniczy w " + record.podroze.length + " podróży"} key="1">
                             <List
                                 bordered
                                 dataSource={record.podroze}
@@ -91,7 +91,7 @@ const ClientsView = () => {
     ]
     return (
         <div>
-            <h2>Klienty</h2>
+            <h2>Klienci</h2>
             <Space><Button type="primary" onClick={() => { window.open('/klienty/dodaj', '_self') }}>Dodaj klienta</Button></Space>
             <br />
             <br />

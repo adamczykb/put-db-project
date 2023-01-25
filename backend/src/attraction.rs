@@ -1,4 +1,5 @@
 use crate::{
+    journey::PodrozBasic,
     language::Jezyk,
     pilot::{PilotBasic, PilotDeleteQuery},
     urls::RequestBody,
@@ -17,6 +18,7 @@ pub struct Atrakcja {
     pub opis: String,
     pub koszt: i64,
     pub przewodnicy: Vec<PilotBasic>,
+    pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AtrakcjaBasic {
@@ -60,11 +62,19 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p)::text 
+                    "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,piloci,podroze 
                         from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
-                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt order by a.nazwa",
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as piloci
+    						from przewodnik prz left join atrakcja_przewodnik pp on pp.przewodnik_id = prz.id
+    						where pp.atrakcja_id = a.id
+    					) pr on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join podroz_atrakcja pp on pp.podroz_id = prz.id
+    						where pp.atrakcja_id = a.id
+    					) pr2 on true
+                        group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,piloci,podroze order by a.nazwa",
                     &[],
                 )
                 .unwrap()
@@ -78,6 +88,8 @@ pub fn get_all_attractions_json<'a>() -> HashMap<&'a str, String> {
                     opis: row.get(5),
                     koszt: row.get(6),
                     przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(7))
+                        .unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(8))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Atrakcja>>(),
@@ -111,14 +123,25 @@ pub fn get_certain_attraction_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,json_agg(p) 
+    let mut query: String =
+        "select a.id, a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,piloci,podroze 
                         from atrakcja a
-                        left join atrakcja_przewodnik ap on ap.atrakcja_id = a.id
-                        left join przewodnik p on p.id = ap.przewodnik_id
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as piloci
+    						from przewodnik prz left join atrakcja_przewodnik pp on pp.przewodnik_id = prz.id
+    						where pp.atrakcja_id = a.id
+    					) pr on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join podroz_atrakcja pp on pp.podroz_id = prz.id
+    						where pp.atrakcja_id = a.id
+    					) pr2 on true
                         where a.id in ("
-        .to_owned();
+            .to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt order by a.nazwa");
+    query.push_str(
+        ") group by a.id,a.nazwa,a.adres,a.sezon,a.opis,a.koszt,piloci,podroze order by a.nazwa",
+    );
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Atrakcja> = ResponseArray {
@@ -137,6 +160,8 @@ pub fn get_certain_attraction_json<'a>(
                     opis: row.get(5),
                     koszt: row.get(6),
                     przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(7))
+                        .unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(8))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Atrakcja>>(),
@@ -201,20 +226,24 @@ pub fn insert_certain_attraction_json<'a>(
         let result: Response<i64>;
         let mut query_parmas: Vec<String> = Vec::new();
         for i in params.params.sezon {
-            let mut temp: String = String::from("\'");
+            let mut temp: String = String::from("\"");
             temp.push_str(i.as_str());
-            temp.push_str("\'");
+            temp.push_str("\"");
             query_parmas.push(temp);
         }
-        let mut query_parmas_sezon: String = String::from("{");
+        let mut query_parmas_sezon: String = String::from("\'{");
         query_parmas_sezon.push_str(query_parmas.join(",").as_str());
-        query_parmas_sezon.push_str("}");
+        query_parmas_sezon.push_str("}\'");
+        let mut query: String =
+            String::from("INSERT INTO atrakcja ( nazwa, adres, sezon, opis,koszt) values ($1,$2,");
+        query.push_str(&query_parmas_sezon);
+        query.push_str(",$3,$4) returning id");
+        println!("{}", query_parmas_sezon);
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
-            "INSERT INTO atrakcja ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
+            &query,
             &[
                 &params.params.nazwa,
                 &params.params.adres,
-                &query_parmas_sezon,
                 &params.params.opis,
                 &params.params.koszt,
             ],
@@ -223,7 +252,10 @@ pub fn insert_certain_attraction_json<'a>(
                 .iter()
                 .map(|row| PilotDeleteQuery { id: row.get(0) })
                 .collect::<Vec<PilotDeleteQuery>>(),
-            Err(result) => Vec::new(),
+            Err(result) => {
+                println!("{}", result);
+                Vec::new()
+            }
         };
 
         if query_result

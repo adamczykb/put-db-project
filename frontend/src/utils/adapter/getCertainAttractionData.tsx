@@ -1,15 +1,14 @@
 import { message } from "antd";
 import config from "../../config.json";
 
-const getCertainPilot = (id: any, setData: any) => {
+const getCertainAttraction = (id: any, setData: any) => {
     if (isNaN(+id)) {
-        message.error("Zły identyfikator przewodnika")
+        message.error("Zły identyfikator atrkacji")
         setTimeout(function () {
-            window.open('/przewodnicy', '_self')
+            window.open('/atrakcje', '_self')
         }, 2.0 * 1000);
 
     } else {
-
         const requestOptions = {
             method: "POST",
             headers: {
@@ -18,16 +17,17 @@ const getCertainPilot = (id: any, setData: any) => {
             },
             body: JSON.stringify({ params: { id_list: [Number(id)] } })
         };
-        fetch(config.SERVER_URL + "/api/get/certain_pilots", requestOptions)
+        fetch(config.SERVER_URL + "/api/get/certain_attractions", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200 && response.result.length > 0) {
                     setData(response.result[0]);
                 } else {
-                    message.error("Taki przewodnik nie istnieje")
+                    message.error("Takia atrakcja nie istnieje")
                     setTimeout(function () {
-                        window.open('/przewodnicy', '_self')
+                        window.open('/atrakcje', '_self')
                     }, 2.0 * 1000);
+
                 }
             })
             .catch((error) => console.log('Błąd połączenia z serwerem'));
@@ -35,4 +35,4 @@ const getCertainPilot = (id: any, setData: any) => {
     }
 };
 
-export default getCertainPilot;
+export default getCertainAttraction;

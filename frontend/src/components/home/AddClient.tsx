@@ -2,6 +2,8 @@ import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "an
 import { useEffect, useState } from "react";
 
 import config from '../../config.json'
+import getJourneyData from "../../utils/adapter/getJourneyData";
+import { stringToDate } from "./UpdateClient";
 
 
 const tailFormItemLayout = {
@@ -26,16 +28,56 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
+const columns_journey = [
+    {
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
+    },
+    {
+        title: 'Cena',
+        key: 'cena',
+        render: (text: any, record: any) => <>{record.cena}</>,
+        sorter: (a: any, b: any) => a.cena - b.cena,
+    },
+    {
+        title: 'Data rozpoczecia',
+        key: 'data_rozpoczecia',
+        render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+    {
+        title: 'Data ukonczenia',
+        key: 'data_ukonczenia',
+        render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+]
 const AddClients = () => {
     const [form] = Form.useForm();
 
     const [loading, setLoading] = useState(false);
     useEffect(() => {
     }, [])
+    const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
+    const [journeyData, setJourneyData] = useState();
+    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedJounrneyKeys(newSelectedRowKeys);
+
+    };
+    const rowJourneySelection = {
+        selectedRowKeys: selectedJounrneyKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectLanguagesChange,
+    };
+    useEffect(() => {
+        getJourneyData(setJourneyData);
+    }, [])
 
     const onFinish = (values: any) => {
 
-        values.data_urodzenia=values.data_urodzenia.format('DD-MM-YYYY');
+        values.data_urodzenia = values.data_urodzenia.format('DD-MM-YYYY');
         const requestOptions = {
             method: "POST",
             headers: {
@@ -51,6 +93,7 @@ const AddClients = () => {
             .then((response) => {
                 if (response.status == 200) {
 
+                    message.success("Dodanie klienta powiodło się.")
                     console.log(response)
                     setTimeout(function () {
                         window.open('/klienty', '_self')
@@ -170,8 +213,16 @@ const AddClients = () => {
             >
                 <DatePicker format="DD-MM-YYYY" />
             </Form.Item>
+            <Form.Item
+                name=""
+                label="Powiązany z podróżami"
+            >
+                <Table columns={columns_journey} dataSource={journeyData}
+                    rowSelection={rowJourneySelection}
+                />
+            </Form.Item>
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Dodaj klienta
                 </Button>
             </Form.Item>
