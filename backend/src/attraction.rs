@@ -199,13 +199,22 @@ pub fn insert_certain_attraction_json<'a>(
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<i64>;
-
+        let mut query_parmas: Vec<String> = Vec::new();
+        for i in params.params.sezon {
+            let mut temp: String = String::from("\'");
+            temp.push_str(i.as_str());
+            temp.push_str("\'");
+            query_parmas.push(temp);
+        }
+        let mut query_parmas_sezon: String = String::from("{");
+        query_parmas_sezon.push_str(query_parmas.join(",").as_str());
+        query_parmas_sezon.push_str("}");
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
-            "INSERT INTO pracownik ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
+            "INSERT INTO atrakcja ( nazwa, adres, sezon, opis,koszt) values ($1,$2,$3,$4,$5)",
             &[
                 &params.params.nazwa,
                 &params.params.adres,
-                &params.params.sezon,
+                &query_parmas_sezon,
                 &params.params.opis,
                 &params.params.koszt,
             ],

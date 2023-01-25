@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 import { useParams } from "react-router-dom";
 import getCertainClient from "../../utils/adapter/getCertainClientData";
 
@@ -35,9 +33,7 @@ const UpdateClient = () => {
     const { pesel } = useParams();
     const [form] = Form.useForm();
     const [data, setData] = useState({ pesel: '', imie: '', nazwisko: "", adres: '', numer_telefonu: '', data_urodzenia: '' });
-
-
-
+    const [loading, setLoading] = useState(false);
     useEffect(() => {
         getCertainClient(pesel, setData)
         console.log(data)
@@ -55,7 +51,7 @@ const UpdateClient = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
+        setLoading(true);
         fetch(config.SERVER_URL + "/api/update/certain_client", requestOptions)
             .then((response) => response.json())
             .then((response) => {
@@ -65,13 +61,11 @@ const UpdateClient = () => {
                         window.open('/klienty', '_self')
                     }, 2.0 * 1000);
                 } else {
+                    setLoading(false)
                     message.error("Wystąpił błąd podczas edycji klienta, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(() => {
-                window.open('/klienty')
-            })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
+            }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
         <h2>Edycja klienta</h2>
@@ -153,7 +147,7 @@ const UpdateClient = () => {
 
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Edytuj klienta
                 </Button>
             </Form.Item>
