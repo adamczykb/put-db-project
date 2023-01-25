@@ -25,5 +25,5 @@ const getCertainAccommodation = (id: any, setData: any) => {
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };
-
+//
 export default getCertainAccommodation;

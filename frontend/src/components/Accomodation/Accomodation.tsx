@@ -5,7 +5,7 @@ import { text } from "stream/consumers";
 import getAccomodationData from "../../utils/adapter/getAccomodationData";
 import removeAccommodation from "../../utils/adapter/removeAccomodation";
 const { Panel } = Collapse;
-
+//
 const AccomodationView = () => {
     const handleDelete = (key: React.Key) => {
 

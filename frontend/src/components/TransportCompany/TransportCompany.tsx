@@ -5,7 +5,7 @@ import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData
 import removePilot from "../../utils/adapter/removePilot";
 import removeTransportCompany from "../../utils/adapter/removeTransportCompany";
 const { Panel } = Collapse;
-
+//
 const TransportCompanyView = () => {
 
     const [data, setData] = useState([]);

@@ -27,7 +27,7 @@ const TransportyView = () => {
             key: 'liczba_miejsc',
             render: (text: any, record: any) => <>{record.liczba_miejsc}</>,
         },
-       
+       //
         {
             title: 'Firma transportowa',
             key: 'firmy_transportowe',

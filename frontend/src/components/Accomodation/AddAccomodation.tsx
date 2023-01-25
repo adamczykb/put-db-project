@@ -6,7 +6,7 @@ import getAllLanguages from "../../utils/adapter/getAllLanguages";
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
-
+//
 const onFinish = (values: any) => {
 };
 const attraction_columns = [
