@@ -1,43 +1,9 @@
 import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 
-const onFinish = (values: any) => {
-};
-const attraction_columns = [
-    {
-        title: 'Atrakcja',
-        key: 'atrakcja',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-    {
-        title: 'Opis',
-        key: 'opis',
-        render: (text: any, record: any) => <>{record.opis}</>,
-    },
-]
-const languages_columns = [
-    {
-        title: 'Kod języka',
-        key: 'kod',
-        render: (text: any, record: any) => <>{record.kod}</>,
-    },
-    {
-        title: 'Język',
-        key: 'jezyk',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-]
+
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -62,35 +28,14 @@ const formItemLayout = {
 };
 const AddClients = () => {
     const [form] = Form.useForm();
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
-    };
-    const rowAttractionSelection = {
-        selectedAttractionKeys,
-        onChange: onSelectAttractionChange,
-    };
-    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
-    const [languagesData, setLanguagesData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedLanguagesKeys(newSelectedRowKeys);
-    };
-    const rowLanguagesSelection = {
-        selectedLanguagesKeys,
-        onChange: onSelectLanguagesChange,
-    };
 
-    // useEffect(() => {
-    //     getAllAttractions(setAttractionData)
-    //     getAllLanguages(setLanguagesData)
-    // }, [])
+    const [loading, setLoading] = useState(false);
+    useEffect(() => {
+    }, [])
 
     const onFinish = (values: any) => {
 
-        values.data_urodzenia=values.data_urodzenia.format('DD-MM-  YYYY');
+        values.data_urodzenia = values.data_urodzenia.format('DD-MM-  YYYY');
         const requestOptions = {
             method: "POST",
             headers: {
@@ -100,22 +45,24 @@ const AddClients = () => {
             body: JSON.stringify({ params: values })
         };
 
+        setLoading(true);
         fetch(config.SERVER_URL + "/api/push/client", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                   
+
                     console.log(response)
                     setTimeout(function () {
                         window.open('/klienty', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania clienta, odśwież strone i spróbuj ponownie")
+                    setLoading(false);
+                    message.error("Wystąpił błąd podczas dodawania clienta, klient o podanym PESEL już istnieje")
                 }
 
-            }).then(()=>{
-                
-                
+            }).then(() => {
+
+
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -131,23 +78,31 @@ const AddClients = () => {
         >
             <Form.Item
                 name="pesel"
-                label="Pesel"
+                label="PESEL"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole pesel nie może być puste!',
+                        message: 'Pole PESEL nie może być puste!',
                     },
                     {
                         validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Pesel musi być większy niż 0');
+                            if (value.length != 11) {
+                                return Promise.reject('PESEL musi być długości 11');
+                            }
+                            return Promise.resolve();
+                        },
+                    }, {
+                        validator: (rule, value) => {
+                            if (isNaN(+value)) {
+                                return Promise.reject('PESEL musi skladać sie z cyfr');
                             }
                             return Promise.resolve();
                         },
                     }
+
                 ]}
             >
-                <InputNumber />
+                <Input />
             </Form.Item>
             <Form.Item
                 name="imie"
@@ -195,38 +150,26 @@ const AddClients = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input />
             </Form.Item>
-            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}>
-                    <DatePicker format="DD-MM-YYYY" />
-            </Form.Item> 
-            {/* <Form.Item
-                label="Powiązany z atrakcjami"
+            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole nazwisko nie może być puste!',
+                    },
+                ]}
             >
-                <Table
-                    rowSelection={rowAttractionSelection}
-                    columns={attraction_columns}
-                    dataSource={attractionData}
-                />
+                <DatePicker format="DD-MM-YYYY" />
             </Form.Item>
-            <Form.Item
-                label="Zna języki"
-            >
-                <Table
-                    rowSelection={rowLanguagesSelection}
-                    columns={languages_columns}
-                    dataSource={languagesData}
-                />
-            </Form.Item> */}
-
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
                     Dodaj klienta

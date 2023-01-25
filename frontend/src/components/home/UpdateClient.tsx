@@ -7,43 +7,7 @@ import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 import { useParams } from "react-router-dom";
 import getCertainClient from "../../utils/adapter/getCertainClientData";
-import FormItemLabel from "antd/es/form/FormItemLabel";
 
-
-const attraction_columns = [
-    {
-        title: 'Imie',
-        key: 'imie',
-        render: (text: any, record: any) => <>{record.imie}</>,
-    },
-    {
-        title: 'Nazwisko',
-        key: 'nazwisko',
-        render: (text: any, record: any) => <>{record.nazwisko}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-    {
-        title: 'Numer telefonu',
-        key: 'numer_telefonu',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-    },
-]
-// const languages_columns = [
-//     {
-//         title: 'Kod języka',
-//         key: 'kod',
-//         render: (text: any, record: any) => <>{record.kod}</>,
-//     },
-//     {
-//         title: 'Język',
-//         key: 'jezyk',
-//         render: (text: any, record: any) => <>{record.nazwa}</>,
-//     },
-// ]
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -70,46 +34,19 @@ const formItemLayout = {
 const UpdateClient = () => {
     const { pesel } = useParams();
     const [form] = Form.useForm();
-    const [data, setData] = useState({pesel:'', imie: '', nazwisko: "", adres: '', numer_telefonu: '', data_urodzenia: ''});
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
-    };
-    const rowAttractionSelection = {
-        selectedRowKeys: selectedAttractionKeys,
-        preserveSelectedRowKeys: true,
-        onChange: onSelectAttractionChange,
+    const [data, setData] = useState({ pesel: '', imie: '', nazwisko: "", adres: '', numer_telefonu: '', data_urodzenia: '' });
 
-    };
-    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
-    const [languagesData, setLanguagesData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedLanguagesKeys(newSelectedRowKeys);
-    };
-    const rowLanguagesSelection = {
-        selectedRowKeys: selectedLanguagesKeys,
-        preserveSelectedRowKeys: true,
-        onChange: onSelectLanguagesChange,
-    };
 
 
     useEffect(() => {
-        getCertainClient(pesel,setData)
+        getCertainClient(pesel, setData)
         console.log(data)
     }, [])
     useEffect(() => {
         form.setFieldsValue(data)
-        //setSelectedLanguagesKeys([])
-        //setSelectedAttractionKeys([])
-       
-        
-       
     }, [data])
     const onFinish = (values: any) => {
-       
+
         const requestOptions = {
             method: "POST",
             headers: {
@@ -122,18 +59,11 @@ const UpdateClient = () => {
         fetch(config.SERVER_URL + "/api/update/certain_client", requestOptions)
             .then((response) => response.json())
             .then((response) => {
-                console.log( values);
+                console.log(values);
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
-                        addLanguageToPilot(value, response.result)
-                    })
-                    selectedAttractionKeys.map((value: any) => {
-                        addAttractionToPilot(value, response.result)
-                    })
-                    console.log(response)
                     setTimeout(function () {
                         window.open('/klienty', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas edycji klienta, odśwież strone i spróbuj ponownie")
                 }
@@ -156,9 +86,9 @@ const UpdateClient = () => {
             <Form.Item hidden
                 name="pesel"
                 label="Pesel"
-                
-                >
-                <InputNumber  readOnly value={data.pesel}/>
+
+            >
+                <Input readOnly value={data.pesel} />
             </Form.Item>
             <Form.Item
                 name="imie"
@@ -171,7 +101,7 @@ const UpdateClient = () => {
                     },
                 ]}
             >
-                <Input value={data.imie}/>
+                <Input value={data.imie} />
             </Form.Item>
             <Form.Item
                 name="nazwisko"
@@ -198,8 +128,8 @@ const UpdateClient = () => {
                 <Input value={data.adres} />
             </Form.Item>
             <Form.Item hidden name="data_urodzenia" label="Data urodzenia" {...config}>
-                    <Input hidden/>
-            </Form.Item> 
+                <Input hidden />
+            </Form.Item>
             <Form.Item
                 name="numer_telefonu"
                 label="Numer telefonu"
@@ -210,17 +140,17 @@ const UpdateClient = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input value={data.numer_telefonu} />
             </Form.Item>
-           
+
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">

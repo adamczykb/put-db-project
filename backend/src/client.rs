@@ -23,7 +23,7 @@ pub struct Klient {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct KlientBasic {
-    pub pesel: i64,
+    pub pesel: String,
     pub imie: String,
     pub nazwisko: String,
     pub adres: String,
@@ -83,16 +83,18 @@ pub fn get_all_clients_json<'a>() -> HashMap<&'a str, String> {
 
 pub fn get_certain_clients_json<'a>(params: RequestBody<KlientQuery>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
-    let params_query: Vec<String> = params
-        .params
-        .pesel_list
-        .iter()
-        .map(|v| v.to_string())
-        .collect();
-    let mut query:String = "select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where pesel in (".to_owned() ;
-    query.push_str(params_query.join(",").as_str());
-    query
-        .push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia order by z.nazwisko");
+    let mut query: String = "".to_owned();
+    query.push_str("select z.pesel, z.pesel,z.imie,z.nazwisko, z.adres,z.numer_telefonu,cast(z.data_urodzenia as varchar), json_agg(p)::text from klient z left join klient_podroz zp on zp.klient_pesel=z.pesel left join podroz p on p.id=zp.podroz_id where z.pesel in (");
+    let mut query_parmas: Vec<String> = Vec::new();
+    for i in params.params.pesel_list {
+        let mut temp: String = String::from("\'");
+        temp.push_str(i.as_str());
+        temp.push_str("\'");
+        query_parmas.push(temp);
+    }
+    query.push_str(query_parmas.join(",").as_str());
+    query.push_str(") group by z.pesel,z.imie,z.nazwisko,z.adres,z.numer_telefonu,z.data_urodzenia order by z.nazwisko");
+    println!("{}", query);
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Klient> = ResponseArray {

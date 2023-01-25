@@ -7,7 +7,7 @@ const getCertainClient = (pesel: any, setData: any) => {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ params: { pesel_list: [Number(pesel)] } })
+        body: JSON.stringify({ params: { pesel_list: [pesel] } })
     };
     fetch(config.SERVER_URL + "/api/get/certain_clients", requestOptions)
         .then((response) => response.json())
