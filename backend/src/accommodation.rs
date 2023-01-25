@@ -34,7 +34,7 @@ pub struct ZakwaterowanieInsert {
     pub ilosc_miejsc: i64,
     pub standard_zakwaterowania: String,
     pub adres: String,
-    pub podroze: Vec<PodrozBasic>,
+    //pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ZakwaterowanieDelete {

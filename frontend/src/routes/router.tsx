@@ -24,6 +24,7 @@ import AddJourney from "../components/Journey/addJourney";
 import LangView from "../components/Languages/LangView";
 import AddLang from "../components/Languages/AddLang";
 import AddAttraction from "../components/Attraction/AddAttraction";
+import UpdateAccommodation from "../components/Accomodation/UpdateAccommodation";
 
 
 
@@ -41,9 +42,13 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
                 <Route path={"/przewodnicy/edycja/:id"} element={<UpdatePilot />} />
+
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
+                <Route path={"/zakwaterowanie/edytuj"} element={<UpdateAccommodation/>} />
+
+
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
                 <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany/>}/>
                 <Route path={"/transporty"} element={<TransportyView/>}/>
@@ -53,6 +58,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 
                 <Route path={"/etapy"} element={<EtapView/>}/>
                 <Route path={"/etapy/dodaj"} element={<AddEtap/>}/>
+
                 <Route path={"/podrozy"} element={<JourneysView/>}/>
                 <Route path={"/podrozy/dodaj"} element={<AddJourney/>}/>
                 

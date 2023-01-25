@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
+import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
 import getAccomodationData from "../../utils/adapter/getAccomodationData";
@@ -70,7 +70,7 @@ const AccomodationView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
                 
-                <a href={"/zakwaterowanie/dodaj/"}>dodaj</a><br />
+                <a href={"/zakwaterowanie/edytuj/"}>edytuj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeAccommodation(record.id)}>
                     <a>Usuń</a>
                 </Popconfirm>
@@ -80,6 +80,9 @@ const AccomodationView = () => {
     return (
         <div>
             <h2>Zakwaterowanie</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/zakwaterowanie/dodaj') }}>Dodaj zakwaterowania</Button></Space>
+            <br />
+            <br />
             <Table columns={columns} dataSource={data} />
         </div>
     )

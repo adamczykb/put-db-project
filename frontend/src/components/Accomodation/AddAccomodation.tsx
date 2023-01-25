@@ -98,31 +98,25 @@ const AddAccommodanion = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/accommodations", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/accommodation", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
-                        addLanguageToPilot(value, response.result)
-                    })
-                    selectedAttractionKeys.map((value: any) => {
-                        addAttractionToPilot(value, response.result)
-                    })
                     console.log(response)
                     setTimeout(function () {
                         window.open('/zakwaterowanie', '_self')
                       }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania zakwaterowania, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(() => {
-                window.open('/klienty')
+               
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Dodawanie nowego zakwaterowania</h2>
         <Form
             form={form}
             {...formItemLayout}
