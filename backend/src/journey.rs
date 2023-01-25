@@ -304,6 +304,9 @@ pub fn insert_certain_journey_json<'a>(
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
 <<<<<<< HEAD
             "INSERT INTO podroz (nazwa, data_rozpoczecia, data_ukonczenia, opis, cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5) returning id",
+=======
+            "INSERT INTO podroz (nazwa, data_rozpoczecia,data_ukonczenia,opis,cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5) returning id",
+>>>>>>> 663654adaa2aacfe81313fdc0942fd12181c32a5
                 &[
                     &params.params.nazwa,
                     &params.params.data_rozpoczecia,
@@ -316,11 +319,12 @@ pub fn insert_certain_journey_json<'a>(
                 .iter()
                 .map(|row| PilotDeleteQuery { id: row.get(0) })
                 .collect::<Vec<PilotDeleteQuery>>(),
-            Err(result) => Vec::new(),
+            Err(result) => {println!("{}",result);  Vec::new()},
         };
 
         if query_result
             .get(0)
+            //.unwrap()
             .unwrap_or(&PilotDeleteQuery { id: 0 })
             .id
             > 0
