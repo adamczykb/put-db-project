@@ -62,13 +62,15 @@ const ClientsView = () => {
             render: (text: any, record: any) =>
                 <>{record.podroze.length > 0 ?
                     <Collapse >
-                        <Panel header={record.podroze.length > 1 ? "Uczestniczy w " + record.atrakcje.length + " podróżach" : "Uczestniczy w " + record.podroze.length + " podróży"} key="1">
+                        <Panel header={record.podroze.length > 1 ? "Uczestniczy w " + record.podroze.length + " podróżach" : "Uczestniczy w " + record.podroze.length + " podróży"} key="1">
                             <List
                                 bordered
                                 dataSource={record.podroze}
                                 renderItem={(item: any) => (
                                     <List.Item>
-                                        {item.nazwa}
+                                        Nazwa: {item.nazwa}, 
+                                        Data rozpoczęcia: {item.data_rozpoczecia.split('T')[0]}, Data ukończenia: {item.data_ukonczenia.split('T')[0]}
+                                        , Opis: {item.opis}, Cena: {item.cena}
                                     </List.Item>
                                 )}
                             />

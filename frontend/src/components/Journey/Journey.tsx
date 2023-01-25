@@ -25,12 +25,12 @@ const JourneysView = () => {
         {
             title: 'Data rozpoczecia',
             key: 'data_rozpoczecia',
-            render: (text: any, record: any) => <>{record.data_rozpoczecia}</>,
+            render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
         },
         {
             title: 'Data ukonczenia',
             key: 'data_ukonczenia',
-            render: (text: any, record: any) => <>{record.data_ukonczenia}</>,
+            render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
         },
         {
             title: 'Opis',

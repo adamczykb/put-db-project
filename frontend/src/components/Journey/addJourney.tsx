@@ -322,13 +322,13 @@ const AddJourney = () => {
 
                     setEtapData(response.result)
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania podróży, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania podróży, podróż o takiej nazwie już istnieje")
                 }
 
             }).then(() => {
 
             })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
+            .catch((error) => message.error('nie istnieje etapów w takim przedziału terminowym'));
     }
     const onFinish = (values: any) => {
         const out = {
@@ -408,7 +408,7 @@ const AddJourney = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} >
+            <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} required>
                 <RangePicker format="DD-MM-YYYY" onChange={onChange}
 
 
@@ -421,7 +421,7 @@ const AddJourney = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwisko nie może być puste!',
+                        message: 'Pole opis nie może być puste!',
                     },
                 ]}
             >
@@ -504,15 +504,7 @@ const AddJourney = () => {
                     dataSource={accommodationData}
                 />
             </Form.Item>
-            {/* <Form.Item
-                label="Zna języki"
-            >
-                <Table
-                    rowSelection={rowLanguagesSelection}
-                    columns={languages_columns}
-                    dataSource={languagesData}
-                />
-            </Form.Item> */}
+           
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">

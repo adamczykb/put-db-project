@@ -105,7 +105,7 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t) from etap e
+    let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t)::text from etap e
             join transport t on t.id = e.id".to_owned();
 
     if (!params.params.from.is_empty() && !params.params.to.is_empty())
