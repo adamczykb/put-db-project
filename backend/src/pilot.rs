@@ -65,9 +65,9 @@ pub fn get_all_pilots_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection.query(
                     "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu, 
-po, 
-je, 
-a  
+    po, 
+    je, 
+    a  
                         from przewodnik p
 						left join lateral (
     						select COALESCE(json_agg(prz)::text,'[]') as po
@@ -85,7 +85,7 @@ a
     						where pp.przewodnik_id = p.id
     					) je on true
 
-                        group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a", &[]
+                        group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a order by p.nazwisko", &[]
                     ).unwrap().iter().map(|row| {
                         Pilot{
                     key: row.get(0),
@@ -150,7 +150,7 @@ a
 
                         where p.id in (".to_owned() ;
     query.push_str(params_query.join(",").as_str());
-    query.push_str(")  group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a");
+    query.push_str(")  group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefonu,po,je,a order by p.nazwisko");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Pilot> = ResponseArray {

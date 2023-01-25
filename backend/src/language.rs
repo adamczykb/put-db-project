@@ -33,7 +33,7 @@ pub fn get_all_languages_json<'a>() -> HashMap<&'a str, String> {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query("select  kod, nazwa from jezyk", &[])
+                .query("select  kod, nazwa from jezyk order by kod", &[])
                 .unwrap()
                 .iter()
                 .map(|row| Jezyk {
@@ -67,7 +67,7 @@ pub fn get_certain_languages_json<'a>(params: RequestBody<JezykQuery>) -> HashMa
     let params_query: Vec<String> = params.params.kody.iter().map(|v| v.to_string()).collect();
     let mut query: String = "select kod, nazwa from jezyk where kod in (".to_owned();
     query.push_str(params_query.join(",").as_str());
-    query.push_str(") ");
+    query.push_str(") order by kod");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Jezyk> = ResponseArray {
@@ -112,7 +112,7 @@ pub fn insert_certain_language_json<'a>(
         let result: Response<u64>;
         let query_result = connection
             .execute(
-                "INSERT INTO jezyk (kod, nazwa) values ($1,$2)",
+                "INSERT INTO jezyk (kod, nazwa) values (upper($1),$2)",
                 &[&params.params.kod, &params.params.nazwa],
             )
             .unwrap_or(0);
