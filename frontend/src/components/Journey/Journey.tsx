@@ -32,7 +32,7 @@ const JourneysView = () => {
             key: 'data_ukonczenia',
             render: (text: any, record: any) => <>{record.data_ukonczenia}</>,
         },
-         {
+        {
             title: 'Opis',
             key: 'opis',
             render: (text: any, record: any) => <>{record.opis}</>,
@@ -48,11 +48,11 @@ const JourneysView = () => {
                             <List
                                 bordered
                                 dataSource={record.pracownicy}
-                               
+
                                 renderItem={(item: any) => (
-                                    
+
                                     <List.Item>
-                                        Pracownik: {item.imie+ ' '+ item.nazwisko}, Adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        Pracownik: {item.imie + ' ' + item.nazwisko}, Adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                         , Numer telefonu: {item.numer_telefon}.
                                     </List.Item>
                                 )}
@@ -62,7 +62,7 @@ const JourneysView = () => {
                     <>Brak danych</>
                 }</>
         },
-        
+
         {
             title: 'Atrakcje',
             key: 'atrakcje',
@@ -74,11 +74,11 @@ const JourneysView = () => {
                             <List
                                 bordered
                                 dataSource={record.atrakcje}
-                               
+
                                 renderItem={(item: any) => (
-                                    
+
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                         , opis: {item.opis}, koszt: {item.koszt}.
                                     </List.Item>
                                 )}
@@ -89,7 +89,7 @@ const JourneysView = () => {
                 }</>
         },
         {
-            title: 'Klienty',
+            title: 'Klienci',
             key: 'klienci',
             render: (text: any, record: any) =>
                 <>{record.klienci.length > 0 ?
@@ -99,11 +99,11 @@ const JourneysView = () => {
                             <List
                                 bordered
                                 dataSource={record.klienci}
-                               
+
                                 renderItem={(item: any) => (
-                                    
+
                                     <List.Item>
-                                        Klient: {item.imie+' '+ item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                         , Numer telefonu: {item.numer_telefonu}, Data urodzenia: {item.data_urodzenia}.
                                     </List.Item>
                                 )}
@@ -125,11 +125,11 @@ const JourneysView = () => {
                             <List
                                 bordered
                                 dataSource={record.przewodnicy}
-                               
+
                                 renderItem={(item: any) => (
-                                    
+
                                     <List.Item>
-                                        Klient: {item.imie+' '+ item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
+                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                         , Numer telefonu: {item.numer_telefonu}.
                                     </List.Item>
                                 )}
@@ -146,13 +146,13 @@ const JourneysView = () => {
                 <>{record.klienci.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length  : "Zakwaterowań używano  " + record.zakwaterowania.length } key="1">
+                        <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length : "Zakwaterowań używano  " + record.zakwaterowania.length} key="1">
                             <List
                                 bordered
                                 dataSource={record.zakwaterowania}
-                               
+
                                 renderItem={(item: any) => (
-                                    
+
                                     <List.Item>
                                         Nazwa: {item.nazwa}, Koszt {item.koszt}, Ilość miejsc: {item.ilosc_miejsc}, Standard zakwaterowania: {item.standard_zakwaterowania}
                                         , Ilosc miejsc: {item.ilosc_miejsc}
@@ -165,11 +165,11 @@ const JourneysView = () => {
                     <>Brak danych</>
                 }</>
         },
-        
+
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-          
+
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeJourney(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

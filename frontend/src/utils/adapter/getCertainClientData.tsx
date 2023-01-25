@@ -13,7 +13,7 @@ const getCertainClient = (pesel: any, setData: any) => {
     fetch(config.SERVER_URL + "/api/get/certain_clients", requestOptions)
         .then((response) => response.json())
         .then((response) => {
-            if (response.status == 200) {
+            if (response.status == 200 && response.result.length > 0) {
                 setData(response.result[0]);
             } else {
                 message.error("Taki klient nie istnieje")
