@@ -52,12 +52,15 @@ const AddTransportCompany = () => {
                 if (response.status == 200) {
                     
                     console.log(response)
+                    setTimeout(function () {
+                        window.open('/firma_transportowa', '_self')
+                      }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(()=>{
-                window.open('/firma_transportowa')
+                
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -121,7 +124,7 @@ const AddTransportCompany = () => {
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Dodaj transport
+                    Dodaj firmę transportową
                 </Button>
             </Form.Item>
         </Form>

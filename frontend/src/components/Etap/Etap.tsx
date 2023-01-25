@@ -42,34 +42,31 @@ const EtapView = () => {
             key: 'data_koncowa',
             render: (text: any, record: any) => <>{record.data_koncowa}</>,
         },
+        
         {
             title: 'Transport',
             key: 'transport',
             render: (text: any, record: any) =>
-                <>{record.transport.length > 0 ?
-
+               
+                   
                     <Collapse >
-                        <Panel header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1">
-                            <List
-                                bordered
-                                dataSource={record.transport}
-                                renderItem={(item: any) => (
-                                    <List.Item>
-                                        Nazwa: {item.nazwa}  
-                                    </List.Item>
-                                )}
-                            />
+                        <Panel 
+                        header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1"
+                        >
+                            Nazwa: {record.transport[0].nazwa}
+                            , Liczba jednostek: {record.transport[0].liczba_jednostek}
+                            , Liczba miejsc: {record.transport[0].liczba_miejsc}
+                           
                         </Panel>
-                    </Collapse > :
-                    <>Brak danych</>
-                }</>
+                    </Collapse > 
+                    
         },
         
         
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/etapy/edycja/" + record.id}>Edytuj</a><br />
+            
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeEtap(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

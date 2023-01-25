@@ -68,7 +68,7 @@ const AccomodationView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/zakwaterowanie/edycja/" + record.id}>Edytuj</a><br />
+                
                 <a href={"/zakwaterowanie/dodaj/"}>dodaj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.pesel)}>
                     <a>Usuń</a>

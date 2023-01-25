@@ -302,7 +302,11 @@ pub fn insert_certain_journey_json<'a>(
         let result: Response<i64>;
 
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
-            "INSERT INTO podroz (nazwa, data_rozpoczecia,data_ukonczenia,opis,cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5) returning id",
+
+            "INSERT INTO podroz (nazwa, data_rozpoczecia, data_ukonczenia, opis, cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5) returning id",
+
+           
+
                 &[
                     &params.params.nazwa,
                     &params.params.data_rozpoczecia,
@@ -336,7 +340,7 @@ pub fn insert_certain_journey_json<'a>(
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new journey".to_owned(),
                 result: 0,
             };
         }

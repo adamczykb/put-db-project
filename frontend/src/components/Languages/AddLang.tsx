@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
+import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
 import getAllLanguages from "../../utils/adapter/getAllLanguages";
@@ -60,7 +60,7 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const AddClients = () => {
+const AddLang = () => {
     const [form] = Form.useForm();
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
@@ -83,14 +83,12 @@ const AddClients = () => {
         onChange: onSelectLanguagesChange,
     };
 
-    // useEffect(() => {
-    //     getAllAttractions(setAttractionData)
-    //     getAllLanguages(setLanguagesData)
-    // }, [])
+    useEffect(() => {
+        getAllAttractions(setAttractionData)
+        getAllLanguages(setLanguagesData)
+    }, [])
 
     const onFinish = (values: any) => {
-
-        values.data_urodzenia=values.data_urodzenia.format('DD-MM-  YYYY');
         const requestOptions = {
             method: "POST",
             headers: {
@@ -100,27 +98,26 @@ const AddClients = () => {
             body: JSON.stringify({ params: values })
         };
 
-        fetch(config.SERVER_URL + "/api/push/client", requestOptions)
+        fetch(config.SERVER_URL + "/api/push/language", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                   
+                    
                     console.log(response)
                     setTimeout(function () {
-                        window.open('/klienty', '_self')
+                        window.open('/jezyki', '_self')
                       }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania clienta, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania języka, podany kod jest już wykorzystany")
                 }
 
             }).then(()=>{
-                
-                
+           
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Dodawanie nowego języka</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -130,40 +127,24 @@ const AddClients = () => {
             scrollToFirstError
         >
             <Form.Item
-                name="pesel"
-                label="Pesel"
+                name="kod"
+                label="Kod"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole pesel nie może być puste!',
+                        message: 'Pole kod nie może być puste!',
                     },
                     {
-                        validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Pesel musi być większy niż 0');
-                            }
-                            return Promise.resolve();
-                        },
+                        max: 5,
+                        message: 'Możesz wpisać maksymalnie 5 znaków'
                     }
-                ]}
-            >
-                <InputNumber />
-            </Form.Item>
-            <Form.Item
-                name="imie"
-                label="Imię"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole imię nie może być puste!',
-                    },
                 ]}
             >
                 <Input />
             </Form.Item>
             <Form.Item
-                name="nazwisko"
-                label="Nazwisko"
+                name="nazwa"
+                label="Nazwa"
                 rules={[
                     {
                         required: true,
@@ -173,66 +154,16 @@ const AddClients = () => {
             >
                 <Input />
             </Form.Item>
-            <Form.Item
-                name="adres"
-                label="Adres"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole adres nie może być puste!',
-                    },
-                ]}
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item
-                name="numer_telefonu"
-                label="Numer telefonu"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole numer telefonu nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
-                        }
-                      }
-                ]}
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}>
-                    <DatePicker format="DD-MM-YYYY" />
-            </Form.Item> 
-            {/* <Form.Item
-                label="Powiązany z atrakcjami"
-            >
-                <Table
-                    rowSelection={rowAttractionSelection}
-                    columns={attraction_columns}
-                    dataSource={attractionData}
-                />
-            </Form.Item>
-            <Form.Item
-                label="Zna języki"
-            >
-                <Table
-                    rowSelection={rowLanguagesSelection}
-                    columns={languages_columns}
-                    dataSource={languagesData}
-                />
-            </Form.Item> */}
+            
+            
+            
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
-                    Dodaj klienta
+                    Dodaj język
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddClients
+export default AddLang

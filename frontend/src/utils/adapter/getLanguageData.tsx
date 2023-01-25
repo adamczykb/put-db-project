@@ -1,20 +1,20 @@
 import config from "../../config.json";
 
-const getCertainClient = (pesel: any, setData: any) => {
+const getLanguagesData = (setData: any) => {
     const requestOptions = {
-        method: "POST",
+        method: "GET",
         headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ params: { pesel_list: [Number(pesel)] } })
+        
     };
-    fetch(config.SERVER_URL + "/api/get/certain_clients", requestOptions)
+    fetch(config.SERVER_URL + "/api/get/all_languages", requestOptions)
         .then((response) => response.json())
         .then((response) => {
-            setData(response.result[0]);
+            setData(response.result);
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };
 
-export default getCertainClient;
+export default getLanguagesData;

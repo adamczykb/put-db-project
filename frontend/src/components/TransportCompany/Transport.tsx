@@ -55,7 +55,7 @@ const TransportyView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/transporty/edycja/" + record.id}>Edytuj</a><br />
+            
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeTransport(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

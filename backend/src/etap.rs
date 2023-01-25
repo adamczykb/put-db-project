@@ -17,7 +17,7 @@ pub struct Etap {
     pub koszt: i64,
     pub data_poczatkowa: String,
     pub data_koncowa: String,
-    pub transport: TransportBasic,
+    pub transport: Vec<TransportBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapBasic {
@@ -27,7 +27,7 @@ pub struct EtapBasic {
     pub koszt: i64,
     pub data_poczatkowa: String,
     pub data_koncowa: String,
-    pub transport: TransportBasic,
+    // pub transport: TransportBasic,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapInsert {
@@ -73,8 +73,8 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
                     koszt: row.get(4),
                     data_poczatkowa: row.get(5),
                     data_koncowa: row.get(6),
-                    transport: serde_json::from_str::<TransportBasic>(row.get(7))
-                        .unwrap_or(TransportBasic {                    key: row.get(0),                            id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
+                    transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(7)).unwrap_or(Vec::new()),
+                        // .unwrap_or(TransportBasic { id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
                 .collect::<Vec<Etap>>(),
         };
@@ -142,15 +142,16 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
                     koszt: row.get(3),
                     data_poczatkowa: row.get(4),
                     data_koncowa: row.get(5),
-                    transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
-                        TransportBasic {
-                            key: row.get(0),
-                            id: row.get(0),
-                            nazwa: "".to_string(),
-                            liczba_jednostek: 0,
-                            liczba_miejsc: 0,
-                        },
-                    ),
+                    transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(6))
+                        .unwrap_or(Vec::new()),
+                    // transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
+                    //     TransportBasic {
+                    //         id: row.get(0),
+                    //         nazwa: "".to_string(),
+                    //         liczba_jednostek: 0,
+                    //         liczba_miejsc: 0,
+                    //     },
+                    // ),
                 })
                 .collect::<Vec<Etap>>(),
         };
@@ -201,7 +202,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
             > 0
         {
             connection.execute(
-                    "INSERT INTO transport (nazwa, liczba_jednostek,liczba_miejsc) values ($1,$2,$3,$4) returning id",
+                    "INSERT INTO transport (id, nazwa, liczba_jednostek,liczba_miejsc) values ($1,$2,$3,$4) returning id",
                 &[
                     &query_result
             .get(0)
@@ -224,7 +225,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
         } else {
             result = Response {
                 status: 500,
-                message: "Cannot add new accommodation".to_owned(),
+                message: "Cannot add new etap".to_owned(),
                 result: 0,
             };
         }

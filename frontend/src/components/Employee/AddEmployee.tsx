@@ -99,6 +99,9 @@ const AddEmployee = () => {
                         addLanguageToWorker(value, response.result)
                     })
                     console.log(response)
+                    setTimeout(function () {
+                        window.open('/pracownicy', '_self')
+                      }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
@@ -164,6 +167,14 @@ const AddEmployee = () => {
                         required: true,
                         message: 'Pole numer telefonu nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            return Promise.reject('Numer telefonu jest nieprawidłowy');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
                 ]}
             >
                 <Input />

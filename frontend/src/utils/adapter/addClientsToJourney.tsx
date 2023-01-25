@@ -1,20 +1,21 @@
 import config from "../../config.json";
 
-const getCertainClient = (pesel: any, setData: any) => {
+const addClientToJourney = (pesel: any, journey_id: any) => {
     const requestOptions = {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ params: { pesel_list: [Number(pesel)] } })
+        body: JSON.stringify({ params: { klient_pesel: pesel, podroz_id: journey_id } })
     };
-    fetch(config.SERVER_URL + "/api/get/certain_clients", requestOptions)
+
+    fetch(config.SERVER_URL + "/api/push/journey_client", requestOptions)
         .then((response) => response.json())
         .then((response) => {
-            setData(response.result[0]);
+
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };
 
-export default getCertainClient;
+export default addClientToJourney;

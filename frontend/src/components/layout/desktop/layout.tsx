@@ -26,13 +26,13 @@ const Frontend: React.FC = () => {
                     mode="inline"
                     items={[
                         {
-                            key: '2',
-                            icon: <CompassOutlined />,
-                            label: (<a href="/">
-
+                            key: '10',
+                            icon: <FolderViewOutlined/>,
+                            label: (<a href='/podrozy'>
                                 Podróże
-                            </a>),
+                            </a>)
                         },
+                        
                         {
                             key: '1',
                             icon: <UserOutlined />,
@@ -75,7 +75,7 @@ const Frontend: React.FC = () => {
                             key: '7',
                             icon: <FolderViewOutlined/>,
                             label: (<a href='/transporty'>
-                                Transporty
+                                Transport
                             </a>)
                         },
                         {
@@ -92,11 +92,12 @@ const Frontend: React.FC = () => {
                                 Etapy
                             </a>)
                         },
+                        
                         {
-                            key: '10',
+                            key: '11',
                             icon: <FolderViewOutlined/>,
-                            label: (<a href='/podrozy'>
-                                Podróży
+                            label: (<a href='/jezyki'>
+                                Języki
                             </a>)
                         }
 

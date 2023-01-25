@@ -62,7 +62,7 @@ const AttractionView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/atrakcje/edycja/" + record.id}>Edytuj</a><br />
+                
                 <a href={"/atrakcje/dodaj/"}>dodaj</a><br />
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeAttraction(record.id)}>
                     <a>Usuń</a>

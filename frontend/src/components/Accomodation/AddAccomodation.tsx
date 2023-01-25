@@ -109,6 +109,9 @@ const AddAccommodanion = () => {
                         addAttractionToPilot(value, response.result)
                     })
                     console.log(response)
+                    setTimeout(function () {
+                        window.open('/zakwaterowanie', '_self')
+                      }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
@@ -160,13 +163,22 @@ const AddAccommodanion = () => {
                         required: true,
                         message: 'Pole koszt nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Koszt musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
                 ]}
             >
                 <InputNumber />
             </Form.Item>
-            
 
-    
+
+
+            
             <Form.Item
                 name="ilosc_miejsc"
                 label="Ilosc miejsc"
@@ -175,11 +187,18 @@ const AddAccommodanion = () => {
                         required: true,
                         message: 'Pole ilosc miejsc nie może być puste!',
                     },
+                    {
+                        validator: (rule, value) => {
+                            if (value <= 0) {
+                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
                 ]}
             >
                 <InputNumber />
             </Form.Item>
-
             <Form.Item
                 name="standard_zakwaterowania"
                 label="Standard zakwaterowania"
@@ -204,7 +223,7 @@ const AddAccommodanion = () => {
             >
                 <Input />
             </Form.Item>
-           
+
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
