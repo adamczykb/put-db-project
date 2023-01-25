@@ -4,16 +4,46 @@ import { useEffect, useState } from "react";
 // import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
+import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
+import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 import getTransportData from "../../utils/adapter/getTransportData";
 // import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 // import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+const { RangePicker } = DatePicker;
+
+const rangeConfig = {
+    rules: [{ type: 'array' as const, required: true, message: 'Proszę wybrać date i godzine' }],
+};
 const transport = {
 
 }
 const onFinish = (values: any) => {
 };
 
+const firma_transportowa_columns = [
+    {
+        title: 'id',
+        key: 'id',
+        render: (text: any, record: any) => <>{record.id}</>,
+    },
+    {
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+    },
+    {
+        title: 'Numer telefonu',
+        key: 'telefon',
+        render: (text: any, record: any) => <>{record.telefon}</>,
+    },
+    {
+        title: 'Adres',
+        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+        key: 'adres',
+    },
+    
 
+]
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -48,26 +78,28 @@ const AddEtap = () => {
         selectedAttractionKeys,
         onChange: onSelectTransportChange,
     };
-    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
-    const [languagesData, setLanguagesData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
+    const [selectedFirmaKeys, setSelectedFirmaKeys] = useState<React.Key[]>([]);
+    const [firmaData, setFirmaData] = useState();
+    const onSelectFirmaChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedLanguagesKeys(newSelectedRowKeys);
+        setSelectedFirmaKeys(newSelectedRowKeys);
     };
-    const rowLanguagesSelection = {
-        selectedLanguagesKeys,
-        onChange: onSelectLanguagesChange,
+    const rowFirmaSelection = {
+        selectedFirmaKeys,
+        onChange: onSelectFirmaChange,
     };
 
+
     useEffect(() => {
+        getTransportCompanyData(setFirmaData)
         getTransportData(setTransportData)
+        //getFirmaTransportowa(setFirmaData)
         // getAllAttractions(setTransportData)
         // getAllLanguages(setLanguagesData)
     }, [])
 
     const onFinish = (values: any) => {
-        values.data_poczatkowa = values.data_poczatkowa.format('DD-MM-YYYY');
-        values.data_koncowa = values.data_koncowa.format('DD-MM-YYYY');
+        
         const transport={
             nazwa: values.nazwa,
             liczba_jednostek: values.liczba_jednostek,
@@ -78,8 +110,8 @@ const AddEtap = () => {
             punkt_poczatkowy: values.punkt_poczatkowy,
             punkt_konczowy: values.punkt_konczowy,
             koszt: values.koszt,
-            data_poczatkowa: values.data_poczatkowa,
-            data_koncowa: values.data_koncowa,
+            data_poczatkowa: values.data_rozpoczecia[0].format('DD-MM-YYYY'),
+            data_koncowa: values.data_rozpoczecia[1].format('DD-MM-YYYY'),
             
             transport
         }
@@ -94,14 +126,16 @@ const AddEtap = () => {
             },
             body: JSON.stringify({ params: out })
         };
-
+        const join={
+            firma_transportowa_id: selectedFirmaKeys,
+        }
         fetch(config.SERVER_URL + "/api/push/etap", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    // selectedLanguagesKeys.map((value: any) => {
-                    //     // addLanguageToPilot(value, response.result)
-                    // })
+                    selectedFirmaKeys.map((value: any) => {
+                         addTransportCompanyToTransport(value, response.result)
+                     })
                     // selectedAttractionKeys.map((value: any) => {
                     //     // addAttractionToPilot(value, response.result)
                     // })
@@ -113,8 +147,6 @@ const AddEtap = () => {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(() => {
-                window.open('/przewodnicy')
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -128,7 +160,7 @@ const AddEtap = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-
+            
 
             <Form.Item
                 name="punkt_poczatkowy"
@@ -174,23 +206,34 @@ const AddEtap = () => {
             >
                 <InputNumber />
             </Form.Item>
-            <Form.Item name="data_poczatkowa" label="Data poczatkowa" {...config}>
-                <DatePicker format="DD-MM-YYYY" />
-            </Form.Item>
-            <Form.Item name="data_koncowa" label="Data koncowa" {...config}>
-                <DatePicker format="DD-MM-YYYY" />
+            <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} required>
+                <RangePicker format="DD-MM-YYYY"  
+                 
+                />
             </Form.Item>
            
             <Form.Item
                 label='Nazwa transportu'
                 name={'nazwa'}
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole nazwa transportu nie może być puste!',
+                    },
+                ]}
+                
             >
                 <Input />
             </Form.Item>
             <Form.Item
                 label='Liczba jednostek'
                 name={'liczba_jednostek'}
-                rules={[{
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole liczba jednostek nie może być puste!',
+                    },
+                    {
                     validator: (rule, value) => {
                         if (value <= 0) {
                             return Promise.reject('Ilosc miejsc musi być większy niż 0');
@@ -206,7 +249,12 @@ const AddEtap = () => {
             <Form.Item
                 label='Liczba miejsc'
                 name='liczba_miejsc'
-                rules={[{
+                rules={[
+                    {
+                        required: true,
+                        message: 'Pole liczba miejsc nie może być puste!',
+                    },
+                    {
                     validator: (rule, value) => {
                         if (value <= 0) {
                             return Promise.reject('Ilosc miejsc musi być większy niż 0');
@@ -219,12 +267,19 @@ const AddEtap = () => {
             >
                 <InputNumber />
             </Form.Item>
+
             
-            {/* <Table
-                    rowSelection={rowTransportSelection}
-                    columns={transport_columns}
-                    dataSource={transportData}
-                /> */}
+            
+            
+            <Form.Item
+                label="Powiązany z atrakcjami"
+            >
+                <Table
+                    rowSelection={rowFirmaSelection}
+                    columns={firma_transportowa_columns}
+                    dataSource={firmaData}
+                />
+            </Form.Item>
 
 
             <Form.Item {...tailFormItemLayout}>

@@ -48,6 +48,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/transporty"} element={<TransportyView/>}/>
                
                 <Route path={"/atrakcje"} element={<AttractionView/>}/>
+                
                 <Route path={"/etapy"} element={<EtapView/>}/>
                 <Route path={"/etapy/dodaj"} element={<AddEtap/>}/>
                 <Route path={"/podrozy"} element={<JourneysView/>}/>

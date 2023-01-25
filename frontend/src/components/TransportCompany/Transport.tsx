@@ -52,20 +52,20 @@ const TransportyView = () => {
                 }</>
         },
 
-        {
-            title: 'Akcja',
-            render: (text: any, record: any) => <>
+        // {
+        //     title: 'Akcja',
+        //     render: (text: any, record: any) => <>
             
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeTransport(record.key)}>
-                    <a>Usuń</a>
-                </Popconfirm>
-            </>
-        },
+        //         <Popconfirm title="Sure to delete?" onConfirm={() => removeTransport(record.key)}>
+        //             <a>Usuń</a>
+        //         </Popconfirm>
+        //     </>
+        // },
     ]
     return (
         <div>
-            <h2>Transport</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/transporty/dodaj') }}>Dodaj transport</Button></Space>
+            <h2>Transporty dla etapów</h2>
+            {/* <Space><Button type="primary" onClick={() => { window.open('/transporty/dodaj') }}>Dodaj transport</Button></Space> */}
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

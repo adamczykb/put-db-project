@@ -3,6 +3,7 @@ import { Collapse, List, Popconfirm, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
 import { text } from "stream/consumers";
 import getAccomodationData from "../../utils/adapter/getAccomodationData";
+import removeAccommodation from "../../utils/adapter/removeAccomodation";
 const { Panel } = Collapse;
 
 const AccomodationView = () => {
@@ -70,7 +71,7 @@ const AccomodationView = () => {
             render: (text: any, record: any) => <>
                 
                 <a href={"/zakwaterowanie/dodaj/"}>dodaj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.pesel)}>
+                <Popconfirm title="Sure to delete?" onConfirm={() => removeAccommodation(record.id)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
