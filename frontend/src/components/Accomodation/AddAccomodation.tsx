@@ -109,6 +109,9 @@ const AddAccommodanion = () => {
                         addAttractionToPilot(value, response.result)
                     })
                     console.log(response)
+                    setTimeout(function () {
+                        window.open('/zakwaterowanie', '_self')
+                      }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }

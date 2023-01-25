@@ -17,7 +17,7 @@ pub struct Etap {
     pub koszt: i64,
     pub data_poczatkowa: String,
     pub data_koncowa: String,
-    pub transport: TransportBasic,
+    pub transport:Vec<TransportBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapBasic {
@@ -27,7 +27,7 @@ pub struct EtapBasic {
     pub koszt: i64,
     pub data_poczatkowa: String,
     pub data_koncowa: String,
-    pub transport: TransportBasic,
+    // pub transport: TransportBasic,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapInsert {
@@ -73,8 +73,8 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
                     koszt: row.get(4),
                     data_poczatkowa: row.get(5),
                     data_koncowa: row.get(6),
-                    transport: serde_json::from_str::<TransportBasic>(row.get(7))
-                        .unwrap_or(TransportBasic {                                          id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
+                    transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(7)).unwrap_or(Vec::new()),
+                        // .unwrap_or(TransportBasic { id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
                 .collect::<Vec<Etap>>(),
         };
@@ -105,14 +105,12 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t) from etap e
-            join transport t on t.id = e.id where  e.id in (".to_owned();
-    query.push_str(params_query.join(",").as_str());
-    query.push_str(")");
+    let mut query: String = "select e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,cast(e.data_poczatkowa as varchar),cast(e.data_koncowa as varchar),json_agg(t)::text from etap e
+            join transport t on t.id = e.id  ".to_owned();
     if !params.params.from.is_empty() && !params.params.to.is_empty() {
-        query.push_str(" or (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ")
+        query.push_str(" where (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ")
     }
-    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa");
+    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, e.data_poczatkowa,e.data_koncowa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Etap> = ResponseArray {
@@ -130,14 +128,15 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
                     koszt: row.get(3),
                     data_poczatkowa: row.get(4),
                     data_koncowa: row.get(5),
-                    transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
-                        TransportBasic {
-                            id: row.get(0),
-                            nazwa: "".to_string(),
-                            liczba_jednostek: 0,
-                            liczba_miejsc: 0,
-                        },
-                    ),
+                    transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(6)).unwrap_or(Vec::new()),
+                    // transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
+                    //     TransportBasic {
+                    //         id: row.get(0),
+                    //         nazwa: "".to_string(),
+                    //         liczba_jednostek: 0,
+                    //         liczba_miejsc: 0,
+                    //     },
+                    // ),
                 })
                 .collect::<Vec<Etap>>(),
         };

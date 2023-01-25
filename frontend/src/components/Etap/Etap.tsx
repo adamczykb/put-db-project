@@ -50,10 +50,12 @@ const EtapView = () => {
                
                    
                     <Collapse >
-                        <Panel header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1">
-                            Nazwa: {record.transport.liczba_jednostek
-        }
-                               
+                        <Panel 
+                        header={record.transport.length > 4 ? "Używa " + record.transport.length + " jednostek" : "Używa " + record.transport.length + " jednostek"} key="1"
+                        >
+                            Nazwa: {record.transport[0].nazwa}
+                            , Liczba jednostek: {record.transport[0].liczba_jednostek}
+                            , Liczba miejsc: {record.transport[0].liczba_miejsc}
                            
                         </Panel>
                     </Collapse > 
@@ -64,7 +66,7 @@ const EtapView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/etapy/edycja/" + record.id}>Edytuj</a><br />
+            
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeEtap(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

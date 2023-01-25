@@ -165,36 +165,11 @@ const JourneysView = () => {
                     <>Brak danych</>
                 }</>
         },
-        // {
-        //     title: 'Etapy',
-        //     key: 'etapy',
-        //     render: (text: any, record: any) =>
-        //         <>{record.etapy.length > 0 ?
-
-        //             <Collapse >
-        //                 <Panel header={record.etapy.length > 4 ? "Obsługuje " + record.etapy.length + " atracje" : "Obsługuje " + record.etapy.length + " atrakcje"} key="1">
-        //                     <List
-        //                         bordered
-        //                         dataSource={record.etapy}
-                               
-        //                         renderItem={(item: any) => (
-                                    
-        //                             <List.Item>
-        //                                 Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> 
-        //                                 , opis: {item.opis}, koszt: {item.koszt}.
-        //                             </List.Item>
-        //                         )}
-        //                     />
-        //                 </Panel>
-        //             </Collapse > :
-        //             <>Brak danych</>
-        //         }</>
-        // },
-       
+        
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/podrozy/edycja/" + record.id}>Edytuj</a><br />
+          
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeJourney(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
@@ -203,7 +178,7 @@ const JourneysView = () => {
     ]
     return (
         <div>
-            <h2>Podróży</h2>
+            <h2>Podróże</h2>
             <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj') }}>Dodaj podróż</Button></Space>
             <br />
             <br />

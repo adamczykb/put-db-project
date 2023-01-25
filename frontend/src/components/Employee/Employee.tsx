@@ -33,33 +33,11 @@ const WorkerView = () => {
             render: (text: any, record: any) =>
                 <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
         },
-        // {
-        //     title: 'Podróże',
-        //     key: 'podroze',
-        //     render: (text: any, record: any) =>
-        //         <>{record.podroze.length > 0 ?
-        //             <Collapse >
-        //                 <Panel header={record.podroze.length > 4 ? "Obsługuje " + record.podroze.length + " podróże" : "Obsługuje " + record.podroze.length + " podróży"} key="1">
-        //                     <List
-        //                         bordered
-        //                         dataSource={record.podroze}
-        //                         renderItem={(item: any) => (
-        //                             <List.Item>
-        //                                 {item.nazwa}
-        //                             </List.Item>
-        //                         )}
-        //                     />
-        //                 </Panel>
-        //             </Collapse >
-        //             :
-        //             <>Brak danych</>
-
-        //         }</>
-        // },
+       
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/przewodnicy/edycja/" + record.id}>Edytuj</a><br />
+                
                 <Popconfirm title="Sure to delete?" onConfirm={() => removeWorker(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>

@@ -15,11 +15,14 @@ import TransportCompanyView from "../components/TransportCompany/TransportCompan
 import AddEmployee from "../components/Employee/AddEmployee";
 import TransportyView from "../components/TransportCompany/Transport";
 import AddTransportCompany from "../components/TransportCompany/AddTransportCompany";
-import AddTransport from "../components/TransportCompany/AddTransport";
+
 import AttractionView from "../components/Attraction/Attraction";
 import EtapView from "../components/Etap/Etap";
 import JourneysView from "../components/Journey/Journey";
 import AddEtap from "../components/Etap/AddEtap";
+import AddJourney from "../components/Journey/addJourney";
+import LangView from "../components/Languages/LangView";
+import AddLang from "../components/Languages/AddLang";
 
 
 
@@ -27,7 +30,7 @@ const IndexRouter: React.FC = (): ReactElement => {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path={"/"} element={<Travel />} />
+                <Route path={"/"} element={<JourneysView />} />
                 <Route path={"/klienty"} element={<Home />} />
                 <Route path={"/klienty/dodaj"} element={<AddClients />} />
                 <Route path={"/klienty/edycja/:pesel"} element={<UpdateClient />} />
@@ -43,12 +46,15 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
                 <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany/>}/>
                 <Route path={"/transporty"} element={<TransportyView/>}/>
-                <Route path={"/transporty/dodaj"} element={<AddTransport/>}/>
+               
                 <Route path={"/atrakcje"} element={<AttractionView/>}/>
                 <Route path={"/etapy"} element={<EtapView/>}/>
                 <Route path={"/etapy/dodaj"} element={<AddEtap/>}/>
                 <Route path={"/podrozy"} element={<JourneysView/>}/>
+                <Route path={"/podrozy/dodaj"} element={<AddJourney/>}/>
                 
+                <Route path={"/jezyki"} element={<LangView/>}/>
+                <Route path={"/jezyki/dodaj"} element={<AddLang/>}/>
             </Routes>
         </BrowserRouter>
     );

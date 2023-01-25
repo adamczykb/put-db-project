@@ -131,6 +131,9 @@ const UpdateClient = () => {
                         addAttractionToPilot(value, response.result)
                     })
                     console.log(response)
+                    setTimeout(function () {
+                        window.open('/klienty', '_self')
+                      }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas edycji klienta, odśwież strone i spróbuj ponownie")
                 }
@@ -150,21 +153,12 @@ const UpdateClient = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            <Form.Item
+            <Form.Item hidden
                 name="pesel"
                 label="Pesel"
-                rules={[
-                    {
-                        validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
-                            }
-                            return Promise.resolve();
-                        },
-                    }
-                ]}
+                
                 >
-                <Input  readOnly value={data.pesel}/>
+                <InputNumber  readOnly value={data.pesel}/>
             </Form.Item>
             <Form.Item
                 name="imie"
@@ -203,8 +197,8 @@ const UpdateClient = () => {
             >
                 <Input value={data.adres} />
             </Form.Item>
-            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}>
-                    <DatePicker format="DD-MM-YYYY"/>
+            <Form.Item hidden name="data_urodzenia" label="Data urodzenia" {...config}>
+                    <Input hidden/>
             </Form.Item> 
             <Form.Item
                 name="numer_telefonu"
