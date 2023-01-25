@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table, Typography } from "antd";
+import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
 
 
@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import getCertainClient from "../../utils/adapter/getCertainClientData";
 import getJourneyData from "../../utils/adapter/getJourneyData";
 import addClientToJourney from "../../utils/adapter/addClientsToJourney";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 
 
 export function stringToDate(_date: any, _format: any, _delimiter: any) {
@@ -113,10 +114,11 @@ const UpdateClient = () => {
             .then((response) => response.json())
             .then((response) => {
                 console.log(values);
-                if (response.status == 200) {
-                    selectedJounrneyKeys.map((value: any) => {
+                if (response.status == 200 && response.result.length >0) {
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
                         addClientToJourney(pesel, value)
                     })
+                    message.success("Aktualizacja klienta powiodła się.")
                     setTimeout(function () {
                         window.open('/klienty', '_self')
                     }, 2.0 * 1000);
@@ -167,7 +169,7 @@ const UpdateClient = () => {
                     },
                 ]}
             >
-                
+
                 <Input value={data.nazwisko} />
             </Form.Item>
             <Form.Item
@@ -216,7 +218,7 @@ const UpdateClient = () => {
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                    Edytuj klienta
+                    Zatwierdź edycje klienta
                 </Button>
             </Form.Item>
         </Form>

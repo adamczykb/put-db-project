@@ -1,16 +1,19 @@
-import { Button, Form, Input, InputNumber, message, Select, Table, Tag } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, message, Select, Table, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
+
 
 import config from '../../config.json'
-import type { CustomTagProps } from 'rc-select/lib/BaseSelect';
-import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import getCertainAttraction from "../../utils/adapter/getCertainAttractionData";
 import { stringToDate } from "../home/UpdateClient";
-import getJourneyData from "../../utils/adapter/getJourneyData";
 import addAttractionToJourney from "../../utils/adapter/addAttractionToJourney";
-import getPilotData from "../../utils/adapter/getPilotData";
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-const options = [{ value: 'zima' }, { value: 'lato' }, { value: 'wiosna' }, { value: 'jesień' }];
+import getJourneyData from "../../utils/adapter/getJourneyData";
+import getPilotData from "../../utils/adapter/getPilotData";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 
-const tagRender = (props: CustomTagProps) => {
+const options = [{ value: 'zima' }, { value: 'lato' }, { value: 'wiosna' }, { value: 'jesień' }];
+const tagRender = (props: any) => {
     const { label, value, closable, onClose } = props;
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
         event.preventDefault();
@@ -29,29 +32,6 @@ const tagRender = (props: CustomTagProps) => {
     );
 };
 
-
-const tailFormItemLayout = {
-    wrapperCol: {
-        xs: {
-            span: 24,
-            offset: 0,
-        },
-        sm: {
-            span: 16,
-            offset: 8,
-        },
-    },
-};
-const formItemLayout = {
-    labelCol: {
-        xs: { span: 24 },
-        sm: { span: 8 },
-    },
-    wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 },
-    },
-};
 const columns_journey = [
     {
         title: 'Nazwa',
@@ -97,11 +77,34 @@ const columns_pilot = [
         sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
     },
 ]
+const tailFormItemLayout = {
+    wrapperCol: {
+        xs: {
+            span: 24,
+            offset: 0,
+        },
+        sm: {
+            span: 16,
+            offset: 8,
+        },
+    },
+};
+const formItemLayout = {
+    labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 },
+    },
+    wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 },
+    },
+};
 
-const AddAttraction = () => {
+const UpdateAttraction = () => {
+    const { id } = useParams();
     const [form] = Form.useForm();
+    const [data, setData] = useState({ pesel: '', imie: '', nazwisko: "", adres: '', numer_telefonu: '', data_urodzenia: '', koszt: 0, podroze: [], przewodnicy: [] });
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState({ nazwa: '', adres: '', sezon: [], opis: '', koszt: 0 });
 
     const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
     const [journeyData, setJounrneyData] = useState();
@@ -127,18 +130,32 @@ const AddAttraction = () => {
         onChange: onSelectPilotChange,
     };
 
+
     useEffect(() => {
+        getCertainAttraction(id, setData)
         getJourneyData(setJounrneyData);
         getPilotData(setPilotData);
-        form.setFieldsValue({ koszt: 0 })
+
     }, [])
+    useEffect(() => {
+        form.setFieldsValue(data)
+        let piloci: any = []
+        let podroze: any = []
+        data.podroze.map((value: any) => {
+            podroze.push(value.id)
+            console.log(value.id)
+        })
+        data.przewodnicy.map((value: any) => {
+            piloci.push(value.id)
+            console.log(value.id)
+        })
 
+        setSelectedJounrneyKeys(podroze)
+        setSelectedPilotKeys(piloci)
 
+    }, [data])
     const onFinish = (values: any) => {
-        if (!values.sezon) {
-            values.sezon = []
-        }
-
+        values.id = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -148,31 +165,31 @@ const AddAttraction = () => {
             body: JSON.stringify({ params: values })
         };
         setLoading(true);
-        fetch(config.SERVER_URL + "/api/push/attraction", requestOptions)
+        fetch(config.SERVER_URL + "/api/update/certain_attraction", requestOptions)
             .then((response) => response.json())
             .then((response) => {
+                console.log(values);
                 if (response.status == 200) {
-                    console.log(response)
-                    selectedJounrneyKeys.map((value: any) => {
-                        addAttractionToJourney(response.result, value)
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
+                        addAttractionToJourney(Number(id), value)
                     })
-                    selectedPilotKeys.map((value: any) => {
-                        addAttractionToPilot(response.result, value)
+                    selectedPilotKeys.filter(onlyUnique).map((value: any) => {
+                        addAttractionToPilot(Number(id), value)
                     })
 
-                    message.success("Dodanie atrkacji powiodło się.")
+                    message.success("Aktualizacja atrkacji powiodła się.")
                     setTimeout(function () {
                         window.open('/atrakcje', '_self')
                     }, 2.0 * 1000);
                 } else {
-                    setLoading(false);
-                    message.error("Wystąpił błąd podczas dodawania atrakcji, istnieje już taka w bazie danych")
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas edycji atrakcji, odśwież strone i spróbuj ponownie")
                 }
 
             }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowej atrakcji</h2>
+        <h2>Edycja atrakcji</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -188,7 +205,7 @@ const AddAttraction = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwy nie może być puste!',
+                        message: 'Pole nazwa nie może być puste!',
                     },
                 ]}
             >
@@ -200,7 +217,7 @@ const AddAttraction = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwiska nie może być puste!',
+                        message: 'Pole nazwisko nie może być puste!',
                     },
                 ]}
             >
@@ -225,7 +242,7 @@ const AddAttraction = () => {
                 rules={[
                     {
                         required: true,
-                        message: 'Pole opisu nie może być puste!',
+                        message: 'Pole opis nie może być puste!',
                     },
                 ]}
             >
@@ -234,7 +251,6 @@ const AddAttraction = () => {
             <Form.Item
                 name="koszt"
                 label="Koszt (zł)"
-
                 rules={[
                     {
                         validator: (rule, value) => {
@@ -267,10 +283,10 @@ const AddAttraction = () => {
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                    Dodaj atrakcje
+                    Zatwierdź edycje atrakcji
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddAttraction;
+export default UpdateAttraction 

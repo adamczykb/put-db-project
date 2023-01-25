@@ -9,6 +9,9 @@ import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 import { useParams } from "react-router-dom";
 import getCertainPilot from "../../utils/adapter/getCertainPilotData";
 import { clear } from "console";
+import { stringToDate } from "../home/UpdateClient";
+import getJourneyData from "../../utils/adapter/getJourneyData";
+import addPilotToJourney from "../../utils/adapter/addPilotToJourney";
 
 
 const attraction_columns = [
@@ -62,12 +65,38 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-function onlyUnique(value: any, index: any, self: any) {
+const columns_journey = [
+    {
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
+    },
+    {
+        title: 'Cena',
+        key: 'cena',
+        render: (text: any, record: any) => <>{record.cena}</>,
+        sorter: (a: any, b: any) => a.cena - b.cena,
+    },
+    {
+        title: 'Data rozpoczecia',
+        key: 'data_rozpoczecia',
+        render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+    {
+        title: 'Data ukonczenia',
+        key: 'data_ukonczenia',
+        render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+]
+export function onlyUnique(value: any, index: any, self: any) {
     return self.indexOf(value) === index;
-  }
+}
 const UpdatePilot = () => {
     const { id } = useParams();
-    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false); const [form] = Form.useForm();
     const [data, setData] = useState({ key: 0, id: 0, imie: '', nazwisko: "", adres: '', numer_telefonu: '', jezyki: [], podroze: [], atrakcje: [] });
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
@@ -75,9 +104,9 @@ const UpdatePilot = () => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedAttractionKeys(newSelectedRowKeys.filter(onlyUnique));
     };
-    
+
     const rowAttractionSelection = {
-        
+
         selectedRowKeys: selectedAttractionKeys,
         preserveSelectedRowKeys: false,
         onChange: onSelectAttractionChange,
@@ -89,22 +118,32 @@ const UpdatePilot = () => {
     const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedLanguagesKeys(newSelectedRowKeys);
-    
+
     };
     const rowLanguagesSelection = {
         selectedRowKeys: selectedLanguagesKeys,
         preserveSelectedRowKeys: false,
         onChange: onSelectLanguagesChange,
     };
+    const [selectedJourneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
+    const [journeyData, setJourneyData] = useState();
+    const onSelectJourneyChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedJounrneyKeys(newSelectedRowKeys);
 
-    function getUniqueValues(arr: Array<unknown>): Array<unknown> | unknown {
-        if (arr === undefined || !Array.isArray(arr)) return;
-        return Array.from(new Set(arr));
-    }
+    };
+    const rowJourneySelection = {
+        selectedRowKeys: selectedJourneyKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectJourneyChange,
+    };
+
+
+
     useEffect(() => {
         getAllAttractions(setAttractionData)
         getAllLanguages(setLanguagesData)
         getCertainPilot(id, setData)
+        getJourneyData(setJourneyData);
     }, [])
     useEffect(() => {
         form.setFieldsValue(data)
@@ -112,6 +151,7 @@ const UpdatePilot = () => {
         //setSelectedAttractionKeys([])
         let atrakcje: any = []
         let jezyki: any = []
+        let podroze: any = []
         data.jezyki.map((value: any) => {
             jezyki.push(value.id)
             console.log(value.id)
@@ -120,13 +160,17 @@ const UpdatePilot = () => {
             atrakcje.push(value.id)
             console.log(value.id)
         })
+        data.podroze.map((value: any) => {
+            podroze.push(value.id)
+            console.log(value.id)
+        })
         setSelectedAttractionKeys(atrakcje)
+        setSelectedJounrneyKeys(podroze)
         setSelectedLanguagesKeys(jezyki)
     }, [data])
     const onFinish = (values: any) => {
         //console.log(values);
         values.id = Number(id)
-        values.key = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -135,33 +179,34 @@ const UpdatePilot = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
+        setLoading(true)
         fetch(config.SERVER_URL + "/api/update/certain_pilot", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    console.log(response.result)
-                    console.log(selectedLanguagesKeys);
-                    console.log(selectedAttractionKeys);
-                    console.log(values);
                     selectedLanguagesKeys.filter(onlyUnique).map((value: any) => {
-                        addLanguageToPilot(value, response.result)
+                        addLanguageToPilot(value, Number(id))
                     })
                     selectedAttractionKeys.filter(onlyUnique).map((value: any) => {
-                        addAttractionToPilot(value, response.result)
+                        addAttractionToPilot(value, Number(id))
                     })
-                    console.log(response)
-                } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
-                }
-                //window.open("/przewodnicy")
-                //window.close();
-                return response
-            }).then((response) => {
+                    selectedJourneyKeys.filter(onlyUnique).map((value: any) => {
+                        addPilotToJourney(Number(id), value)
+                    })
 
+                    message.success("Aktualizacja przewodnika powiodła się.")
+                    setTimeout(function () {
+                        window.open('/przewodnicy', '_self')
+                    }, 2.0 * 1000);
+
+                } else {
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas aktualizowania przewodnika, odśwież strone i spróbuj ponownie")
+                }
+                return response
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
-            
+
         // window.open("/przewodnicy")
         // window.close();
     };
@@ -222,12 +267,12 @@ const UpdatePilot = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input value={data.numer_telefonu} />
@@ -236,7 +281,7 @@ const UpdatePilot = () => {
                 label="Powiązany z atrakcjami"
             >
                 <Table
-                    
+
                     rowSelection={rowAttractionSelection}
                     columns={attraction_columns}
                     dataSource={attractionData}
@@ -252,9 +297,18 @@ const UpdatePilot = () => {
                     dataSource={languagesData}
                 />
             </Form.Item>
+            <Form.Item
+                name=""
+                label="Powiązany z podróżami"
+            >
+                <Table columns={columns_journey} dataSource={journeyData}
+                    rowSelection={rowJourneySelection}
+                />
+            </Form.Item>
+
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Zgłoś zmiany
                 </Button>
             </Form.Item>

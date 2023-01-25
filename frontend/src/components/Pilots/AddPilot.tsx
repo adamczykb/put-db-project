@@ -6,6 +6,10 @@ import getAllLanguages from "../../utils/adapter/getAllLanguages";
 import config from '../../config.json'
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
 import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import getJourneyData from "../../utils/adapter/getJourneyData";
+import { stringToDate } from "../home/UpdateClient";
+import { onlyUnique } from "./UpdatePilot";
+import addPilotToJourney from "../../utils/adapter/addPilotToJourney";
 
 const onFinish = (values: any) => {
 };
@@ -60,6 +64,32 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
+const columns_journey = [
+    {
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
+    },
+    {
+        title: 'Cena',
+        key: 'cena',
+        render: (text: any, record: any) => <>{record.cena}</>,
+        sorter: (a: any, b: any) => a.cena - b.cena,
+    },
+    {
+        title: 'Data rozpoczecia',
+        key: 'data_rozpoczecia',
+        render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+    {
+        title: 'Data ukonczenia',
+        key: 'data_ukonczenia',
+        render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
+        sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+    },
+]
 const AddPilot = () => {
     const [form] = Form.useForm();
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
@@ -83,9 +113,21 @@ const AddPilot = () => {
         onChange: onSelectLanguagesChange,
     };
 
+    const [selectedJourneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
+    const [journeyData, setJourneyData] = useState();
+    const onSelectJourneyChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedJounrneyKeys(newSelectedRowKeys);
+
+    };
+    const rowJourneySelection = {
+        selectedRowKeys: selectedJourneyKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectJourneyChange,
+    };
     useEffect(() => {
         getAllAttractions(setAttractionData)
         getAllLanguages(setLanguagesData)
+        getJourneyData(setJourneyData);
     }, [])
 
     const onFinish = (values: any) => {
@@ -102,21 +144,24 @@ const AddPilot = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
+                    selectedLanguagesKeys.filter(onlyUnique).map((value: any) => {
                         addLanguageToPilot(value, response.result)
                     })
-                    selectedAttractionKeys.map((value: any) => {
+                    selectedAttractionKeys.filter(onlyUnique).map((value: any) => {
                         addAttractionToPilot(value, response.result)
+                    })
+                    selectedJourneyKeys.filter(onlyUnique).map((value: any) => {
+                        addPilotToJourney(response.result, value)
                     })
                     console.log(response)
                     setTimeout(function () {
                         window.open('/przewodnicy', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(()=>{
+            }).then(() => {
                 window.open('/przewodnicy')
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
@@ -177,12 +222,12 @@ const AddPilot = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input />
@@ -203,6 +248,14 @@ const AddPilot = () => {
                     rowSelection={rowLanguagesSelection}
                     columns={languages_columns}
                     dataSource={languagesData}
+                />
+            </Form.Item>
+            <Form.Item
+                name=""
+                label="Powiązany z podróżami"
+            >
+                <Table columns={columns_journey} dataSource={journeyData}
+                    rowSelection={rowJourneySelection}
                 />
             </Form.Item>
 

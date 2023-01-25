@@ -18,7 +18,7 @@ const Frontend: React.FC = () => {
     } = theme.useToken();
 
     return (
-        <Layout>
+        <Layout style={{ height: '100%' }}>
             <Sider trigger={null} collapsible collapsed={collapsed}>
                 <div className="slider-logo" >Biuro <i>"Horus"</i></div>
                 <Menu
@@ -27,12 +27,12 @@ const Frontend: React.FC = () => {
                     items={[
                         {
                             key: '10',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/podrozy'>
                                 Podróże
                             </a>)
                         },
-                        
+
                         {
                             key: '1',
                             icon: <UserOutlined />,
@@ -49,7 +49,7 @@ const Frontend: React.FC = () => {
                             label: (<a href="/pracownicy">
                                 Pracownicy
                             </a>),
-                        }, 
+                        },
                         {
                             key: '4',
                             icon: <FolderViewOutlined />,
@@ -66,36 +66,36 @@ const Frontend: React.FC = () => {
                         },
                         {
                             key: '6',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/firma_transportowa'>
                                 Firma transportowa
                             </a>)
                         },
                         {
                             key: '7',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/transporty'>
                                 Transport
                             </a>)
                         },
                         {
                             key: '8',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/atrakcje'>
                                 Atrakcje
                             </a>)
                         },
                         {
                             key: '9',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/etapy'>
                                 Etapy
                             </a>)
                         },
-                        
+
                         {
                             key: '11',
-                            icon: <FolderViewOutlined/>,
+                            icon: <FolderViewOutlined />,
                             label: (<a href='/jezyki'>
                                 Języki
                             </a>)
@@ -104,7 +104,7 @@ const Frontend: React.FC = () => {
                     ]}
                 />
             </Sider>
-            <Layout className="site-layout">
+            <Layout className="site-layout" style={{ height: '100%' }}>
                 <Header style={{ padding: 0, background: colorBgContainer }}>
                     {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
                         className: 'trigger',
@@ -116,6 +116,7 @@ const Frontend: React.FC = () => {
                         margin: '24px 16px',
                         padding: 24,
                         minHeight: 280,
+                        height: '100%',
                         background: colorBgContainer,
                     }}
                 >

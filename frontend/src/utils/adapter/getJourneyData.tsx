@@ -1,3 +1,4 @@
+import { message } from "antd";
 import config from "../../config.json";
 
 const getJourneyData = (setData: any) => {
@@ -11,7 +12,9 @@ const getJourneyData = (setData: any) => {
     fetch(config.SERVER_URL + "/api/get/all_journey", requestOptions)
         .then((response) => response.json())
         .then((response) => {
+
             setData(response.result);
+
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };

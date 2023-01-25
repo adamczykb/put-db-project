@@ -24,6 +24,7 @@ import AddJourney from "../components/Journey/addJourney";
 import LangView from "../components/Languages/LangView";
 import AddLang from "../components/Languages/AddLang";
 import AddAttraction from "../components/Attraction/AddAttraction";
+import EditAttraction from "../components/Attraction/UpdateAttraction";
 
 
 
@@ -44,20 +45,21 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
-                <Route path={"/firma_transportowa"} element={<TransportCompanyView/>}/>
-                <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany/>}/>
-                <Route path={"/transporty"} element={<TransportyView/>}/>
-               
-                <Route path={"/atrakcje"} element={<AttractionView/>}/>
-                <Route path={"/atrakcje/dodaj"} element={<AddAttraction />}/>
-                
-                <Route path={"/etapy"} element={<EtapView/>}/>
-                <Route path={"/etapy/dodaj"} element={<AddEtap/>}/>
-                <Route path={"/podrozy"} element={<JourneysView/>}/>
-                <Route path={"/podrozy/dodaj"} element={<AddJourney/>}/>
-                
-                <Route path={"/jezyki"} element={<LangView/>}/>
-                <Route path={"/jezyki/dodaj"} element={<AddLang/>}/>
+                <Route path={"/firma_transportowa"} element={<TransportCompanyView />} />
+                <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany />} />
+                <Route path={"/transporty"} element={<TransportyView />} />
+
+                <Route path={"/atrakcje"} element={<AttractionView />} />
+                <Route path={"/atrakcje/dodaj"} element={<AddAttraction />} />
+                <Route path={"/atrakcje/edycja/:id"} element={<EditAttraction />} />
+
+                <Route path={"/etapy"} element={<EtapView />} />
+                <Route path={"/etapy/dodaj"} element={<AddEtap />} />
+                <Route path={"/podrozy"} element={<JourneysView />} />
+                <Route path={"/podrozy/dodaj"} element={<AddJourney />} />
+
+                <Route path={"/jezyki"} element={<LangView />} />
+                <Route path={"/jezyki/dodaj"} element={<AddLang />} />
             </Routes>
         </BrowserRouter>
     );
