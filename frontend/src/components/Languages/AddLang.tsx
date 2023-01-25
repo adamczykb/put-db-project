@@ -108,7 +108,7 @@ const AddLang = () => {
                         window.open('/jezyki', '_self')
                       }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania języka, podany kod jest już wykorzystany")
                 }
 
             }).then(()=>{
@@ -134,6 +134,10 @@ const AddLang = () => {
                         required: true,
                         message: 'Pole kod nie może być puste!',
                     },
+                    {
+                        max: 5,
+                        message: 'Możesz wpisać maksymalnie 5 znaków'
+                    }
                 ]}
             >
                 <Input />
