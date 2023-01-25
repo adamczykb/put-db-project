@@ -103,7 +103,9 @@ pub fn get_certain_languages_json<'a>(params: RequestBody<JezykQuery>) -> HashMa
     }
 }
 
-pub fn insert_certain_language_json<'a>(params: RequestBody<Jezyk>) -> HashMap<&'a str, String> {
+pub fn insert_certain_language_json<'a>(
+    params: RequestBody<JezykBasic>,
+) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();

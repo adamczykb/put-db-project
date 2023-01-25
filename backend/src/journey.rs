@@ -302,6 +302,7 @@ pub fn insert_certain_journey_json<'a>(
         let result: Response<i64>;
 
         let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+<<<<<<< HEAD
             "INSERT INTO podroz (nazwa, data_rozpoczecia, data_ukonczenia, opis, cena) values ($1,TO_DATE($2,'DD-MM-YYYY'),TO_DATE($3,'DD-MM-YYYY'),$4,$5) returning id",
                 &[
                     &params.params.nazwa,

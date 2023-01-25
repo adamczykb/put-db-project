@@ -33,8 +33,8 @@ use crate::journey::{
     PodrozZakwaterowanieQuery,
 };
 use crate::language::{
-    delete_certain_language_json, get_all_languages_json, get_certain_languages_json, JezykDelete,
-    JezykQuery,
+    delete_certain_language_json, get_all_languages_json, get_certain_languages_json,
+    insert_certain_language_json, JezykBasic, JezykDelete, JezykQuery,
 };
 use crate::pilot::{
     add_attraction_to_pilot_json, add_language_to_pilot_json, delete_certain_pilot_json,
@@ -381,7 +381,19 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
-
+                        "language" => {
+                            match serde_json::from_str::<RequestBody<JezykBasic>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_language_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("wrong query".to_owned()));
+                                }
+                            };
+                        }
                         "transport_company" => {
                             match serde_json::from_str::<RequestBody<FirmaTransportowaInsert>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
