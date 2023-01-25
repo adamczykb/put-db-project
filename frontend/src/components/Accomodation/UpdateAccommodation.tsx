@@ -13,7 +13,7 @@ import getAllAccommodationData from "../../utils/adapter/getAllAccommodationData
 import getCertainAccommodation from "../../utils/adapter/getCertainAccommodation";
 
 
-
+const val={}
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
