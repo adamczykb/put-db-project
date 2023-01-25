@@ -1,11 +1,8 @@
 import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 import getAllPilots from "../../utils/adapter/getAllPilots";
 import getAllClientsData from "../../utils/adapter/getAllClientsData";
 import getAllEtaps from "../../utils/adapter/getAllEtaps";
@@ -292,23 +289,23 @@ const AddJourney = () => {
         getAllAccommodationData(setAccommodationData)
 
     }, [])
-    const onChange= (data: any) =>{
+    const onChange = (data: any) => {
         console.log(data)
-        let sendData={
+        let sendData = {
             id_list: [],
             from: '',
             to: ''
         }
 
-        if(data &&data[0]&& data[1]){ 
-            sendData={
+        if (data && data[0] && data[1]) {
+            sendData = {
                 id_list: [],
                 from: data[0].format('DD-MM-YYYY'),
                 to: data[1].format('DD-MM-YYYY')
             }
         }
-        
-        
+
+
         const requestOptions = {
             method: "POST",
             headers: {
@@ -322,19 +319,19 @@ const AddJourney = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    
+
                     setEtapData(response.result)
                 } else {
                     message.error("Wystąpił błąd podczas dodawania podróży, odśwież strone i spróbuj ponownie")
                 }
 
             }).then(() => {
-                
+
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     }
     const onFinish = (values: any) => {
-        const out={
+        const out = {
             nazwa: values.nazwa,
             opis: values.opis,
             cena: values.cena,
@@ -376,14 +373,14 @@ const AddJourney = () => {
                     console.log(response)
                     setTimeout(function () {
                         window.open('/podrozy', '_self')
-                      }, 2.0 * 1000);
-                   
+                    }, 2.0 * 1000);
+
                 } else {
                     message.error("Wystąpił błąd podczas dodawania podróży, zmień nazwę lub date rozpoczęcia podróży")
                 }
 
             }).then(() => {
-                
+
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
 
@@ -413,8 +410,8 @@ const AddJourney = () => {
 
             <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} >
                 <RangePicker format="DD-MM-YYYY" onChange={onChange}
-                 
-                
+
+
                 />
             </Form.Item>
 
@@ -450,44 +447,6 @@ const AddJourney = () => {
             >
                 <InputNumber />
             </Form.Item>
-
-
-
-
-
-
-            {/* <Form.Item
-                name="adres"
-                label="Adres"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole adres nie może być puste!',
-                    },
-                ]}
-            >
-                <Input />
-            </Form.Item> */}
-            {/* <Form.Item
-                name="numer_telefonu"
-                label="Numer telefonu"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole numer telefonu nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
-                        }
-                      }
-                ]}
-            >
-                <Input />
-            </Form.Item> */}
             <Form.Item
                 label="Powiązać z atrakcjami"
             >
