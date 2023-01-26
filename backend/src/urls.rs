@@ -19,7 +19,7 @@ use crate::client::{
 
 use crate::etap::{
     delete_certain_etap_json, get_all_etap_json, get_certain_etap_json, insert_certain_etap_json,
-    update_certain_etap_json, Etap, EtapBasic, EtapDelete, EtapInsert, EtapQuery,
+    update_certain_etap_json, Etap, EtapBasic, EtapDelete, EtapInsert, EtapQuery, EtapUpdate,
 };
 use crate::journey::{
     add_accommodation_to_journey_json, add_attraction_to_journey_json, add_client_to_journey_json,
@@ -604,7 +604,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             };
                         }
                         "certain_etap" => {
-                            match serde_json::from_str::<RequestBody<EtapBasic>>(
+                            match serde_json::from_str::<RequestBody<EtapUpdate>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
                             ) {
                                 Ok(params) => {

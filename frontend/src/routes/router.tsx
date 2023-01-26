@@ -25,6 +25,8 @@ import LangView from "../components/Languages/LangView";
 import AddLang from "../components/Languages/AddLang";
 import AddAttraction from "../components/Attraction/AddAttraction";
 import EditAttraction from "../components/Attraction/UpdateAttraction";
+import UpdateEtap from "../components/Etap/UpdateEtap";
+import UpdateEmployee from "../components/Employee/UpdateEmployee";
 
 
 
@@ -38,6 +40,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/klienty/edycja/:pesel"} element={<UpdateClient />} />
                 <Route path={"/pracownicy"} element={<Employee />} />
                 <Route path={"/pracownicy/dodaj"} element={<AddEmployee />} />
+                <Route path={"/pracownicy/edycja/:id"} element={<UpdateEmployee />} />
                 <Route path={"/podrozy/dodaniePodrozy"} element={<TravelForm />} />
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
@@ -55,6 +58,7 @@ const IndexRouter: React.FC = (): ReactElement => {
 
                 <Route path={"/etapy"} element={<EtapView />} />
                 <Route path={"/etapy/dodaj"} element={<AddEtap />} />
+                <Route path={"/etapy/edycja/:id"} element={<UpdateEtap />} />
                 <Route path={"/podrozy"} element={<JourneysView />} />
                 <Route path={"/podrozy/dodaj"} element={<AddJourney />} />
 

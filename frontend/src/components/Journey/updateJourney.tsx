@@ -131,7 +131,11 @@ const clients_columns = [
     },
 ]
 const etaps_columns = [
-
+    {
+        title: 'id',
+        key: 'id',
+        render: (text: any, record: any) => <>{record.id}</>,
+    },
     {
         title: 'Punkt poczatkowy',
         key: 'punkt_poczatkowy',

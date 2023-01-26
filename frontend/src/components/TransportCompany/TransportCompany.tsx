@@ -28,12 +28,12 @@ const TransportCompanyView = () => {
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'adres',
         },
-        
+
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeTransportCompany(record.key)}>
+
+                <Popconfirm title="Napewno usunąć firme transportową?" onConfirm={() => removeTransportCompany(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>

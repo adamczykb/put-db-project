@@ -69,9 +69,9 @@ const AccomodationView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
+
                 <a href={"/zakwaterowanie/dodaj/"}>dodaj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeAccommodation(record.id)}>
+                <Popconfirm title="Napewno usunąć zakwaterowanie?" onConfirm={() => removeAccommodation(record.id)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>

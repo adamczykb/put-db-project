@@ -20,22 +20,12 @@ const JourneysView = () => {
         {
             title: 'Cena',
             key: 'cena',
-            render: (text: any, record: any) => <>{record.cena}</>,
+            render: (text: any, record: any) => <>{record.cena}zł</>,
         },
         {
-            title: 'Data rozpoczecia',
+            title: 'Termin',
             key: 'data_rozpoczecia',
-            render: (text: any, record: any) => <>{record.data_rozpoczecia}</>,
-        },
-        {
-            title: 'Data ukonczenia',
-            key: 'data_ukonczenia',
-            render: (text: any, record: any) => <>{record.data_ukonczenia}</>,
-        },
-        {
-            title: 'Opis',
-            key: 'opis',
-            render: (text: any, record: any) => <>{record.opis}</>,
+            render: (text: any, record: any) => <>od {record.data_rozpoczecia.split(' ')[0]}<br />do {record.data_ukonczenia.split(' ')[0]}</>,
         },
         {
             title: 'Kierowane przez pracowników',
@@ -52,14 +42,14 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Pracownik: {item.imie + ' ' + item.nazwisko}, Adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefon}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        {item.numer_telefon}
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
 
@@ -78,14 +68,15 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , opis: {item.opis}, koszt: {item.koszt}.
+                                        {item.nazwa}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a><br />
+                                        {item.koszt}zł
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
         {
@@ -103,8 +94,8 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefonu}, Data urodzenia: {item.data_urodzenia}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        {item.numer_telefonu}
                                     </List.Item>
                                 )}
                             />
@@ -129,40 +120,43 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefonu}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a><br />
+                                        {item.numer_telefonu}.
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
         {
             title: 'Zakwaterowania',
             key: 'zakwaterowania',
             render: (text: any, record: any) =>
-                <>{record.klienci.length > 0 ?
+                <>{record.zakwaterowania.length > 0 ?
 
                     <Collapse >
                         <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length : "Zakwaterowań używano  " + record.zakwaterowania.length} key="1">
                             <List
                                 bordered
                                 dataSource={record.zakwaterowania}
-
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, Koszt {item.koszt}, Ilość miejsc: {item.ilosc_miejsc}, Standard zakwaterowania: {item.standard_zakwaterowania}
-                                        , Ilosc miejsc: {item.ilosc_miejsc}
-                                        , adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> .
+                                        {item.nazwa}<br />
+                                        {item.koszt}zł<br />
+                                        Miejsca: {item.ilosc_miejsc}<br />
+                                        Standard {item.standard_zakwaterowania}<br />
+                                        Miejsc: {item.ilosc_miejsc}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
 
@@ -179,7 +173,7 @@ const JourneysView = () => {
     return (
         <div>
             <h2>Podróże</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj') }}>Dodaj podróż</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj', '_self') }}>Dodaj podróż</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

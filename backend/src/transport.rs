@@ -200,7 +200,7 @@ pub fn add_transport_company_to_transport_json<'a>(
                 ("Status", "500 Internal Server Error".to_owned()),
                 (
                     "Content",
-                    "{result:'Id atrakcji nie jest jednoznaczne'}".to_owned(),
+                    "{result:'Id firmy_transportowe nie jest jednoznaczne'}".to_owned(),
                 ),
                 ("Content-Type", "application/json".to_owned()),
             ]);

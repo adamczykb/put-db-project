@@ -12,7 +12,7 @@ const addTransportCompanyToTransport = (id: any, transport_id: any) => {
     };
     fetch(config.SERVER_URL + "/api/push/transport_company_transport", requestOptions)
         .then((response) => response.json())
-        
+
         .catch((error) => message.error('Błąd połączenia z serwerem'));
 };
 

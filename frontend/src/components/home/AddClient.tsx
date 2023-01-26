@@ -38,7 +38,7 @@ const columns_journey = [
     {
         title: 'Cena',
         key: 'cena',
-        render: (text: any, record: any) => <>{record.cena}</>,
+        render: (text: any, record: any) => <>{record.cena}zł</>,
         sorter: (a: any, b: any) => a.cena - b.cena,
     },
     {

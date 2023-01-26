@@ -1,27 +1,33 @@
 import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
-
+import getAllAttractions from "../../utils/adapter/getAllAttractions";
+import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
+import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
+import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
+import addLanguageToWorker from "../../utils/adapter/addLanguageToWorker";
+import getCertainWorker from "../../utils/adapter/getCertainWorker";
 import { useParams } from "react-router-dom";
-import getCertainClient from "../../utils/adapter/getCertainClientData";
 import getJourneyData from "../../utils/adapter/getJourneyData";
-import addClientToJourney from "../../utils/adapter/addClientsToJourney";
+import { stringToDate } from "../home/UpdateClient";
+import addWorkerToJourney from "../../utils/adapter/addWorkerToJourney";
 import { onlyUnique } from "../Pilots/UpdatePilot";
 
-
-export function stringToDate(_date: any, _format: any, _delimiter: any) {
-    var formatLowerCase = _format.toLowerCase();
-    var formatItems = formatLowerCase.split(_delimiter);
-    var dateItems = _date.split(_delimiter);
-    var monthIndex = formatItems.indexOf("mm");
-    var dayIndex = formatItems.indexOf("dd");
-    var yearIndex = formatItems.indexOf("yyyy");
-    var month = parseInt(dateItems[monthIndex]);
-    month -= 1;
-    var formatedDate = new Date(dateItems[yearIndex], month, dateItems[dayIndex]);
-    return formatedDate;
-}
+const onFinish = (values: any) => {
+};
+const languages_columns = [
+    {
+        title: 'Kod języka',
+        key: 'kod',
+        render: (text: any, record: any) => <>{record.kod}</>,
+    },
+    {
+        title: 'Język',
+        key: 'jezyk',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+    },
+]
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -43,8 +49,7 @@ const formItemLayout = {
         xs: { span: 24 },
         sm: { span: 16 },
     },
-};
-const columns_journey = [
+}; const columns_journey = [
     {
         title: 'Nazwa',
         key: 'nazwa',
@@ -54,7 +59,7 @@ const columns_journey = [
     {
         title: 'Cena',
         key: 'cena',
-        render: (text: any, record: any) => <>{record.cena}</>,
+        render: (text: any, record: any) => <>{record.cena}zł</>,
         sorter: (a: any, b: any) => a.cena - b.cena,
     },
     {
@@ -70,37 +75,56 @@ const columns_journey = [
         sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
     },
 ]
-const UpdateClient = () => {
-    const { pesel } = useParams();
+const UpdateEmployee = () => {
     const [form] = Form.useForm();
-    const [data, setData] = useState({ pesel: '', imie: '', nazwisko: "", adres: '', numer_telefonu: '', data_urodzenia: '', podroze: [] });
-    const [loading, setLoading] = useState(false);
+    const { id } = useParams()
+    const [data, setData] = useState({ jezyki: [], podroze: [] })
+    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
+    const [languagesData, setLanguagesData] = useState();
+    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
+        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+        setSelectedLanguagesKeys(newSelectedRowKeys);
+    };
+    const rowLanguagesSelection = {
+        selectedRowKeys: selectedLanguagesKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectLanguagesChange,
+    };
 
     const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
     const [journeyData, setJounrneyData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
+    const onSelectJourneyChange = (newSelectedRowKeys: React.Key[]) => {
         setSelectedJounrneyKeys(newSelectedRowKeys);
 
     };
     const rowJourneySelection = {
         selectedRowKeys: selectedJounrneyKeys,
         preserveSelectedRowKeys: false,
-        onChange: onSelectLanguagesChange,
+        onChange: onSelectJourneyChange,
     };
+
     useEffect(() => {
-        getCertainClient(pesel, setData)
+        getCertainWorker(id, setData)
+        getAllLanguages(setLanguagesData)
         getJourneyData(setJounrneyData);
     }, [])
+
     useEffect(() => {
         form.setFieldsValue(data)
+        let jezyk: any = []
+        data.jezyki.map((value: any) => {
+            jezyk.push(value.kod)
+        })
         let podroze: any = []
         data.podroze.map((value: any) => {
             podroze.push(value.id)
         })
+        console.log(podroze)
+        setSelectedLanguagesKeys(jezyk)
         setSelectedJounrneyKeys(podroze)
     }, [data])
     const onFinish = (values: any) => {
-
+        values.id = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -109,28 +133,29 @@ const UpdateClient = () => {
             },
             body: JSON.stringify({ params: values })
         };
-        setLoading(true);
-        fetch(config.SERVER_URL + "/api/update/certain_client", requestOptions)
+
+        fetch(config.SERVER_URL + "/api/update/certain_worker", requestOptions)
             .then((response) => response.json())
             .then((response) => {
-                console.log(values);
                 if (response.status == 200) {
-                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
-                        addClientToJourney(pesel, value)
+                    selectedLanguagesKeys.filter(onlyUnique).map((value: any) => {
+                        addLanguageToWorker(value, Number(id))
                     })
-                    message.success("Aktualizacja klienta powiodła się.")
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
+                        addWorkerToJourney(Number(id), value)
+                    })
+                    message.success("Pracownik poprawnie zaktualizowany")
                     setTimeout(function () {
-                        window.open('/klienty', '_self')
+                        window.open('/pracownicy', '_self')
                     }, 2.0 * 1000);
                 } else {
-                    setLoading(false)
-                    message.error("Wystąpił błąd podczas edycji klienta, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas aktualizowania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
             }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Edycja klienta</h2>
+        <h2>Edycja pracownika</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -139,17 +164,9 @@ const UpdateClient = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            <Form.Item hidden
-                name="pesel"
-                label="Pesel"
-
-            >
-                <Input readOnly value={data.pesel} />
-            </Form.Item>
             <Form.Item
                 name="imie"
                 label="Imię"
-                //initialValue={data.imie}
                 rules={[
                     {
                         required: true,
@@ -157,7 +174,7 @@ const UpdateClient = () => {
                     },
                 ]}
             >
-                <Input value={data.imie} />
+                <Input />
             </Form.Item>
             <Form.Item
                 name="nazwisko"
@@ -169,8 +186,7 @@ const UpdateClient = () => {
                     },
                 ]}
             >
-
-                <Input value={data.nazwisko} />
+                <Input />
             </Form.Item>
             <Form.Item
                 name="adres"
@@ -182,13 +198,10 @@ const UpdateClient = () => {
                     },
                 ]}
             >
-                <Input value={data.adres} />
-            </Form.Item>
-            <Form.Item hidden name="data_urodzenia" label="Data urodzenia" {...config}>
-                <Input hidden />
+                <Input />
             </Form.Item>
             <Form.Item
-                name="numer_telefonu"
+                name="numer_telefon"
                 label="Numer telefonu"
                 rules={[
                     {
@@ -197,7 +210,7 @@ const UpdateClient = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            if (!/^\+?[0-9]{10,11}$/.test(value)) {
                                 return Promise.reject('Numer telefonu jest nieprawidłowy');
                             }
                             return Promise.resolve();
@@ -205,7 +218,25 @@ const UpdateClient = () => {
                     }
                 ]}
             >
-                <Input value={data.numer_telefonu} />
+                <Input />
+            </Form.Item>
+            {/* <Form.Item
+                label="Powiązany z atrakcjami"
+            >
+                <Table
+                    rowSelection={rowAttractionSelection}
+                    columns={attraction_columns}
+                    dataSource={attractionData}
+                />
+            </Form.Item> */}
+            <Form.Item
+                label="Zna języki"
+            >
+                <Table
+                    rowSelection={rowLanguagesSelection}
+                    columns={languages_columns}
+                    dataSource={languagesData}
+                />
             </Form.Item>
             <Form.Item
                 name=""
@@ -217,11 +248,11 @@ const UpdateClient = () => {
             </Form.Item>
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                    Zatwierdź edycje klienta
+                <Button type="primary" htmlType="submit">
+                    Zaktualizuj pracownika
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default UpdateClient
+export default UpdateEmployee;

@@ -86,6 +86,9 @@ pub struct PodrozDelete {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PodrozQuery {
     pub id_list: Vec<i64>,
+    pub from: String,
+    pub to: String,
+
 }
 pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
@@ -231,11 +234,27 @@ zakwaterowanie
     						select   COALESCE(json_agg(et)::text,'[]')   as zakwaterowanie
     						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
     						where pp.podroz_id = p.id
-    					) zak on true
-                             where p.id in (".to_owned();
+    					) zak on true ".to_owned();
+    if (!params.params.from.is_empty() && !params.params.to.is_empty())
+        || !params.params.id_list.is_empty()
+    {
+        query.push_str("where")
+    }
+    if !params.params.id_list.is_empty() {
+        query.push_str(" p.id in (");
+        query.push_str(params_query.join(",").as_str());
+        query.push_str(") and ");
+    }
+
+    if !params.params.from.is_empty() && !params.params.to.is_empty() {
+        query.push_str(" (p.data_rozpoczecia>= TO_DATE($1,'DD-MM-YYYY') and p.data_ukonczenia <= TO_DATE($2,'DD-MM-YYYY')) ");
+    } else {
+        query.push_str(" 1=1");
+    }
+
     query.push_str(params_query.join(",").as_str());
     query.push_str(
-        ") group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+        " group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
 klient ,
 atrakcja ,
 pracownik ,
@@ -248,7 +267,7 @@ zakwaterowanie order by p.data_rozpoczecia",
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query(&query, &[])
+                .query(&query, &[&params.params.from,&params.params.to])
                 .unwrap()
                 .iter()
                 .map(|row| Podroz {

@@ -1,4 +1,5 @@
 use crate::{
+    journey::PodrozBasic,
     language::{Jezyk, JezykBasic},
     pilot::PilotDeleteQuery,
     urls::RequestBody,
@@ -17,6 +18,7 @@ pub struct Worker {
     pub adres: String,
     pub numer_telefon: String,
     pub jezyki: Vec<JezykBasic>,
+    pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerBasic {
@@ -52,22 +54,41 @@ pub fn get_all_workers_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let  result: ResponseArray<Worker> = ResponseArray{
+        let result: ResponseArray<Worker> = ResponseArray {
             status: 200,
             message: "OK".to_owned(),
-            result: connection.query(
-                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon order by p.nazwisko", &[]
-                    ).unwrap().iter().map(|row| {
-                        Worker{
+            result: connection
+                .query(
+                    "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, jezyki ,podroze
+from pracownik p 
+left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as jezyki
+    						from jezyk prz left join jezyk_pracownik pp on pp.jezyk_kod = prz.kod
+    						where pp.pracownik_id = p.id
+    					) pr3 on true
+left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join pracownik_podroz pp on pp.podroz_id = prz.id
+    						where pp.pracownik_id = p.id
+    					) p3r3 on true
+group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon,jezyki ,podroze order by p.nazwisko",
+                    &[],
+                )
+                .unwrap()
+                .iter()
+                .map(|row| Worker {
                     key: row.get(0),
-                            id:row.get(0),
-                            imie: row.get(1),
-                            nazwisko:row.get(2),
-                            adres: row.get(3),
-                            numer_telefon: row.get(4),
-                            jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5)  ).unwrap_or(Vec::new())
-                        }
-            }).collect::<Vec<Worker>>()
+                    id: row.get(0),
+                    imie: row.get(1),
+                    nazwisko: row.get(2),
+                    adres: row.get(3),
+                    numer_telefon: row.get(4),
+                    jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5))
+                        .unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
+                        .unwrap_or(Vec::new()),
+                })
+                .collect::<Vec<Worker>>(),
         };
         connection.close();
         return HashMap::from([
@@ -96,10 +117,23 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query:String = "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, json_agg(j)::text as jezyki from pracownik p left join jezyk_pracownik jp on jp.pracownik_id=p.id left join jezyk j on j.kod=jp.jezyk_kod where p.id in (".to_owned() ;
+    let mut query: String =
+        "select  p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon, jezyki ,podroze
+from pracownik p 
+left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as jezyki
+    						from jezyk prz left join jezyk_pracownik pp on pp.jezyk_kod = prz.kod
+    						where pp.pracownik_id = p.id
+    					) pr3 on true
+left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join pracownik_podroz pp on pp.podroz_id = prz.id
+    						where pp.pracownik_id = p.id
+    					) p3r3 on true where p.id in ("
+            .to_owned();
     query.push_str(params_query.join(",").as_str());
     query
-        .push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon  order by p.nazwisko");
+        .push_str(") group by p.id,p.imie,p.nazwisko,p.adres,p.numer_telefon,jezyki ,podroze  order by p.nazwisko");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Worker> = ResponseArray {
@@ -117,6 +151,8 @@ pub fn get_certain_workers_json<'a>(params: RequestBody<WorkerQuery>) -> HashMap
                     adres: row.get(3),
                     numer_telefon: row.get(4),
                     jezyki: serde_json::from_str::<Vec<JezykBasic>>(row.get(5))
+                        .unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(6))
                         .unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<Worker>>(),
@@ -146,7 +182,27 @@ pub fn update_certain_worker_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64> = Response {
+        let mut result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "delete from jezyk_pracownik where pracownik_id=$1",
+                    &[&params.params.id],
+                )
+                .unwrap_or(0),
+        };
+        result = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "delete from pracownik_podroz where pracownik_id=$1",
+                    &[&params.params.id],
+                )
+                .unwrap_or(0),
+        };
+        result = Response {
             status: 200,
             message: "OK".to_owned(),
             result: connection

@@ -19,7 +19,6 @@ pub struct FirmaTransportowa {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmaTransportowaBasic {
-    pub key: i64,
     pub id: i64,
     pub nazwa: String,
     pub adres: String,
