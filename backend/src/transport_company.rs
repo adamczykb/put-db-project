@@ -1,4 +1,5 @@
 use crate::{
+    etap::EtapBasic,
     pilot::PilotDeleteQuery,
     transport::TransportBasic,
     urls::RequestBody,
@@ -15,7 +16,7 @@ pub struct FirmaTransportowa {
     pub nazwa: String,
     pub adres: String,
     pub telefon: String,
-    pub transporty: Vec<TransportBasic>,
+    pub etapy: Vec<EtapBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FirmaTransportowaBasic {
@@ -50,7 +51,7 @@ pub fn get_all_transport_company_json<'a>() -> HashMap<&'a str, String> {
                     "select ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t)::text 
                     from firma_transportowa ft 
                     left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
-                    left join transport t on t.id = fft.transport_id
+                    left join etap t on t.id = fft.transport_id
                     group by ft.id, ft.nazwa, ft.adres, ft.telefon order by ft.nazwa",
                     &[],
                 )
@@ -62,8 +63,7 @@ pub fn get_all_transport_company_json<'a>() -> HashMap<&'a str, String> {
                     nazwa: row.get(1),
                     adres: row.get(2),
                     telefon: row.get(3),
-                    transporty: serde_json::from_str::<Vec<TransportBasic>>(row.get(4))
-                        .unwrap_or(Vec::new()),
+                    etapy: serde_json::from_str::<Vec<EtapBasic>>(row.get(4)).unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<FirmaTransportowa>>(),
         };
@@ -96,10 +96,10 @@ pub fn get_certain_transport_company_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select  ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t) 
+    let mut query: String = "select  ft.id, ft.nazwa, ft.adres, ft.telefon,json_agg(t)::text  
                              from firma_transportowa ft 
                              left join transport_firma_transportowa fft on ft.id = fft.firma_transportowa_id
-                             left join transport t on t.id = fft.transport_id where fr.id in (".to_owned();
+                             left join etap t on t.id = fft.transport_id where ft.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(") group by ft.id, ft.nazwa, ft.adres, ft.telefon order by ft.nazwa");
     if client.is_ok() {
@@ -117,8 +117,7 @@ pub fn get_certain_transport_company_json<'a>(
                     nazwa: row.get(1),
                     adres: row.get(2),
                     telefon: row.get(3),
-                    transporty: serde_json::from_str::<Vec<TransportBasic>>(row.get(4))
-                        .unwrap_or(Vec::new()),
+                    etapy: serde_json::from_str::<Vec<EtapBasic>>(row.get(4)).unwrap_or(Vec::new()),
                 })
                 .collect::<Vec<FirmaTransportowa>>(),
         };
@@ -146,6 +145,13 @@ pub fn update_certain_transport_company_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
+        connection
+            .execute(
+                "delete from transport_firma_transportowa where firma_transportowa_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap();
+
         let result: Response<u64> = Response {
             status: 200,
             message: "OK".to_owned(),

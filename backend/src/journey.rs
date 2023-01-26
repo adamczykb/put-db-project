@@ -238,28 +238,27 @@ zakwaterowanie
     if (!params.params.from.is_empty() && !params.params.to.is_empty())
         || !params.params.id_list.is_empty()
     {
-        query.push_str("where")
+        query.push_str(" where ")
     }
     if !params.params.id_list.is_empty() {
         query.push_str(" p.id in (");
         query.push_str(params_query.join(",").as_str());
-        query.push_str(") and ");
+        query.push_str(") or ");
     }
 
     if !params.params.from.is_empty() && !params.params.to.is_empty() {
         query.push_str(" (p.data_rozpoczecia>= TO_DATE($1,'DD-MM-YYYY') and p.data_ukonczenia <= TO_DATE($2,'DD-MM-YYYY')) ");
     } else {
-        query.push_str(" 1=1");
+        query.push_str(" (false and $1=$2 )");
     }
 
-    query.push_str(params_query.join(",").as_str());
     query.push_str(
         " group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
 klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie order by p.data_rozpoczecia",
+zakwaterowanie order by p.data_rozpoczecia desc",
     );
     if client.is_ok() {
         let mut connection = client.unwrap();

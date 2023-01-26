@@ -1,43 +1,9 @@
 import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
-import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
+import { useState } from "react";
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
 
-const onFinish = (values: any) => {
-};
-const attraction_columns = [
-    {
-        title: 'Atrakcja',
-        key: 'atrakcja',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-    {
-        title: 'Opis',
-        key: 'opis',
-        render: (text: any, record: any) => <>{record.opis}</>,
-    },
-]
-const languages_columns = [
-    {
-        title: 'Kod języka',
-        key: 'kod',
-        render: (text: any, record: any) => <>{record.kod}</>,
-    },
-    {
-        title: 'Język',
-        key: 'jezyk',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-]
+
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -62,32 +28,9 @@ const formItemLayout = {
 };
 const AddAccommodanion = () => {
     const [form] = Form.useForm();
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys);
-    };
-    const rowAttractionSelection = {
-        selectedAttractionKeys,
-        onChange: onSelectAttractionChange,
-    };
-    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
-    const [languagesData, setLanguagesData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedLanguagesKeys(newSelectedRowKeys);
-    };
-    const rowLanguagesSelection = {
-        selectedLanguagesKeys,
-        onChange: onSelectLanguagesChange,
-    };
 
-    // useEffect(() => {
-    //     getAllAttractions(setAttractionData)
-    //     getAllLanguages(setLanguagesData)
-    // }, [])
-
+    const [loading, setLoading] = useState(false);
+    form.setFieldsValue({ koszt: 0, ilosc_miejsc: 0 })
     const onFinish = (values: any) => {
         const requestOptions = {
             method: "POST",
@@ -97,32 +40,25 @@ const AddAccommodanion = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
-        fetch(config.SERVER_URL + "/api/push/accommodations", requestOptions)
+        setLoading(true)
+        fetch(config.SERVER_URL + "/api/push/accommodation", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedLanguagesKeys.map((value: any) => {
-                        addLanguageToPilot(value, response.result)
-                    })
-                    selectedAttractionKeys.map((value: any) => {
-                        addAttractionToPilot(value, response.result)
-                    })
                     console.log(response)
+                    message.success("Udało się dodać zakwaterowanie")
                     setTimeout(function () {
                         window.open('/zakwaterowanie', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas dodawania zakwaterowania, zostało już ono dodane")
                 }
 
-            }).then(() => {
-                window.open('/klienty')
-            })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
+            }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Dodawanie nowego zakwaterowania</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -131,18 +67,6 @@ const AddAccommodanion = () => {
             style={{ maxWidth: 1200 }}
             scrollToFirstError
         >
-            {/* <Form.Item
-                name="id"
-                label="Pesel"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole pesel nie może być puste!',
-                    },
-                ]}
-            >
-                <InputNumber />
-            </Form.Item> */}
             <Form.Item
                 name="nazwa"
                 label="Nazwa"
@@ -165,8 +89,8 @@ const AddAccommodanion = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Koszt musi być większy niż 0');
+                            if (value < 0) {
+                                return Promise.reject('Koszt musi nie moze być ujemny');
                             }
                             return Promise.resolve();
                         },
@@ -178,7 +102,7 @@ const AddAccommodanion = () => {
 
 
 
-            
+
             <Form.Item
                 name="ilosc_miejsc"
                 label="Ilosc miejsc"
@@ -189,8 +113,8 @@ const AddAccommodanion = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (value <= 0) {
-                                return Promise.reject('Ilosc miejsc musi być większy niż 0');
+                            if (value < 0) {
+                                return Promise.reject('Ilosc miejsc nie może być ujmena');
                             }
                             return Promise.resolve();
                         },
@@ -226,7 +150,7 @@ const AddAccommodanion = () => {
 
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Dodaj zakwaterowanie
                 </Button>
             </Form.Item>

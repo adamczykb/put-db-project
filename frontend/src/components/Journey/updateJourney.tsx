@@ -17,6 +17,10 @@ import addWorkerToJourney from "../../utils/adapter/addWorkerToJourney";
 import addAccommodationToJourney from "../../utils/adapter/addAccommodationToJourney";
 import TextArea from "antd/es/input/TextArea";
 import { stringToDate } from "../home/UpdateClient";
+import getCertainJourney from "../../utils/adapter/getCertainJourney";
+import { useParams } from "react-router-dom";
+import dayjs from "dayjs";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 const { RangePicker } = DatePicker;
 
 const rangeConfig = {
@@ -131,11 +135,7 @@ const clients_columns = [
     },
 ]
 const etaps_columns = [
-    {
-        title: 'id',
-        key: 'id',
-        render: (text: any, record: any) => <>{record.id}</>,
-    },
+
     {
         title: 'Punkt poczatkowy',
         key: 'punkt_poczatkowy',
@@ -234,8 +234,11 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const AddJourney = () => {
+const UpdateJourney = () => {
     const [form] = Form.useForm();
+    const { id } = useParams()
+    const [loading, setLoading] = useState(false);
+    const [data, setData] = useState({ data_rozpoczecia: '', data_ukonczenia: '', atrakcje: [], etapy: [], klienci: [], zakwaterowania: [], pracownicy: [], przewodnicy: [] })
     //atrakcji
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
@@ -243,7 +246,7 @@ const AddJourney = () => {
         setSelectedAttractionKeys(newSelectedRowKeys);
     };
     const rowAttractionSelection = {
-        selectedAttractionKeys,
+        selectedRowKeys: selectedAttractionKeys,
         onChange: onSelectAttractionChange,
     };
     //piloty
@@ -253,7 +256,7 @@ const AddJourney = () => {
         setSelectedPilotsKeys(newSelectedRowKeys);
     }
     const rowPilotSelection = {
-        selectedPilotsKeys,
+        selectedRowKeys: selectedPilotsKeys,
         onChange: onSelectPilotChange,
     }
     //clienty
@@ -263,7 +266,7 @@ const AddJourney = () => {
         setSelectedClientsKeys(newSelectedRowKeys);
     }
     const rowClientSelection = {
-        selectedClientsKeys,
+        selectedRowKeys: selectedClientsKeys,
         onChange: onSelectClientChange,
     }
     //etap
@@ -273,7 +276,7 @@ const AddJourney = () => {
         setSelectedEtapKeys(newSelectedRowKeys);
     }
     const rowEtapSelection = {
-        selectedEtapKeys,
+        selectedRowKeys: selectedEtapKeys,
         onChange: onSelectEtapChange,
     }
 
@@ -284,9 +287,10 @@ const AddJourney = () => {
         setSelectedWorkerKeys(newSelectedRowKeys);
     }
     const rowWorkerSelection = {
-        selectedWorkerKeys,
+        selectedRowKeys: selectedWorkerKeys,
         onChange: onSelectWorkerChange,
     }
+
 
     //accommodation
     const [selectedAccommodationKeys, setSelectedAccommodationKeys] = useState<React.Key[]>([]);
@@ -295,11 +299,12 @@ const AddJourney = () => {
         setSelectedAccommodationKeys(newSelectedRowKeys);
     }
     const rowAccommodationSelection = {
-        selectedAccommodationKeys,
+        selectedRowKeys: selectedAccommodationKeys,
         onChange: onSelectAccommodationChange,
     }
 
     useEffect(() => {
+        getCertainJourney(id, setData)
         getAllAttractions(setAttractionData)
         getAllPilots(setPilotsData)
         getAllEtaps(setEtapData)
@@ -308,6 +313,80 @@ const AddJourney = () => {
         getAllAccommodationData(setAccommodationData)
 
     }, [])
+    useEffect(() => {
+        form.setFieldsValue(data)
+        let piloci: any = []
+        data.przewodnicy.map((value: any) => {
+            piloci.push(value.id)
+        })
+
+        setSelectedPilotsKeys(piloci)
+        let etapy: any = []
+        data.etapy.map((value: any) => {
+            etapy.push(value.id)
+        })
+        setSelectedEtapKeys(etapy)
+
+        let attraction: any = []
+        data.atrakcje.map((value: any) => {
+            attraction.push(value.id)
+        })
+
+        setSelectedAttractionKeys(attraction)
+
+        let clients: any = []
+        data.klienci.map((value: any) => {
+            clients.push(value.pesel)
+        })
+        setSelectedClientsKeys(attraction)
+        let workers: any = []
+        data.pracownicy.map((value: any) => {
+            workers.push(value.id)
+        })
+        setSelectedWorkerKeys(workers)
+
+        let accommodation: any = []
+        data.zakwaterowania.map((value: any) => {
+            accommodation.push(value.id)
+        })
+        setSelectedAccommodationKeys(workers)
+        if (data.data_rozpoczecia) {
+            form.setFieldsValue({ data_rozpoczecia: [dayjs(data.data_rozpoczecia), dayjs(data.data_ukonczenia)] })
+
+
+
+            const sendData = {
+                id_list: [],
+                from: dayjs(data.data_rozpoczecia).format('DD-MM-YYYY'),
+                to: dayjs(data.data_ukonczenia).format('DD-MM-YYYY')
+            }
+            const requestOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                body: JSON.stringify({ params: sendData })
+            };
+
+            fetch(config.SERVER_URL + "/api/get/certain_etaps", requestOptions)
+                .then((response) => response.json())
+                .then((response) => {
+                    if (response.status == 200) {
+                        setEtapData(response.result)
+                    } else {
+                        message.error("Wystąpił błąd podczas pobierania etapów, odśwież strone i spróbuj ponownie")
+                    }
+
+                }).then(() => {
+
+                })
+                .catch((error) => message.error('Błąd połączenia z serwerem'));
+
+        }
+    }, [data])
+
+
     const onChange = (data: any) => {
         let sendData = {
             id_list: [],
@@ -353,7 +432,7 @@ const AddJourney = () => {
             nazwa: values.nazwa,
             opis: values.opis,
             cena: values.cena,
-
+            id: Number(id),
             data_rozpoczecia: values.data_rozpoczecia[0].format('DD-MM-YYYY'),
             data_ukonczenia: values.data_rozpoczecia[1].format('DD-MM-YYYY')
         }
@@ -365,35 +444,37 @@ const AddJourney = () => {
             },
             body: JSON.stringify({ params: out })
         };
-
-        fetch(config.SERVER_URL + "/api/push/journey", requestOptions)
+        setLoading(true)
+        fetch(config.SERVER_URL + "/api/update/certain_journey", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedPilotsKeys.map((value: any) => {
-                        addPilotToJourney(value, response.result)
+                    selectedPilotsKeys.filter(onlyUnique).map((value: any) => {
+                        addPilotToJourney(value, Number(id))
                     })
-                    selectedAttractionKeys.map((value: any) => {
-                        addAttractionToJourney(value, response.result)
+                    selectedAttractionKeys.filter(onlyUnique).map((value: any) => {
+                        addAttractionToJourney(value, Number(id))
                     })
-                    selectedClientsKeys.map((value: any) => {
-                        addClientToJourney(value, response.result)
+                    selectedClientsKeys.filter(onlyUnique).map((value: any) => {
+                        addClientToJourney(value, Number(id))
                     })
-                    selectedEtapKeys.map((value: any) => {
-                        addEtapToJourney(value, response.result)
+                    selectedEtapKeys.filter(onlyUnique).map((value: any) => {
+                        addEtapToJourney(value, Number(id))
                     })
-                    selectedWorkerKeys.map((value: any) => {
-                        addWorkerToJourney(value, response.result)
+                    selectedWorkerKeys.filter(onlyUnique).map((value: any) => {
+                        addWorkerToJourney(value, Number(id))
                     })
-                    selectedAccommodationKeys.map((value: any) => {
-                        addAccommodationToJourney(value, response.result)
+                    selectedAccommodationKeys.filter(onlyUnique).map((value: any) => {
+                        addAccommodationToJourney(value, Number(id))
                     })
+                    message.success("Zaktualizowano podróż")
                     setTimeout(function () {
                         window.open('/podrozy', '_self')
                     }, 2.0 * 1000);
 
                 } else {
-                    message.error("Wystąpił błąd podczas dodawania podróży, zmień nazwę lub date rozpoczęcia podróży")
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas aktualizowania podróży, zmień nazwę lub date rozpoczęcia podróży")
                 }
 
             }).then(() => {
@@ -442,9 +523,12 @@ const AddJourney = () => {
             </Form.Item>
             <Form.Item
                 name="cena"
-                label="Cena"
+                label="Cena (zł)"
                 rules={[
-
+                    {
+                        required: true,
+                        message: 'Pole ceny nie może być puste!',
+                    },
                     {
                         validator: (rule, value) => {
                             if (value < 0) {
@@ -517,11 +601,11 @@ const AddJourney = () => {
 
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
-                    Dodaj podróż
+                <Button type="primary" htmlType="submit" loading={loading}>
+                    Zaktualizuj podróż
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddJourney
+export default UpdateJourney

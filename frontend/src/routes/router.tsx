@@ -27,6 +27,9 @@ import AddAttraction from "../components/Attraction/AddAttraction";
 import EditAttraction from "../components/Attraction/UpdateAttraction";
 import UpdateEtap from "../components/Etap/UpdateEtap";
 import UpdateEmployee from "../components/Employee/UpdateEmployee";
+import UpdateJourney from "../components/Journey/updateJourney";
+import UpdateTransportCompany from "../components/TransportCompany/UpdateTransportCompany";
+import UpdateAccommodation from "../components/Accomodation/UpdateAccomodation";
 
 
 
@@ -42,16 +45,17 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/pracownicy/dodaj"} element={<AddEmployee />} />
                 <Route path={"/pracownicy/edycja/:id"} element={<UpdateEmployee />} />
                 <Route path={"/podrozy/dodaniePodrozy"} element={<TravelForm />} />
+                <Route path={"/podrozy/edycja/:id"} element={<UpdateJourney />} />
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
                 <Route path={"/przewodnicy/edycja/:id"} element={<UpdatePilot />} />
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
-                <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView />} />
+                <Route path={"/firma_transportowa/edycja/:id"} element={<UpdateTransportCompany />} />
                 <Route path={"/firma_transportowa/dodaj"} element={<AddTransportCompany />} />
                 <Route path={"/transporty"} element={<TransportyView />} />
-
+                <Route path={"/zakwaterowanie/edycja/:id"} element={<UpdateAccommodation />} />
                 <Route path={"/atrakcje"} element={<AttractionView />} />
                 <Route path={"/atrakcje/dodaj"} element={<AddAttraction />} />
                 <Route path={"/atrakcje/edycja/:id"} element={<EditAttraction />} />

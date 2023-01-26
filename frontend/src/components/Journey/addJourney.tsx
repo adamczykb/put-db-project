@@ -298,10 +298,11 @@ const AddJourney = () => {
     useEffect(() => {
         getAllAttractions(setAttractionData)
         getAllPilots(setPilotsData)
-        getAllEtaps(setEtapData)
+        //getAllEtaps(setEtapData)
         getAllClientsData(setClientsData)
         getAllWorkers(setWorkerData)
         getAllAccommodationData(setAccommodationData)
+        form.setFieldsValue({ cena: 0 })
 
     }, [])
     const onChange = (data: any) => {
@@ -440,7 +441,10 @@ const AddJourney = () => {
                 name="cena"
                 label="Cena"
                 rules={[
-
+                    {
+                        required: true,
+                        message: 'Pole cena nie może być puste!',
+                    },
                     {
                         validator: (rule, value) => {
                             if (value < 0) {

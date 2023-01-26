@@ -2,6 +2,7 @@ import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
 import { useEffect, useState } from "react";
 import getJourneyData from "../../utils/adapter/getJourneyData";
 import removeJourney from "../../utils/adapter/removeJourney";
+import { stringToDate } from "../home/UpdateClient";
 
 const { Panel } = Collapse;
 
@@ -25,6 +26,7 @@ const JourneysView = () => {
         {
             title: 'Termin',
             key: 'data_rozpoczecia',
+            sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
             render: (text: any, record: any) => <>od {record.data_rozpoczecia.split(' ')[0]}<br />do {record.data_ukonczenia.split(' ')[0]}</>,
         },
         {
@@ -138,7 +140,7 @@ const JourneysView = () => {
                 <>{record.zakwaterowania.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length : "Zakwaterowań używano  " + record.zakwaterowania.length} key="1">
+                        <Panel header={record.zakwaterowania.length > 4 ? "Ilość zakwaterowań " + record.zakwaterowania.length : "Ilość zakwaterowań  " + record.zakwaterowania.length} key="1">
                             <List
                                 bordered
                                 dataSource={record.zakwaterowania}
@@ -164,7 +166,8 @@ const JourneysView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
 
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeJourney(record.key)}>
+                <a href={"/podrozy/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Czy napewno chcesz usunąć podróż?" onConfirm={() => removeJourney(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
