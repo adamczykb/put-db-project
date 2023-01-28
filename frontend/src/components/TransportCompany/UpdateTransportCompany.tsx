@@ -82,6 +82,7 @@ const UpdateTransportCompany = () => {
             body: JSON.stringify({ params: values })
         };
         setLoading(true)
+
         fetch(config.SERVER_URL + "/api/update/certain_transport_company", requestOptions)
             .then((response) => response.json())
             .then((response) => {
@@ -154,6 +155,7 @@ const UpdateTransportCompany = () => {
                             return Promise.resolve();
                         }
                     }
+
                 ]}
             >
                 <Input />
@@ -186,9 +188,11 @@ const UpdateTransportCompany = () => {
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
                     Zaktualizuj firmę transportową
+
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
 export default UpdateTransportCompany
+

@@ -33,6 +33,7 @@ import UpdateAccommodation from "../components/Accomodation/UpdateAccomodation";
 
 
 
+
 const IndexRouter: React.FC = (): ReactElement => {
     return (
         <BrowserRouter>
@@ -49,6 +50,7 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/przewodnicy"} element={<PilotsView />} />
                 <Route path={"/przewodnicy/dodaj"} element={<AddPilot />} />
                 <Route path={"/przewodnicy/edycja/:id"} element={<UpdatePilot />} />
+
                 <Route path={"/zakwaterowanie"} element={<AccomodationView />} />
                 <Route path={"/zakwaterowanie/dodaj"} element={<AddAccommodanion />} />
                 <Route path={"/firma_transportowa"} element={<TransportCompanyView />} />
@@ -66,8 +68,12 @@ const IndexRouter: React.FC = (): ReactElement => {
                 <Route path={"/podrozy"} element={<JourneysView />} />
                 <Route path={"/podrozy/dodaj"} element={<AddJourney />} />
 
-                <Route path={"/jezyki"} element={<LangView />} />
-                <Route path={"/jezyki/dodaj"} element={<AddLang />} />
+
+                <Route path={"/podrozy"} element={<JourneysView/>}/>
+                <Route path={"/podrozy/dodaj"} element={<AddJourney/>}/>
+                
+                <Route path={"/jezyki"} element={<LangView/>}/>
+                <Route path={"/jezyki/dodaj"} element={<AddLang/>}/>
             </Routes>
         </BrowserRouter>
     );

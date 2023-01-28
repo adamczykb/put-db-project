@@ -26,3 +26,4 @@ const removeAttraction = (id: any) => {
 };
 
 export default removeAttraction;
+//

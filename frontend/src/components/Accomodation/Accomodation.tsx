@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import getAccomodationData from "../../utils/adapter/getAccomodationData";
 import removeAccommodation from "../../utils/adapter/removeAccomodation";
 const { Panel } = Collapse;
-
+//
 const AccomodationView = () => {
 
     const [data, setData] = useState([]);
@@ -64,9 +64,9 @@ const AccomodationView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-
                 <a href={"/zakwaterowanie/edycja/" + record.id}>Edycja</a><br />
                 <Popconfirm title="Napewno usunąć zakwaterowanie?" onConfirm={() => removeAccommodation(record.id)}>
+
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -76,6 +76,7 @@ const AccomodationView = () => {
         <div>
             <h2>Zakwaterowania</h2>
             <Space><Button type="primary" onClick={() => { window.open('/zakwaterowanie/dodaj', '_self') }}>Dodaj zakwaterowania</Button></Space>
+
             <Table columns={columns} dataSource={data} />
         </div>
     )

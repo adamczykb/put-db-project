@@ -26,3 +26,4 @@ const removeAccommodation = (id: any) => {
 };
 
 export default removeAccommodation;
+//

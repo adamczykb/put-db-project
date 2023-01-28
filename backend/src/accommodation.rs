@@ -195,6 +195,7 @@ pub fn insert_certain_accommodation_json<'a>(
         return response;
     } else {
         println!("ERROR: Cannot connect to database!");
+        
         return HashMap::from([
             ("Status", "401 PERMISSION DENIED".to_owned()),
             ("Content", "{result:'PERMISSION DENIED'}".to_owned()),

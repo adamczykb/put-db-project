@@ -3,7 +3,6 @@ import { useState } from "react";
 
 import config from '../../config.json'
 
-
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -41,6 +40,7 @@ const AddAccommodanion = () => {
             body: JSON.stringify({ params: values })
         };
         setLoading(true)
+
         fetch(config.SERVER_URL + "/api/push/accommodation", requestOptions)
             .then((response) => response.json())
             .then((response) => {
@@ -56,6 +56,7 @@ const AddAccommodanion = () => {
                 }
 
             }).catch((error) => message.error('Błąd połączenia z serwerem'));
+
     };
     return <>
         <h2>Dodawanie nowego zakwaterowania</h2>

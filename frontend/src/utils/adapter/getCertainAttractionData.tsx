@@ -27,7 +27,7 @@ const getCertainAttraction = (id: any, setData: any) => {
                     setTimeout(function () {
                         window.open('/atrakcje', '_self')
                     }, 2.0 * 1000);
-
+//
                 }
             })
             .catch((error) => console.log('Błąd połączenia z serwerem'));

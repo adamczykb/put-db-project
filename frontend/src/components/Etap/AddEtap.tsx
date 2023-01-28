@@ -313,6 +313,7 @@ const AddEtap = () => {
             </Form.Item>
             <Form.Item
                 label="Powiązany z firmami transportowymi"
+
             >
                 <Table
                     rowSelection={rowFirmaSelection}

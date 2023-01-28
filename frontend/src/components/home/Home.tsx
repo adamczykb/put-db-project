@@ -122,7 +122,9 @@ const ClientsView = () => {
                                 dataSource={record.podroze}
                                 renderItem={(item: any) => (
                                     <List.Item>
-                                        {item.nazwa}
+                                        Nazwa: {item.nazwa}, 
+                                        Data rozpoczęcia: {item.data_rozpoczecia.split('T')[0]}, Data ukończenia: {item.data_ukonczenia.split('T')[0]}
+                                        , Opis: {item.opis}, Cena: {item.cena}
                                     </List.Item>
                                 )}
                             />

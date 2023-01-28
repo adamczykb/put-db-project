@@ -55,6 +55,7 @@ const JourneysView = () => {
             key: 'zysk',
             sorter: (a: any, b: any) => a.zysk - b.zysk,
             render: (text: any, record: any) => <>{record.zysk}zł</>,
+
         },
         {
             title: 'Termin',

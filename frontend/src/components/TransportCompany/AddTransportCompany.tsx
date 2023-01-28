@@ -61,9 +61,6 @@ const AddTransportCompany = () => {
                     setLoading(false)
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
-
-            }).then(() => {
-
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };

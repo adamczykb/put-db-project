@@ -401,7 +401,7 @@ const AddJourney = () => {
             }).then(() => {
 
             })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
+            .catch((error) => message.error('nie istnieje etapów w takim przedziału terminowym'));
     }
     const onFinish = (values: any) => {
         const out = {
@@ -480,7 +480,7 @@ const AddJourney = () => {
                 <Input />
             </Form.Item>
 
-            <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} >
+            <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} required>
                 <RangePicker format="DD-MM-YYYY" onChange={onChange}
                 />
             </Form.Item>
@@ -572,8 +572,6 @@ const AddJourney = () => {
                     dataSource={accommodationData}
                 />
             </Form.Item>
-
-
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">
                     Dodaj podróż

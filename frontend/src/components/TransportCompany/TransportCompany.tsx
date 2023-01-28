@@ -5,7 +5,7 @@ import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData
 import removePilot from "../../utils/adapter/removePilot";
 import removeTransportCompany from "../../utils/adapter/removeTransportCompany";
 const { Panel } = Collapse;
-
+//
 const TransportCompanyView = () => {
 
     const [data, setData] = useState([]);
@@ -32,9 +32,9 @@ const TransportCompanyView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-
                 <a href={"/firma_transportowa/edycja/" + record.id}>Edytuj</a><br />
                 <Popconfirm title="Napewno usunąć firme transportową?" onConfirm={() => removeTransportCompany(record.key)}>
+
                     <a>Usuń</a>
                 </Popconfirm>
             </>
