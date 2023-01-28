@@ -53,7 +53,7 @@ pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
                 .query(
                     "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft)::text 
                     from transport t 
-                    left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
+                    left join transport_firma_transportowa fft on t.id = fft.transport_id
                     left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
                     group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc order by t.nazwa ",
                     &[],
@@ -102,10 +102,13 @@ pub fn get_certain_transport_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select  t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft) 
-                            from transport t 
-                            left join transport_firma_transportowa fft on t.id = fft.firma_transportowa_id
-                            left join firma_transportowa ft on ft.id = fft.firma_transportowa_id  t.id in (".to_owned();
+    let mut query: String =
+        "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft)::text 
+                    from transport t 
+                    left join transport_firma_transportowa fft on t.id = fft.transport_id
+                    left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
+                     t.id in ("
+            .to_owned();
     query.push_str(params_query.join(",").as_str());
     query
         .push_str(") group by t.id, t.nazwa, t.liczba_jednostek, t.liczba_miejsc order by t.nazwa");

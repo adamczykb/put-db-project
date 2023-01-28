@@ -1,5 +1,5 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table, Tag } from "antd";
-import { useEffect, useState } from "react";
+import { Button, DatePicker, Form, Input, InputNumber, message, Space, Table, Tag } from "antd";
+import { useEffect, useRef, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
 
 import config from '../../config.json'
@@ -12,6 +12,7 @@ import addPilotToJourney from "../../utils/adapter/addPilotToJourney";
 import addAttractionToJourney from "../../utils/adapter/addAttractionToJourney";
 import addClientToJourney from "../../utils/adapter/addClientsToJourney";
 
+import { SearchOutlined } from '@ant-design/icons';
 import addEtapToJourney from "../../utils/adapter/addEtapToJourney";
 import addWorkerToJourney from "../../utils/adapter/addWorkerToJourney";
 import addAccommodationToJourney from "../../utils/adapter/addAccommodationToJourney";
@@ -23,214 +24,271 @@ const rangeConfig = {
     rules: [{ type: 'array' as const, required: true, message: 'Proszę wybrać date i godzine' }],
 };
 
-
-const pilot_columns = [
-    {
-        title: 'Przewodnik',
-        key: 'pilot',
-        render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
-    },
-    {
-        title: 'Numer telefonu',
-        key: 'telefon',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-    },
-    {
-        title: 'Addres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'addres',
-    },
-]
-
-const attraction_columns = [
-    {
-        title: 'Nazwa',
-        key: 'nazwa, adres, sezon, opis,koszt',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
-    },
-
-
-    {
-        title: 'Adres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'adres',
-        sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
-    },
-
-    {
-        title: 'Sezon',
-        key: 'sezon',
-        render: (text: any, record: any) =>
-            <>{record.sezon.length > 0 ? <>{record.sezon.map((value: any) => <Tag>{value}</Tag>)}</> : <>Brak zdefiniowanych sezonów</>}</>,
-        filters: [
-            {
-                text: 'Wiosna',
-                value: 'Wiosna',
-            },
-            {
-                text: 'Lato',
-                value: 'Lato',
-            },
-            {
-                text: 'Jesień',
-                value: 'Jesien',
-            },
-            {
-                text: 'Zima',
-                value: 'Zima',
-            },
-        ],
-        onFilter: (value: any, record: any) => record.sezon.join('').toLowerCase().indexOf(value.toLowerCase()) === 0,
-    },
-]
-const clients_columns = [
-    {
-        title: 'Pesel',
-        key: 'pesel',
-        render: (text: any, record: any) => <>{record.pesel}</>,
-        sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
-    },
-    {
-        title: 'Imie',
-        key: 'imie',
-        render: (text: any, record: any) => <>{record.imie}</>,
-        sorter: (a: any, b: any) => a.imie.localeCompare(b.imie),
-    },
-    {
-        title: 'Nazwisko',
-        key: 'nazwisko',
-        render: (text: any, record: any) => <>{record.nazwisko}</>,
-        sorter: (a: any, b: any) => a.nazwisko.localeCompare(b.nazwisko),
-    },
-    {
-        title: 'Numer telefonu',
-        key: 'telefon',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-        sorter: (a: any, b: any) => a.numer_telefonu.localeCompare(b.numer_telefonu),
-    },
-    {
-        title: 'Addres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'adres',
-        sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
-    },
-
-    {
-        title: 'Data_urodzenia',
-        key: 'data_urodzenia',
-        render: (text: any, record: any) => <>{record.data_urodzenia}</>,
-        sorter: (a: any, b: any) => stringToDate(a.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
-    },
-
-    {
-        title: 'Numer telefonu',
-        key: 'numer_telefonu',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-        sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
-    },
-]
-const etaps_columns = [
-
-    {
-        title: 'Punkt poczatkowy',
-        key: 'punkt_poczatkowy',
-        render: (text: any, record: any) => <>{record.punkt_poczatkowy}</>,
-    },
-    {
-        title: 'Punkt konczowy',
-        key: 'punkt_konczowy',
-        render: (text: any, record: any) => <>{record.punkt_konczowy}</>,
-    },
-    {
-        title: 'Koszt',
-        key: 'koszt',
-        render: (text: any, record: any) => <>{record.koszt}</>,
-    },
-    {
-        title: 'Data poczatkowa',
-        key: 'data_poczatkowa',
-        render: (text: any, record: any) => <>{record.data_poczatkowa.split(' ')[0]}</>,
-    },
-    {
-        title: 'Data koncowa',
-        key: 'data_koncowa',
-        render: (text: any, record: any) => <>{record.data_koncowa.split(' ')[0]}</>,
-    },
-]
-const worker_columns = [
-    {
-        title: 'Pracownik',
-        key: 'pilot',
-        render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
-    },
-    {
-        title: 'Numer telefonu',
-        key: 'telefon',
-        render: (text: any, record: any) => <>{record.numer_telefon}</>,
-    },
-    {
-        title: 'Adres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'addres',
-    },
-    {
-        title: 'Znane języki',
-        render: (text: any, record: any) =>
-            <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
-    },
-]
-const accomodation_columns = [
-    {
-        title: 'Nazwa',
-        key: 'nazwa',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-    },
-    {
-        title: 'Koszt',
-        key: 'koszt',
-        render: (text: any, record: any) => <>{record.koszt}</>,
-    },
-    {
-        title: 'Ilosc miejsc',
-        key: 'ilosc_miejsc',
-        render: (text: any, record: any) => <>{record.ilosc_miejsc}</>,
-    },
-    {
-        title: 'Standard zakwaterowania',
-        key: 'standard_zakwaterowania',
-        render: (text: any, record: any) => <>{record.standard_zakwaterowania}</>,
-    },
-    {
-        title: 'Adres',
-        key: 'adres',
-        render: (text: any, record: any) => <>{record.adres}</>,
-    },
-
-]
-const tailFormItemLayout = {
-    wrapperCol: {
-        xs: {
-            span: 24,
-            offset: 0,
-        },
-        sm: {
-            span: 16,
-            offset: 8,
-        },
-    },
-};
-const formItemLayout = {
-    labelCol: {
-        xs: { span: 24 },
-        sm: { span: 8 },
-    },
-    wrapperCol: {
-        xs: { span: 24 },
-        sm: { span: 16 },
-    },
-};
 const AddJourney = () => {
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const handleSearch = (
+        confirm: (param?: any) => void,
+    ) => {
+        confirm();
+    };
+
+    const handleReset = (clearFilters: () => void) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+    const getColumnSearchProps = (dataIndex: any): any => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: { setSelectedKeys: any, selectedKeys: any, confirm: any, clearFilters: any, close: any }) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    placeholder={`Search PDB ID`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(confirm)}
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <div style={{ textAlign: 'right' }}>
+                    <Space style={{ paddingTop: 10 }}>
+                        <Button
+                            onClick={() => handleReset(clearFilters)}
+                            size="middle"
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            type="primary"
+                            onClick={() => handleSearch(confirm)}
+                            icon={<SearchOutlined />}
+                            size="middle"
+                        >
+                            Search
+                        </Button>
+                    </Space>
+                </div>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined style={{ color: '#00a498' }} />
+        ),
+        onFilter: (value: any, record: any) =>
+            record[dataIndex]
+                .toString()
+                .toLowerCase()
+                .includes((value as string).toLowerCase()),
+    });
+
+    const pilot_columns = [
+        {
+            title: 'Przewodnik',
+            key: 'pilot',
+            render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
+        },
+        {
+            title: 'Numer telefonu',
+            key: 'telefon',
+            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+        },
+        {
+            title: 'Addres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'addres',
+        },
+    ]
+
+    const attraction_columns = [
+        {
+            title: 'Nazwa',
+            key: 'nazwa, adres, sezon, opis,koszt',
+            render: (text: any, record: any) => <>{record.nazwa}</>,
+            sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
+        },
+
+
+        {
+            title: 'Adres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'adres',
+            sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
+        },
+
+        {
+            title: 'Sezon',
+            key: 'sezon',
+            render: (text: any, record: any) =>
+                <>{record.sezon.length > 0 ? <>{record.sezon.map((value: any) => <Tag>{value}</Tag>)}</> : <>Brak zdefiniowanych sezonów</>}</>,
+            filters: [
+                {
+                    text: 'Wiosna',
+                    value: 'Wiosna',
+                },
+                {
+                    text: 'Lato',
+                    value: 'Lato',
+                },
+                {
+                    text: 'Jesień',
+                    value: 'Jesien',
+                },
+                {
+                    text: 'Zima',
+                    value: 'Zima',
+                },
+            ],
+            onFilter: (value: any, record: any) => record.sezon.join('').toLowerCase().indexOf(value.toLowerCase()) === 0,
+        },
+    ]
+    const clients_columns = [
+        {
+            title: 'Pesel',
+            key: 'pesel',
+            render: (text: any, record: any) => <>{record.pesel}</>,
+            sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
+            ...getColumnSearchProps('pesel')
+        },
+        {
+            title: 'Imie',
+            key: 'imie',
+            render: (text: any, record: any) => <>{record.imie}</>,
+            sorter: (a: any, b: any) => a.imie.localeCompare(b.imie),
+            ...getColumnSearchProps('imie')
+        },
+        {
+            title: 'Nazwisko',
+            key: 'nazwisko',
+            render: (text: any, record: any) => <>{record.nazwisko}</>,
+            sorter: (a: any, b: any) => a.nazwisko.localeCompare(b.nazwisko),
+            ...getColumnSearchProps('nazwisko')
+        },
+        {
+            title: 'Numer telefonu',
+            key: 'telefon',
+            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            sorter: (a: any, b: any) => a.numer_telefonu.localeCompare(b.numer_telefonu),
+        },
+        {
+            title: 'Addres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'adres',
+            sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
+        },
+
+        {
+            title: 'Data_urodzenia',
+            key: 'data_urodzenia',
+            render: (text: any, record: any) => <>{record.data_urodzenia}</>,
+            sorter: (a: any, b: any) => stringToDate(a.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+        },
+
+        {
+            title: 'Numer telefonu',
+            key: 'numer_telefonu',
+            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
+        },
+    ]
+    const etaps_columns = [
+
+        {
+            title: 'Punkt poczatkowy',
+            key: 'punkt_poczatkowy',
+            render: (text: any, record: any) => <>{record.punkt_poczatkowy}</>,
+        },
+        {
+            title: 'Punkt konczowy',
+            key: 'punkt_konczowy',
+            render: (text: any, record: any) => <>{record.punkt_konczowy}</>,
+        },
+        {
+            title: 'Koszt',
+            key: 'koszt',
+            render: (text: any, record: any) => <>{record.koszt}</>,
+        },
+        {
+            title: 'Data poczatkowa',
+            key: 'data_poczatkowa',
+            render: (text: any, record: any) => <>{record.data_poczatkowa.split(' ')[0]}</>,
+        },
+        {
+            title: 'Data koncowa',
+            key: 'data_koncowa',
+            render: (text: any, record: any) => <>{record.data_koncowa.split(' ')[0]}</>,
+        },
+    ]
+    const worker_columns = [
+        {
+            title: 'Pracownik',
+            key: 'pilot',
+            render: (text: any, record: any) => <>{record.imie + ' ' + record.nazwisko}</>,
+        },
+        {
+            title: 'Numer telefonu',
+            key: 'telefon',
+            render: (text: any, record: any) => <>{record.numer_telefon}</>,
+        },
+        {
+            title: 'Adres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'addres',
+        },
+        {
+            title: 'Znane języki',
+            render: (text: any, record: any) =>
+                <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
+        },
+    ]
+    const accomodation_columns = [
+        {
+            title: 'Nazwa',
+            key: 'nazwa',
+            render: (text: any, record: any) => <>{record.nazwa}</>,
+        },
+        {
+            title: 'Koszt',
+            key: 'koszt',
+            render: (text: any, record: any) => <>{record.koszt}</>,
+        },
+        {
+            title: 'Ilosc miejsc',
+            key: 'ilosc_miejsc',
+            render: (text: any, record: any) => <>{record.ilosc_miejsc}</>,
+        },
+        {
+            title: 'Standard zakwaterowania',
+            key: 'standard_zakwaterowania',
+            render: (text: any, record: any) => <>{record.standard_zakwaterowania}</>,
+        },
+        {
+            title: 'Adres',
+            key: 'adres',
+            render: (text: any, record: any) => <>{record.adres}</>,
+        },
+
+    ]
+    const tailFormItemLayout = {
+        wrapperCol: {
+            xs: {
+                span: 24,
+                offset: 0,
+            },
+            sm: {
+                span: 16,
+                offset: 8,
+            },
+        },
+    };
+    const formItemLayout = {
+        labelCol: {
+            xs: { span: 24 },
+            sm: { span: 8 },
+        },
+        wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 16 },
+        },
+    };
+
+
     const [form] = Form.useForm();
     //atrakcji
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);

@@ -148,7 +148,7 @@ const UpdateTransportCompany = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
                                 return Promise.reject('Numer telefonu jest nieprawidłowy');
                             }
                             return Promise.resolve();
@@ -184,7 +184,7 @@ const UpdateTransportCompany = () => {
 
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Zaktualizuj firmę transportową
                 </Button>
             </Form.Item>

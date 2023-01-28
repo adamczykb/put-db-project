@@ -153,16 +153,13 @@ const UpdatePilot = () => {
         let jezyki: any = []
         let podroze: any = []
         data.jezyki.map((value: any) => {
-            jezyki.push(value.id)
-            console.log(value.id)
+            jezyki.push(value.kod)
         })
         data.atrakcje.map((value: any) => {
             atrakcje.push(value.id)
-            console.log(value.id)
         })
         data.podroze.map((value: any) => {
             podroze.push(value.id)
-            console.log(value.id)
         })
         setSelectedAttractionKeys(atrakcje)
         setSelectedJounrneyKeys(podroze)
@@ -267,7 +264,7 @@ const UpdatePilot = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
                                 return Promise.reject('Numer telefonu jest nieprawidłowy');
                             }
                             return Promise.resolve();

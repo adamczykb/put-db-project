@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table, Tag } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, message, Space, Table, Tag } from "antd";
 import { useEffect, useState } from "react";
 import getAllAttractions from "../../utils/adapter/getAllAttractions";
 
@@ -12,6 +12,7 @@ import addPilotToJourney from "../../utils/adapter/addPilotToJourney";
 import addAttractionToJourney from "../../utils/adapter/addAttractionToJourney";
 import addClientToJourney from "../../utils/adapter/addClientsToJourney";
 
+import { SearchOutlined } from '@ant-design/icons';
 import addEtapToJourney from "../../utils/adapter/addEtapToJourney";
 import addWorkerToJourney from "../../utils/adapter/addWorkerToJourney";
 import addAccommodationToJourney from "../../utils/adapter/addAccommodationToJourney";
@@ -88,52 +89,7 @@ const attraction_columns = [
         onFilter: (value: any, record: any) => record.sezon.join('').toLowerCase().indexOf(value.toLowerCase()) === 0,
     },
 ]
-const clients_columns = [
-    {
-        title: 'Pesel',
-        key: 'pesel',
-        render: (text: any, record: any) => <>{record.pesel}</>,
-        sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
-    },
-    {
-        title: 'Imie',
-        key: 'imie',
-        render: (text: any, record: any) => <>{record.imie}</>,
-        sorter: (a: any, b: any) => a.imie.localeCompare(b.imie),
-    },
-    {
-        title: 'Nazwisko',
-        key: 'nazwisko',
-        render: (text: any, record: any) => <>{record.nazwisko}</>,
-        sorter: (a: any, b: any) => a.nazwisko.localeCompare(b.nazwisko),
-    },
-    {
-        title: 'Numer telefonu',
-        key: 'telefon',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-        sorter: (a: any, b: any) => a.numer_telefonu.localeCompare(b.numer_telefonu),
-    },
-    {
-        title: 'Addres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'adres',
-        sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
-    },
 
-    {
-        title: 'Data_urodzenia',
-        key: 'data_urodzenia',
-        render: (text: any, record: any) => <>{record.data_urodzenia}</>,
-        sorter: (a: any, b: any) => stringToDate(a.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
-    },
-
-    {
-        title: 'Numer telefonu',
-        key: 'numer_telefonu',
-        render: (text: any, record: any) => <>{record.numer_telefonu}</>,
-        sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
-    },
-]
 const etaps_columns = [
 
     {
@@ -235,6 +191,107 @@ const formItemLayout = {
     },
 };
 const UpdateJourney = () => {
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const handleSearch = (
+        confirm: (param?: any) => void,
+    ) => {
+        confirm();
+    };
+
+    const handleReset = (clearFilters: () => void) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+    const getColumnSearchProps = (dataIndex: any): any => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: { setSelectedKeys: any, selectedKeys: any, confirm: any, clearFilters: any, close: any }) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    placeholder={`Search PDB ID`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(confirm)}
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <div style={{ textAlign: 'right' }}>
+                    <Space style={{ paddingTop: 10 }}>
+                        <Button
+                            onClick={() => handleReset(clearFilters)}
+                            size="middle"
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            type="primary"
+                            onClick={() => handleSearch(confirm)}
+                            icon={<SearchOutlined />}
+                            size="middle"
+                        >
+                            Search
+                        </Button>
+                    </Space>
+                </div>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined style={{ color: '#00a498' }} />
+        ),
+        onFilter: (value: any, record: any) =>
+            record[dataIndex]
+                .toString()
+                .toLowerCase()
+                .includes((value as string).toLowerCase()),
+    });
+
+    const clients_columns = [
+        {
+            title: 'Pesel',
+            key: 'pesel',
+            render: (text: any, record: any) => <>{record.pesel}</>,
+            sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
+            ...getColumnSearchProps('pesel')
+        },
+        {
+            title: 'Imie',
+            key: 'imie',
+            render: (text: any, record: any) => <>{record.imie}</>,
+            sorter: (a: any, b: any) => a.imie.localeCompare(b.imie),
+            ...getColumnSearchProps('imie')
+        },
+        {
+            title: 'Nazwisko',
+            key: 'nazwisko',
+            render: (text: any, record: any) => <>{record.nazwisko}</>,
+            sorter: (a: any, b: any) => a.nazwisko.localeCompare(b.nazwisko),
+            ...getColumnSearchProps('nazwisko')
+        }, {
+            title: 'Numer telefonu',
+            key: 'telefon',
+            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            sorter: (a: any, b: any) => a.numer_telefonu.localeCompare(b.numer_telefonu),
+        },
+        {
+            title: 'Addres',
+            render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
+            key: 'adres',
+            sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
+        },
+
+        {
+            title: 'Data_urodzenia',
+            key: 'data_urodzenia',
+            render: (text: any, record: any) => <>{record.data_urodzenia}</>,
+            sorter: (a: any, b: any) => stringToDate(a.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_urodzenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+        },
+
+        {
+            title: 'Numer telefonu',
+            key: 'numer_telefonu',
+            render: (text: any, record: any) => <>{record.numer_telefonu}</>,
+            sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
+        },
+    ]
     const [form] = Form.useForm();
     const { id } = useParams()
     const [loading, setLoading] = useState(false);

@@ -43,7 +43,7 @@ const TransportCompanyView = () => {
     return (
         <div>
             <h2>Firma transportowa</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/firma_transportowa/dodaj') }}>Dodaj firmę transportową</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/firma_transportowa/dodaj', '_self') }}>Dodaj firmę transportową</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

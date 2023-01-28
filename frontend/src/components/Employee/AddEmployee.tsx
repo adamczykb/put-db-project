@@ -63,9 +63,9 @@ const formItemLayout = {
 };
 const AddEmployee = () => {
     const [form] = Form.useForm();
-    
-    
-    
+
+
+
     const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
     const [languagesData, setLanguagesData] = useState();
     const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
@@ -101,14 +101,14 @@ const AddEmployee = () => {
                     console.log(response)
                     setTimeout(function () {
                         window.open('/pracownicy', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(()=>{
-                if(message.error.length==0){
-                window.open('/pracownicy')
+            }).then(() => {
+                if (message.error.length == 0) {
+                    window.open('/pracownicy')
                 }
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
@@ -169,12 +169,12 @@ const AddEmployee = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input />

@@ -1,14 +1,39 @@
-import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
+import { Collapse, List, Popconfirm, Table, Tag, Space, Button, message, InputNumber } from "antd"
 import { useEffect, useState } from "react";
 import getJourneyData from "../../utils/adapter/getJourneyData";
 import removeJourney from "../../utils/adapter/removeJourney";
 import { stringToDate } from "../home/UpdateClient";
 
+import config from '../../config.json'
 const { Panel } = Collapse;
+
+const inflacja = (value: any, setValue: any) => {
+    const requestOptions = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ params: value })
+    };
+
+    fetch(config.SERVER_URL + "/api/get/inflacja", requestOptions)
+        .then((response) => response.json())
+        .then((response) => {
+            if (response.status == 200) {
+                message.success('Inflacja została naniesiona')
+                setTimeout(function () {
+                    window.open('/', '_self')
+                }, 2.0 * 1000);
+
+            }
+        })
+}
 
 const JourneysView = () => {
 
     const [data, setData] = useState([]);
+    const [inflacjaState, setInflacjaState] = useState<number>(0);
     useEffect(() => {
         getJourneyData(setData)
     }, [])
@@ -16,12 +41,20 @@ const JourneysView = () => {
         {
             title: 'Nazwa',
             key: 'nazwa',
+            sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
             render: (text: any, record: any) => <>{record.nazwa}</>,
         },
         {
             title: 'Cena',
             key: 'cena',
+            sorter: (a: any, b: any) => a.cena - b.cena,
             render: (text: any, record: any) => <>{record.cena}zł</>,
+        },
+        {
+            title: 'Zysk',
+            key: 'zysk',
+            sorter: (a: any, b: any) => a.zysk - b.zysk,
+            render: (text: any, record: any) => <>{record.zysk}zł</>,
         },
         {
             title: 'Termin',
@@ -176,11 +209,14 @@ const JourneysView = () => {
     return (
         <div>
             <h2>Podróże</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj', '_self') }}>Dodaj podróż</Button></Space>
+            <Space>Inflacja <InputNumber min={0} value={inflacjaState} onChange={(value: any) => { setInflacjaState(value); console.log(value) }} /> <Button onClick={() => inflacja(inflacjaState, setInflacjaState)}>Wprowadź</Button></Space>
+
+            <br />
+            <br />        <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj', '_self') }}>Dodaj podróż</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />
-        </div>
+        </div >
     )
 }
 export default JourneysView

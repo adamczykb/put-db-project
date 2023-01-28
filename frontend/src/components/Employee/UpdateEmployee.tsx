@@ -210,7 +210,7 @@ const UpdateEmployee = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,11}$/.test(value)) {
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
                                 return Promise.reject('Numer telefonu jest nieprawidłowy');
                             }
                             return Promise.resolve();

@@ -496,3 +496,37 @@ pub fn delete_certain_worker_json<'a>(
         ]);
     }
 }
+
+pub fn inflacja<'a>(params: RequestBody<i64>) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let mut t: String = String::from("call inflacja(");
+        t.push_str(params.params.to_string().as_str());
+        t.push_str(");");
+        println!("{}", t);
+        connection.batch_execute(&t).unwrap();
+
+        let result: ResponseArray<i64> = ResponseArray {
+            status: 200,
+            message: "OK".to_owned(),
+            result: Vec::from([]),
+        };
+        connection.close();
+        return HashMap::from([
+            ("Status", "200 OK".to_owned()),
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}

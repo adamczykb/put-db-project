@@ -57,9 +57,9 @@ use crate::transport_company::{
 use crate::views::http_response;
 use crate::worker::{
     add_language_to_worker_json, delete_certain_worker_json, get_all_workers_json,
-    get_certain_workers_json, insert_certain_worker_json, remove_language_from_worker_json,
-    update_certain_worker_json, WorkerBasic, WorkerDeleteQuery, WorkerInsert, WorkerLanguageQuery,
-    WorkerQuery,
+    get_certain_workers_json, inflacja, insert_certain_worker_json,
+    remove_language_from_worker_json, update_certain_worker_json, WorkerBasic, WorkerDeleteQuery,
+    WorkerInsert, WorkerLanguageQuery, WorkerQuery,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -178,6 +178,18 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+                        "inflacja" => {
+                            let mut url = request.get("URL").unwrap().as_str();
+                            match serde_json::from_str::<RequestBody<i64>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => response.extend(inflacja(params)),
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
                         "certain_workers" => {
                             match serde_json::from_str::<RequestBody<WorkerQuery>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
@@ -202,6 +214,7 @@ pub fn urls(request: HashMap<String, String>) -> String {
                                 }
                             };
                         }
+
                         "certain_attractions" => {
                             match serde_json::from_str::<RequestBody<AtrakcjaQuery>>(
                                 request.get("Content").unwrap_or(&"".to_owned()),
