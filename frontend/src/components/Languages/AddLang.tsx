@@ -102,17 +102,18 @@ const AddLang = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    
+
                     console.log(response)
+                    message.success("Język został dodany")
                     setTimeout(function () {
                         window.open('/jezyki', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
                     message.error("Wystąpił błąd podczas dodawania języka, podany kod jest już wykorzystany")
                 }
 
-            }).then(()=>{
-           
+            }).then(() => {
+
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -154,9 +155,9 @@ const AddLang = () => {
             >
                 <Input />
             </Form.Item>
-            
-            
-            
+
+
+
 
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit">

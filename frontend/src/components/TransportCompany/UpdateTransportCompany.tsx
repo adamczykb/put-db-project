@@ -1,19 +1,14 @@
-import { Button, Form, Input, InputNumber, message, Table } from "antd";
+import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
+import { useParams } from "react-router-dom";
 
 import config from '../../config.json'
-import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
-import addLanguageToPilot from "../../utils/adapter/addLanguageToPilot";
-import { useParams } from "react-router-dom";
-import getCertainPilot from "../../utils/adapter/getCertainPilotData";
-import { clear } from "console";
-import getAllAccommodationData from "../../utils/adapter/getAllAccommodationData";
-import getCertainAccommodation from "../../utils/adapter/getCertainAccommodation";
+import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
+import getAllEtaps from "../../utils/adapter/getAllEtaps";
+import getCertainTransportCompany from "../../utils/adapter/getCertainTransportCompany";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 
 
-//
 const tailFormItemLayout = {
     wrapperCol: {
         xs: {
@@ -36,59 +31,48 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-function onlyUnique(value: any, index: any, self: any) {
-    return self.indexOf(value) === index;
-  }
+const etaps_columns = [
+
+    {
+        title: 'Punkt poczatkowy',
+        key: 'punkt_poczatkowy',
+        render: (text: any, record: any) => <>{record.punkt_poczatkowy}</>,
+    },
+    {
+        title: 'Punkt konczowy',
+        key: 'punkt_konczowy',
+        render: (text: any, record: any) => <>{record.punkt_konczowy}</>,
+    },
+    {
+        title: 'Koszt',
+        key: 'koszt',
+        render: (text: any, record: any) => <>{record.koszt}</>,
+    },
+    {
+        title: 'Data poczatkowa',
+        key: 'data_poczatkowa',
+        render: (text: any, record: any) => <>{record.data_poczatkowa.split(' ')[0]}</>,
+    },
+    {
+        title: 'Data koncowa',
+        key: 'data_koncowa',
+        render: (text: any, record: any) => <>{record.data_koncowa.split(' ')[0]}</>,
+    },
+]
 const UpdateTransportCompany = () => {
-    const { id } = useParams();
     const [form] = Form.useForm();
-    const [data, setData] = useState({ id: 0, nazwa: '', numer_telefonu: '', adres: ''});
-    const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
-    const [attractionData, setAttractionData] = useState();
-    const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedAttractionKeys(newSelectedRowKeys.filter(onlyUnique));
-    };
-    
-    const rowAttractionSelection = {
-        
-        selectedRowKeys: selectedAttractionKeys,
-        preserveSelectedRowKeys: false,
-        onChange: onSelectAttractionChange,
-
-    };
-
-    const [selectedLanguagesKeys, setSelectedLanguagesKeys] = useState<React.Key[]>([]);
-    const [languagesData, setLanguagesData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
-        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-        setSelectedLanguagesKeys(newSelectedRowKeys);
-    
-    };
-    const rowLanguagesSelection = {
-        selectedRowKeys: selectedLanguagesKeys,
-        preserveSelectedRowKeys: false,
-        onChange: onSelectLanguagesChange,
-    };
-
-    function getUniqueValues(arr: Array<unknown>): Array<unknown> | unknown {
-        if (arr === undefined || !Array.isArray(arr)) return;
-        return Array.from(new Set(arr));
+    const [loading, setLoading] = useState(false)
+    const { id } = useParams()
+    const [selectedEtapKeys, setSelectedEtapKeys] = useState<React.Key[]>([]);
+    const onSelectEtapChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedEtapKeys(newSelectedRowKeys);
     }
-    useEffect(() => {
-        //getCertainAccommodation(id,setData)
-        // getAllAttractions(setAttractionData)
-        // getAllLanguages(setLanguagesData)
-        // getCertainPilot(id, setData)
-    }, [])
-    useEffect(() => {
-        form.setFieldsValue(data)
-      
-    }, [data])
+    const rowEtapSelection = {
+        selectedRowKeys: selectedEtapKeys,
+        onChange: onSelectEtapChange,
+    }
     const onFinish = (values: any) => {
-        //console.log(values);
         values.id = Number(id)
-        values.key = Number(id)
         const requestOptions = {
             method: "POST",
             headers: {
@@ -97,34 +81,44 @@ const UpdateTransportCompany = () => {
             },
             body: JSON.stringify({ params: values })
         };
+        setLoading(true)
 
         fetch(config.SERVER_URL + "/api/update/certain_transport_company", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                 
-                    console.log(values);
-                   
-                    console.log(response)
-
+                    selectedEtapKeys.filter(onlyUnique).map((value: any) => {
+                        addTransportCompanyToTransport(Number(id), value)
+                    })
                     setTimeout(function () {
                         window.open('/firma_transportowa', '_self')
-                      }, 2.0 * 1000);
-
+                    }, 2.0 * 1000);
+                    message.success("Udało sie zaktualizować firme transportowa")
                 } else {
-                    message.error("Wystąpił błąd podczas edycję firmy transportowej, odśwież strone i spróbuj ponownie")
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas aktualizowania, odśwież strone i spróbuj ponownie")
                 }
-               
-                return response
-            }).then((response) => {
 
-            })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
-            
-       
+            }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
+
+    const [etapData, setEtapData] = useState();
+    const [data, setData] = useState({ etapy: [] });
+    useEffect(() => {
+        getAllEtaps(setEtapData)
+        getCertainTransportCompany(id, setData)
+    }, [])
+
+    useEffect(() => {
+        form.setFieldsValue(data)
+        let etapy: any = []
+        data.etapy.map((value: any) => {
+            etapy.push(value.id)
+        })
+        setSelectedEtapKeys(etapy)
+    }, [data])
     return <>
-        <h2>Edycja firmy transportowej</h2>
+        <h2>Aktualizowanie firmy transportowej</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -136,15 +130,14 @@ const UpdateTransportCompany = () => {
             <Form.Item
                 name="nazwa"
                 label="Nazwa"
-                //initialValue={data.imie}
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwa nie może być puste!',
+                        message: 'Pole imię nie może być puste!',
                     },
                 ]}
             >
-                <Input value={data.nazwa}/>
+                <Input />
             </Form.Item>
             <Form.Item
                 name="telefon"
@@ -156,12 +149,13 @@ const UpdateTransportCompany = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
+
                 ]}
             >
                 <Input />
@@ -176,16 +170,29 @@ const UpdateTransportCompany = () => {
                     },
                 ]}
             >
-                <Input value={data.adres} />
+                <Input />
             </Form.Item>
-            
+
+            <Form.Item
+                label="Etapy"
+            >
+                <Table
+                    rowSelection={rowEtapSelection}
+                    columns={etaps_columns}
+                    dataSource={etapData}
+                />
+            </Form.Item>
+
+
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
-                    Zgłoś zmiany
+                <Button type="primary" htmlType="submit" loading={loading}>
+                    Zaktualizuj firmę transportową
+
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
 export default UpdateTransportCompany
+

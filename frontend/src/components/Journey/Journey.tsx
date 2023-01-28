@@ -1,13 +1,39 @@
-import { Collapse, List, Popconfirm, Table, Tag, Space, Button } from "antd"
+import { Collapse, List, Popconfirm, Table, Tag, Space, Button, message, InputNumber } from "antd"
 import { useEffect, useState } from "react";
 import getJourneyData from "../../utils/adapter/getJourneyData";
 import removeJourney from "../../utils/adapter/removeJourney";
+import { stringToDate } from "../home/UpdateClient";
 
+import config from '../../config.json'
 const { Panel } = Collapse;
+
+const inflacja = (value: any, setValue: any) => {
+    const requestOptions = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ params: value })
+    };
+
+    fetch(config.SERVER_URL + "/api/get/inflacja", requestOptions)
+        .then((response) => response.json())
+        .then((response) => {
+            if (response.status == 200) {
+                message.success('Inflacja została naniesiona')
+                setTimeout(function () {
+                    window.open('/', '_self')
+                }, 2.0 * 1000);
+
+            }
+        })
+}
 
 const JourneysView = () => {
 
     const [data, setData] = useState([]);
+    const [inflacjaState, setInflacjaState] = useState<number>(0);
     useEffect(() => {
         getJourneyData(setData)
     }, [])
@@ -15,27 +41,27 @@ const JourneysView = () => {
         {
             title: 'Nazwa',
             key: 'nazwa',
+            sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
             render: (text: any, record: any) => <>{record.nazwa}</>,
         },
         {
             title: 'Cena',
             key: 'cena',
-            render: (text: any, record: any) => <>{record.cena}</>,
+            sorter: (a: any, b: any) => a.cena - b.cena,
+            render: (text: any, record: any) => <>{record.cena}zł</>,
         },
         {
-            title: 'Data rozpoczecia',
+            title: 'Zysk',
+            key: 'zysk',
+            sorter: (a: any, b: any) => a.zysk - b.zysk,
+            render: (text: any, record: any) => <>{record.zysk}zł</>,
+
+        },
+        {
+            title: 'Termin',
             key: 'data_rozpoczecia',
-            render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
-        },
-        {
-            title: 'Data ukonczenia',
-            key: 'data_ukonczenia',
-            render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
-        },
-        {
-            title: 'Opis',
-            key: 'opis',
-            render: (text: any, record: any) => <>{record.opis}</>,
+            sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
+            render: (text: any, record: any) => <>od {record.data_rozpoczecia.split(' ')[0]}<br />do {record.data_ukonczenia.split(' ')[0]}</>,
         },
         {
             title: 'Kierowane przez pracowników',
@@ -52,14 +78,14 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Pracownik: {item.imie + ' ' + item.nazwisko}, Adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefon}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        {item.numer_telefon}
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
 
@@ -78,14 +104,15 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , opis: {item.opis}, koszt: {item.koszt}.
+                                        {item.nazwa}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a><br />
+                                        {item.koszt}zł
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
         {
@@ -103,8 +130,8 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefonu}, Data urodzenia: {item.data_urodzenia}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        {item.numer_telefonu}
                                     </List.Item>
                                 )}
                             />
@@ -129,40 +156,43 @@ const JourneysView = () => {
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Klient: {item.imie + ' ' + item.nazwisko}, adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
-                                        , Numer telefonu: {item.numer_telefonu}.
+                                        {item.imie + ' ' + item.nazwisko}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a><br />
+                                        {item.numer_telefonu}.
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
         {
             title: 'Zakwaterowania',
             key: 'zakwaterowania',
             render: (text: any, record: any) =>
-                <>{record.klienci.length > 0 ?
+                <>{record.zakwaterowania.length > 0 ?
 
                     <Collapse >
-                        <Panel header={record.zakwaterowania.length > 4 ? "Zakwaterowań używano " + record.zakwaterowania.length : "Zakwaterowań używano  " + record.zakwaterowania.length} key="1">
+                        <Panel header={record.zakwaterowania.length > 4 ? "Ilość zakwaterowań " + record.zakwaterowania.length : "Ilość zakwaterowań  " + record.zakwaterowania.length} key="1">
                             <List
                                 bordered
                                 dataSource={record.zakwaterowania}
-
                                 renderItem={(item: any) => (
 
                                     <List.Item>
-                                        Nazwa: {item.nazwa}, Koszt {item.koszt}, Ilość miejsc: {item.ilosc_miejsc}, Standard zakwaterowania: {item.standard_zakwaterowania}
-                                        , Ilosc miejsc: {item.ilosc_miejsc}
-                                        , adres: <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a> .
+                                        {item.nazwa}<br />
+                                        {item.koszt}zł<br />
+                                        Miejsca: {item.ilosc_miejsc}<br />
+                                        Standard {item.standard_zakwaterowania}<br />
+                                        Miejsc: {item.ilosc_miejsc}<br />
+                                        <a href={"https://www.google.com/maps/search/?api=1&query=" + item.adres.replace(' ', '+')}>{item.adres}</a>
                                     </List.Item>
                                 )}
                             />
                         </Panel>
                     </Collapse > :
-                    <>Brak danych</>
+                    <>Brak przypisanych</>
                 }</>
         },
 
@@ -170,7 +200,8 @@ const JourneysView = () => {
             title: 'Akcja',
             render: (text: any, record: any) => <>
 
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeJourney(record.key)}>
+                <a href={"/podrozy/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Czy napewno chcesz usunąć podróż?" onConfirm={() => removeJourney(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -179,11 +210,14 @@ const JourneysView = () => {
     return (
         <div>
             <h2>Podróże</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj') }}>Dodaj podróż</Button></Space>
+            <Space>Inflacja <InputNumber min={0} value={inflacjaState} onChange={(value: any) => { setInflacjaState(value); console.log(value) }} /> <Button onClick={() => inflacja(inflacjaState, setInflacjaState)}>Wprowadź</Button></Space>
+
+            <br />
+            <br />        <Space><Button type="primary" onClick={() => { window.open('/podrozy/dodaj', '_self') }}>Dodaj podróż</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />
-        </div>
+        </div >
     )
 }
 export default JourneysView

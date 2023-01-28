@@ -1,6 +1,8 @@
 use crate::{
+    journey::PodrozBasic,
     pilot::PilotDeleteQuery,
     transport::{TransportBasic, TransportInsert},
+    transport_company::FirmaTransportowaBasic,
     urls::RequestBody,
     utils::get_postgres_client,
     views::{Response, ResponseArray},
@@ -18,6 +20,8 @@ pub struct Etap {
     pub data_poczatkowa: String,
     pub data_koncowa: String,
     pub transport: Vec<TransportBasic>,
+    pub firmy_transportowe: Vec<FirmaTransportowaBasic>,
+    pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapBasic {
@@ -28,6 +32,16 @@ pub struct EtapBasic {
     pub data_poczatkowa: String,
     pub data_koncowa: String,
     // pub transport: TransportBasic,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EtapUpdate {
+    pub id: i64,
+    pub punkt_poczatkowy: String,
+    pub punkt_konczowy: String,
+    pub koszt: i64,
+    pub data_poczatkowa: String,
+    pub data_koncowa: String,
+    pub transport: TransportBasic,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EtapInsert {
@@ -58,9 +72,28 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
             message: "OK".to_owned(),
             result: connection
                 .query(
-                    "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar),json_agg(t)::text from etap e
-                        join transport t on t.id = e.id
-                        group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa order by e.data_poczatkowa",
+                    "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar)
+,transport,firmy_transportowe,podroze
+from etap e
+                        
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as transport
+    						from transport prz 
+    						where prz.id = e.id
+    					) pr on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join etap_podroz pp on pp.podroz_id = prz.id
+    						where pp.etap_id = e.id
+    					) pr2 on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as firmy_transportowe
+    						from firma_transportowa prz left join transport_firma_transportowa pp on pp.firma_transportowa_id = prz.id
+    						where pp.transport_id = e.id
+    					) pr3 on true
+
+						
+group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,transport,firmy_transportowe,podroze order by e.data_poczatkowa",
                     &[],
                 )
                 .unwrap()
@@ -74,6 +107,8 @@ pub fn get_all_etap_json<'a>() -> HashMap<&'a str, String> {
                     data_poczatkowa: row.get(5),
                     data_koncowa: row.get(6),
                     transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(7)).unwrap_or(Vec::new()),
+                    firmy_transportowe: serde_json::from_str::<Vec<FirmaTransportowaBasic>>(row.get(8)).unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(9)).unwrap_or(Vec::new()),
                         // .unwrap_or(TransportBasic { id: row.get(0), nazwa: "".to_string(), liczba_jednostek: 0, liczba_miejsc:0 }),
                 })
                 .collect::<Vec<Etap>>(),
@@ -105,26 +140,46 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select e.id, e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,json_agg(t)::text from etap e
-            join transport t on t.id = e.id".to_owned();
+    let mut query: String = "
+        select  e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt, cast( e.data_poczatkowa as varchar),cast( e.data_koncowa as varchar)
+,transport,firmy_transportowe,podroze
+from etap e
+                        
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as transport
+    						from transport prz 
+    						where prz.id = e.id
+    					) pr on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as podroze
+    						from podroz prz left join etap_podroz pp on pp.podroz_id = prz.id
+    						where pp.etap_id = e.id
+    					) pr2 on true
+						left join lateral (
+    						select COALESCE(json_agg(prz)::text,'[]')  as firmy_transportowe
+    						from firma_transportowa prz left join transport_firma_transportowa pp on pp.firma_transportowa_id = prz.id
+    						where pp.transport_id = e.id
+    					) pr3 on true 
+        ".to_owned();
+
 
     if (!params.params.from.is_empty() && !params.params.to.is_empty())
         || !params.params.id_list.is_empty()
     {
-        query.push_str("where")
+        query.push_str(" where ")
     }
     if !params.params.id_list.is_empty() {
         query.push_str(" e.id in (");
         query.push_str(params_query.join(",").as_str());
-        query.push_str(") and ");
+        query.push_str(") or ");
     }
 
     if !params.params.from.is_empty() && !params.params.to.is_empty() {
         query.push_str(" (e.data_poczatkowa>= TO_DATE($1,'DD-MM-YYYY') and e.data_koncowa <= TO_DATE($2,'DD-MM-YYYY')) ");
     } else {
-        query.push_str(" 1=1");
+        query.push_str(" (false and $1=$2 )");
     }
-    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa order by e.data_poczatkowa");
+    query.push_str(" group by e.id, e.punkt_poczatkowy, e.punkt_konczowy, e.koszt,e.data_poczatkowa,e.data_koncowa,transport,firmy_transportowe,podroze order by e.data_poczatkowa");
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: ResponseArray<Etap> = ResponseArray {
@@ -143,6 +198,12 @@ pub fn get_certain_etap_json<'a>(params: RequestBody<EtapQuery>) -> HashMap<&'a 
                     data_poczatkowa: row.get(4),
                     data_koncowa: row.get(5),
                     transport: serde_json::from_str::<Vec<TransportBasic>>(row.get(6))
+                        .unwrap_or(Vec::new()),
+                    firmy_transportowe: serde_json::from_str::<Vec<FirmaTransportowaBasic>>(
+                        row.get(7),
+                    )
+                    .unwrap_or(Vec::new()),
+                    podroze: serde_json::from_str::<Vec<PodrozBasic>>(row.get(8))
                         .unwrap_or(Vec::new()),
                     // transport: serde_json::from_str::<TransportBasic>(row.get(6)).unwrap_or(
                     //     TransportBasic {
@@ -192,7 +253,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
                 .iter()
                 .map(|row| PilotDeleteQuery { id: row.get(0) })
                 .collect::<Vec<PilotDeleteQuery>>(),
-            Err(result) => Vec::new(),
+            Err(result) => {println!("{}",result); Vec::new()},
         };
 
         if query_result
@@ -207,8 +268,7 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
                     &query_result
             .get(0)
             .unwrap_or(&PilotDeleteQuery { id: 0 })
-            .id
-,
+            .id,
                     &params.params.transport.nazwa,
                     &params.params.transport.liczba_jednostek,
                     &params.params.transport.liczba_miejsc,
@@ -253,15 +313,42 @@ pub fn insert_certain_etap_json<'a>(params: RequestBody<EtapInsert>) -> HashMap<
         ]);
     }
 }
-pub fn update_certain_etap_json<'a>(params: RequestBody<EtapBasic>) -> HashMap<&'a str, String> {
+pub fn update_certain_etap_json<'a>(params: RequestBody<EtapUpdate>) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
-        let result: Response<u64> = Response {
+        let mut result: Response<u64> = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "delete from etap_podroz where etap_id=$1",
+                    &[&params.params.id],
+                )
+                .unwrap_or(0),
+        };
+        result = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute(
+                    "delete from transport_firma_transportowa where transport_id=$1",
+                    &[&params.params.id],
+                )
+                .unwrap_or(0),
+        };
+        result = Response {
             status: 200,
             message: "OK".to_owned(),
             result: connection
                 .execute("UPDATE Etap SET punkt_poczatkowy=$2, punkt_konczowy=$3, koszt=$4, data_poczatkowa=TO_DATE($5,'DD-MM-YYYY'), data_koncowa=TO_DATE($6,'DD-MM-YYYY') where id=$1", &[&params.params.id,&params.params.punkt_poczatkowy,&params.params.punkt_konczowy,&params.params.koszt,&params.params.data_poczatkowa,&params.params.data_koncowa])
+                .unwrap()
+        };
+        result = Response {
+            status: 200,
+            message: "OK".to_owned(),
+            result: connection
+                .execute("UPDATE transport SET nazwa=$2, liczba_miejsc=$3, liczba_jednostek=$4 where id=$1", &[&params.params.id,&params.params.transport.nazwa,&params.params.transport.liczba_miejsc,&params.params.transport.liczba_jednostek])
                 .unwrap()
         };
         connection.close();
@@ -292,17 +379,17 @@ pub fn delete_certain_etap_json<'a>(params: RequestBody<EtapDelete>) -> HashMap<
                 "Delete from etap_podroz where etap_id=$1",
                 &[&params.params.id],
             )
-            .unwrap_or(0);
+            .unwrap();
         connection
             .execute(
                 "Delete from transport_firma_transportowa where transport_id=$1",
                 &[&params.params.id],
             )
-            .unwrap_or(0);
+            .unwrap();
 
         connection
             .execute("Delete from etap where id=$1", &[&params.params.id])
-            .unwrap_or(0);
+            .unwrap();
         let query_result = connection
             .execute("Delete from transport where id=$1", &[&params.params.id])
             .unwrap_or(0);

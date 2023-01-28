@@ -2,11 +2,8 @@ import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "an
 import { useEffect, useState } from "react";
 
 import config from '../../config.json'
-import addEtapToJourney from "../../utils/adapter/addEtapToJourney";
 import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
-import getJourneyData from "../../utils/adapter/getJourneyData";
 import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
-import { stringToDate } from "../home/UpdateClient";
 const { RangePicker } = DatePicker;
 
 const rangeConfig = {
@@ -18,7 +15,6 @@ const firma_transportowa_columns = [
         title: 'Nazwa',
         key: 'nazwa',
         render: (text: any, record: any) => <>{record.nazwa}</>,
-        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
     },
     {
         title: 'Numer telefonu',
@@ -29,32 +25,6 @@ const firma_transportowa_columns = [
         title: 'Adres',
         render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
         key: 'adres',
-    },
-]
-const columns_journey = [
-    {
-        title: 'Nazwa',
-        key: 'nazwa',
-        render: (text: any, record: any) => <>{record.nazwa}</>,
-        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
-    },
-    {
-        title: 'Cena',
-        key: 'cena',
-        render: (text: any, record: any) => <>{record.cena}zł</>,
-        sorter: (a: any, b: any) => a.cena - b.cena,
-    },
-    {
-        title: 'Data rozpoczecia',
-        key: 'data_rozpoczecia',
-        render: (text: any, record: any) => <>{record.data_rozpoczecia.split(' ')[0]}</>,
-        sorter: (a: any, b: any) => stringToDate(a.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_rozpoczecia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
-    },
-    {
-        title: 'Data ukonczenia',
-        key: 'data_ukonczenia',
-        render: (text: any, record: any) => <>{record.data_ukonczenia.split(' ')[0]}</>,
-        sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
     },
 ]
 const tailFormItemLayout = {
@@ -90,64 +60,10 @@ const AddEtap = () => {
         selectedFirmaKeys,
         onChange: onSelectFirmaChange,
     };
-    const [loading, setLoading] = useState(false);
-    const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
-    const [journeyData, setJourneyData] = useState();
-    const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedJounrneyKeys(newSelectedRowKeys);
 
-    };
-    const rowJourneySelection = {
-        selectedRowKeys: selectedJounrneyKeys,
-        preserveSelectedRowKeys: false,
-        onChange: onSelectLanguagesChange,
-    };
-    const onChange = (data: any) => {
-        let sendData = {
-            id_list: [],
-            from: '',
-            to: ''
-        }
-
-        if (data && data[0] && data[1]) {
-            sendData = {
-                id_list: [],
-                from: data[0].format('DD-MM-YYYY'),
-                to: data[1].format('DD-MM-YYYY')
-            }
-        }
-
-
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            body: JSON.stringify({ params: sendData })
-        };
-
-        fetch(config.SERVER_URL + "/api/get/certain_journey", requestOptions)
-            .then((response) => response.json())
-            .then((response) => {
-
-                if (response.status == 200) {
-                    setJourneyData(response.result)
-                    setSelectedJounrneyKeys([])
-                } else {
-                    message.error("Wystąpił błąd podczas pobierania podróży, spróbuj ponownie")
-                }
-
-            }).then(() => {
-
-            })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
-    }
 
     useEffect(() => {
         getTransportCompanyData(setFirmaData)
-        getJourneyData(setJourneyData)
-        form.setFieldsValue({ koszt: 0, liczba_miejsc: 0, liczba_jednostek: 0 })
     }, [])
 
     const onFinish = (values: any) => {
@@ -175,24 +91,22 @@ const AddEtap = () => {
             },
             body: JSON.stringify({ params: out })
         };
-        setLoading(true)
         fetch(config.SERVER_URL + "/api/push/etap", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
                     selectedFirmaKeys.map((value: any) => {
-                        addTransportCompanyToTransport(response.result, value)
+                        addTransportCompanyToTransport(value, response.result)
                     })
-                    selectedJounrneyKeys.map((value: any) => {
-                        addEtapToJourney(response.result, value)
-                    })
-                    message.success("Pomyślnie dodano etap")
+                    // selectedAttractionKeys.map((value: any) => {
+                    //     // addAttractionToPilot(value, response.result)
+                    // })
+                    console.log(response)
                     setTimeout(function () {
                         window.open('/etapy', '_self')
                     }, 2.0 * 1000);
                 } else {
-                    setLoading(false)
-                    message.error("Wystąpił błąd podczas dodawania etapu, spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
             })
@@ -234,7 +148,7 @@ const AddEtap = () => {
             </Form.Item>
             <Form.Item
                 name="koszt"
-                label="Koszt (zł)"
+                label="Koszt"
                 rules={[
                     {
                         required: true,
@@ -242,8 +156,8 @@ const AddEtap = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (value < 0) {
-                                return Promise.reject('Koszt musi być dodatni');
+                            if (value <= 0) {
+                                return Promise.reject('Koszt musi być większy niż 0');
                             }
                             return Promise.resolve();
                         },
@@ -253,7 +167,7 @@ const AddEtap = () => {
                 <InputNumber />
             </Form.Item>
             <Form.Item name="data_rozpoczecia" label="Data rozpoczęcia i zakończenia" {...rangeConfig} required>
-                <RangePicker format="DD-MM-YYYY" onChange={onChange} />
+                <RangePicker format="DD-MM-YYYY" />
             </Form.Item>
 
             <Form.Item
@@ -312,8 +226,7 @@ const AddEtap = () => {
                 <InputNumber />
             </Form.Item>
             <Form.Item
-                label="Powiązany z firmami transportowymi"
-
+                label="Powiązany z atrakcjami"
             >
                 <Table
                     rowSelection={rowFirmaSelection}
@@ -321,17 +234,8 @@ const AddEtap = () => {
                     dataSource={firmaData}
                 />
             </Form.Item>
-            <Form.Item
-                label="Powiązany z podróżami"
-            >
-                <Table
-                    rowSelection={rowJourneySelection}
-                    columns={columns_journey}
-                    dataSource={journeyData}
-                />
-            </Form.Item>
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button type="primary" htmlType="submit">
                     Dodaj etap
                 </Button>
             </Form.Item>

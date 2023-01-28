@@ -1,16 +1,11 @@
-import { render } from "@testing-library/react";
 import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
-import { text } from "stream/consumers";
 import getAttraction from "../../utils/adapter/getAttractionData";
 import removeAttraction from "../../utils/adapter/removeAttraction";
 
 const { Panel } = Collapse;
 
 const AttractionView = () => {
-    const handleDelete = (key: React.Key) => {
-
-    };
 
     const [data, setData] = useState([]);
     useEffect(() => {
@@ -23,8 +18,6 @@ const AttractionView = () => {
             render: (text: any, record: any) => <>{record.nazwa}</>,
             sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
         },
-
-
         {
             title: 'Adres',
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,

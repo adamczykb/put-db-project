@@ -27,7 +27,7 @@ const TransportyView = () => {
             key: 'liczba_miejsc',
             render: (text: any, record: any) => <>{record.liczba_miejsc}</>,
         },
-       //
+
         {
             title: 'Firma transportowa',
             key: 'firmy_transportowe',
@@ -47,7 +47,7 @@ const TransportyView = () => {
                         </Panel>
                     </Collapse >
                     :
-                    <>Brak danych</>
+                    <>Brak powiązań</>
 
                 }</>
         },
@@ -55,7 +55,7 @@ const TransportyView = () => {
         // {
         //     title: 'Akcja',
         //     render: (text: any, record: any) => <>
-            
+
         //         <Popconfirm title="Sure to delete?" onConfirm={() => removeTransport(record.key)}>
         //             <a>Usuń</a>
         //         </Popconfirm>
@@ -65,7 +65,7 @@ const TransportyView = () => {
     return (
         <div>
             <h2>Transporty dla etapów</h2>
-            {/* <Space><Button type="primary" onClick={() => { window.open('/transporty/dodaj') }}>Dodaj transport</Button></Space> */}
+            <h3>Podgląd wykorzystywanych transportów podczas przemierzania poszczególnych etapów</h3>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

@@ -1,15 +1,10 @@
-import { render } from "@testing-library/react";
 import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
 import { useEffect, useState } from "react";
-import { text } from "stream/consumers";
 import getAccomodationData from "../../utils/adapter/getAccomodationData";
 import removeAccommodation from "../../utils/adapter/removeAccomodation";
 const { Panel } = Collapse;
 //
 const AccomodationView = () => {
-    const handleDelete = (key: React.Key) => {
-
-    };
 
     const [data, setData] = useState([]);
     useEffect(() => {
@@ -24,7 +19,7 @@ const AccomodationView = () => {
         {
             title: 'Koszt',
             key: 'koszt',
-            render: (text: any, record: any) => <>{record.koszt}</>,
+            render: (text: any, record: any) => <>{record.koszt}zł</>,
         },
         {
             title: 'Ilosc miejsc',
@@ -69,9 +64,9 @@ const AccomodationView = () => {
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
-                <a href={"/zakwaterowanie/edytuj/"+ record.id}>edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeAccommodation(record.id)}>
+                <a href={"/zakwaterowanie/edycja/" + record.id}>Edycja</a><br />
+                <Popconfirm title="Napewno usunąć zakwaterowanie?" onConfirm={() => removeAccommodation(record.id)}>
+
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -79,10 +74,9 @@ const AccomodationView = () => {
     ]
     return (
         <div>
-            <h2>Zakwaterowanie</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/zakwaterowanie/dodaj') }}>Dodaj zakwaterowania</Button></Space>
-            <br />
-            <br />
+            <h2>Zakwaterowania</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/zakwaterowanie/dodaj', '_self') }}>Dodaj zakwaterowania</Button></Space>
+
             <Table columns={columns} dataSource={data} />
         </div>
     )

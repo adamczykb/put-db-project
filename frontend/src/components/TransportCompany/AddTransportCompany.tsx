@@ -30,10 +30,11 @@ const formItemLayout = {
 };
 const AddTransportCompany = () => {
     const [form] = Form.useForm();
- 
-   
-  
-    
+
+
+
+
+    const [loading, setLoading] = useState(false)
 
 
     const onFinish = (values: any) => {
@@ -45,22 +46,21 @@ const AddTransportCompany = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
+        setLoading(true)
         fetch(config.SERVER_URL + "/api/push/transport_company", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    
+
                     console.log(response)
+                    message.success("Dodano nowa firme transportową")
                     setTimeout(function () {
                         window.open('/firma_transportowa', '_self')
-                      }, 2.0 * 1000);
+                    }, 2.0 * 1000);
                 } else {
+                    setLoading(false)
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
-//
-            }).then(()=>{
-                
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     };
@@ -96,12 +96,12 @@ const AddTransportCompany = () => {
                     },
                     {
                         validator: (rule, value) => {
-                          if (!/^\+?[0-9]{10,15}$/.test(value)) {
-                            return Promise.reject('Numer telefonu jest nieprawidłowy');
-                          }
-                          return Promise.resolve();
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
+                                return Promise.reject('Numer telefonu jest nieprawidłowy');
+                            }
+                            return Promise.resolve();
                         }
-                      }
+                    }
                 ]}
             >
                 <Input />
@@ -118,12 +118,12 @@ const AddTransportCompany = () => {
             >
                 <Input />
             </Form.Item>
-            
-            
-            
+
+
+
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Dodaj firmę transportową
                 </Button>
             </Form.Item>

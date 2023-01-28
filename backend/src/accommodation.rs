@@ -34,7 +34,6 @@ pub struct ZakwaterowanieInsert {
     pub ilosc_miejsc: i64,
     pub standard_zakwaterowania: String,
     pub adres: String,
-    //pub podroze: Vec<PodrozBasic>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ZakwaterowanieDelete {
@@ -96,7 +95,7 @@ pub fn get_certain_accommodation_json<'a>(
         .iter()
         .map(|v| v.to_string())
         .collect();
-    let mut query: String = "select z.id, z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
+    let mut query: String = "select  z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres, json_agg(p)::text from zakwaterowanie z left join zakwaterowanie_podroz zp on zp.zakwaterowanie_id=z.id left join podroz p on p.id=zp.podroz_id where z.id in (".to_owned();
     query.push_str(params_query.join(",").as_str());
     query.push_str(
         ") group by z.id,z.nazwa,z.koszt,z.ilosc_miejsc,z.standard_zakwaterowania,z.adres order by z.koszt",
@@ -112,7 +111,7 @@ pub fn get_certain_accommodation_json<'a>(
                 .iter()
                 .map(|row| Zakwaterowanie {
                     key: row.get(0),
-                    id: row.get(1),
+                    id: row.get(0),
                     nazwa: row.get(1),
                     koszt: row.get(2),
                     ilosc_miejsc: row.get(3),
@@ -151,7 +150,7 @@ pub fn insert_certain_accommodation_json<'a>(
         let result: Response<i64>;
         let mut query_result:Vec<PilotDeleteQuery>=
         match connection.query(
-                "INSERT INTO zakwaterowanie (nazwa,koszt,ilosc_miejsc,standard_zakwaterowania,adres) values ($1,$2,$3,$4,$5)",
+                "INSERT INTO zakwaterowanie (nazwa,koszt,ilosc_miejsc,standard_zakwaterowania,adres) values ($1,$2,$3,$4,$5) returning id",
                 &[&params.params.nazwa, &params.params.koszt, &params.params.ilosc_miejsc, &params.params.standard_zakwaterowania, &params.params.adres]
             ){
             Ok(result)=>
@@ -164,8 +163,8 @@ pub fn insert_certain_accommodation_json<'a>(
                         }
                     })
                 .collect::<Vec<PilotDeleteQuery>>(),
-                Err(result)=> Vec::new()
-        }; 
+                Err(result)=> {println!("{}",result); Vec::new()
+        }}; 
 
         if query_result.get(0).unwrap_or(&PilotDeleteQuery { id: 0 }).id > 0 {
             result = Response {
@@ -215,7 +214,8 @@ pub fn update_certain_accommodation_json<'a>(
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .execute("UPDATE zakwaterowanie SET nazwa=$1,koszt=$2,ilosc_miejsc=$3,standard_zakwaterowania=$4,adres=$5 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.koszt,&params.params.ilosc_miejsc,&params.params.standard_zakwaterowania,&params.params.adres])
+                .execute("UPDATE zakwaterowanie SET nazwa=$2,koszt=$3,ilosc_miejsc=$4,standard_zakwaterowania=$5,adres=$6 where id=$1", 
+                    &[&params.params.id,&params.params.nazwa,&params.params.koszt,&params.params.ilosc_miejsc,&params.params.standard_zakwaterowania,&params.params.adres])
                 .unwrap()
         };
         connection.close();

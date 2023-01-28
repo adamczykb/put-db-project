@@ -28,12 +28,13 @@ const TransportCompanyView = () => {
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'adres',
         },
-        
+
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                <a href={"/firma_transportowa/edytuj/"+ record.id}>edytuj</a><br />
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeTransportCompany(record.key)}>
+                <a href={"/firma_transportowa/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Napewno usunąć firme transportową?" onConfirm={() => removeTransportCompany(record.key)}>
+
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -42,7 +43,7 @@ const TransportCompanyView = () => {
     return (
         <div>
             <h2>Firma transportowa</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/firma_transportowa/dodaj') }}>Dodaj firmę transportową</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/firma_transportowa/dodaj', '_self') }}>Dodaj firmę transportową</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

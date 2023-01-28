@@ -1,12 +1,63 @@
-import { Button, Collapse, List, Popconfirm, Space, Table, Tag, } from "antd"
-import { useEffect, useState } from "react";
+import { Button, Collapse, Input, List, Popconfirm, Space, Table, Tag, } from "antd"
+import { useEffect, useRef, useState } from "react";
 import getClientsData from "../../utils/adapter/getClientsData";
 import removeClient from "../../utils/adapter/removeClient";
 import { stringToDate } from "./UpdateClient";
 const { Panel } = Collapse;
-
+import { SearchOutlined } from '@ant-design/icons';
 const ClientsView = () => {
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const handleSearch = (
+        confirm: (param?: any) => void,
+    ) => {
+        confirm();
+    };
 
+    const handleReset = (clearFilters: () => void) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+    const getColumnSearchProps = (dataIndex: any): any => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: { setSelectedKeys: any, selectedKeys: any, confirm: any, clearFilters: any, close: any }) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    placeholder={`Search PDB ID`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(confirm)}
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <div style={{ textAlign: 'right' }}>
+                    <Space style={{ paddingTop: 10 }}>
+                        <Button
+                            onClick={() => handleReset(clearFilters)}
+                            size="middle"
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            type="primary"
+                            onClick={() => handleSearch(confirm)}
+                            icon={<SearchOutlined />}
+                            size="middle"
+                        >
+                            Search
+                        </Button>
+                    </Space>
+                </div>
+            </div>
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined style={{ color: '#00a498' }} />
+        ),
+        onFilter: (value: any, record: any) =>
+            record[dataIndex]
+                .toString()
+                .toLowerCase()
+                .includes((value as string).toLowerCase()),
+    });
     const [data, setData] = useState([]);
     useEffect(() => {
         getClientsData(setData)
@@ -17,18 +68,21 @@ const ClientsView = () => {
             key: 'pesel',
             render: (text: any, record: any) => <>{record.pesel}</>,
             sorter: (a: any, b: any) => a.pesel.localeCompare(b.pesel),
+            ...getColumnSearchProps('pesel')
         },
         {
             title: 'Imie',
             key: 'imie',
             render: (text: any, record: any) => <>{record.imie}</>,
             sorter: (a: any, b: any) => a.imie.localeCompare(b.imie),
+            ...getColumnSearchProps('imie')
         },
         {
             title: 'Nazwisko',
             key: 'nazwisko',
             render: (text: any, record: any) => <>{record.nazwisko}</>,
             sorter: (a: any, b: any) => a.nazwisko.localeCompare(b.nazwisko),
+            ...getColumnSearchProps('nazwisko')
         },
         {
             title: 'Numer telefonu',

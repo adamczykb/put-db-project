@@ -114,7 +114,7 @@ const UpdateClient = () => {
             .then((response) => response.json())
             .then((response) => {
                 console.log(values);
-                if (response.status == 200 && response.result.length >0) {
+                if (response.status == 200) {
                     selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
                         addClientToJourney(pesel, value)
                     })
@@ -197,7 +197,7 @@ const UpdateClient = () => {
                     },
                     {
                         validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,15}$/.test(value)) {
+                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
                                 return Promise.reject('Numer telefonu jest nieprawidłowy');
                             }
                             return Promise.resolve();

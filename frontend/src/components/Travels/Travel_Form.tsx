@@ -12,6 +12,7 @@ import {
     Select,
     DatePicker
 } from 'antd';
+import TextArea from 'antd/es/input/TextArea';
 
 const { Option } = Select;
 
@@ -198,7 +199,11 @@ const TravelForm: React.FC = () => {
                 name="opis_podrozy"
                 label="Opis"
             >
-                <Input />
+                <TextArea
+                    showCount
+                    maxLength={1000}
+                    style={{ height: 120, marginBottom: 24 }}
+                />
             </Form.Item>
 
             <Form.Item
@@ -245,8 +250,11 @@ const TravelForm: React.FC = () => {
             <Form.Item
                 name="opis"
                 label="Opis"
-            >
-                <Input />
+            ><TextArea
+                    showCount
+                    maxLength={1000}
+                    style={{ height: 120, marginBottom: 24 }}
+                />
             </Form.Item>
 
             <Form.Item

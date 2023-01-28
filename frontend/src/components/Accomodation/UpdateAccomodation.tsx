@@ -1,9 +1,13 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
+import { Button, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
 
 import config from '../../config.json'
+import { useParams } from "react-router-dom";
+import getCertainAccommodation from "../../utils/adapter/getCertainAccomodationData";
 import getJourneyData from "../../utils/adapter/getJourneyData";
-import { stringToDate } from "./UpdateClient";
+import { stringToDate } from "../home/UpdateClient";
+import addAccommodationToJourney from "../../utils/adapter/addAccommodationToJourney";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 
 
 const tailFormItemLayout = {
@@ -27,8 +31,7 @@ const formItemLayout = {
         xs: { span: 24 },
         sm: { span: 16 },
     },
-};
-const columns_journey = [
+}; const columns_journey = [
     {
         title: 'Nazwa',
         key: 'nazwa',
@@ -54,30 +57,41 @@ const columns_journey = [
         sorter: (a: any, b: any) => stringToDate(a.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime() - stringToDate(b.data_ukonczenia.split(' ')[0], "yyyy-mm-dd", '-').getTime(),
     },
 ]
-const AddClients = () => {
+const UpdateAccommodation = () => {
+    const { id } = useParams();
     const [form] = Form.useForm();
+    const [data, setData] = useState({ id: 0, nazwa: '', koszt: "", ilosc_miejsc: '', standard_zakwaterowania: '', adres: '', podroze: [] });
+
 
     const [loading, setLoading] = useState(false);
-    useEffect(() => {
-    }, [])
     const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
     const [journeyData, setJourneyData] = useState();
     const onSelectLanguagesChange = (newSelectedRowKeys: React.Key[]) => {
         setSelectedJounrneyKeys(newSelectedRowKeys);
-
     };
     const rowJourneySelection = {
         selectedRowKeys: selectedJounrneyKeys,
         preserveSelectedRowKeys: false,
         onChange: onSelectLanguagesChange,
     };
+
+
     useEffect(() => {
-        getJourneyData(setJourneyData);
+        getCertainAccommodation(id, setData)
+        getJourneyData(setJourneyData)
     }, [])
+    useEffect(() => {
+        form.setFieldsValue(data)
+        let podroze: any = []
+        data.podroze.map((value: any) => {
+            podroze.push(value.id)
+        })
+        setSelectedJounrneyKeys(podroze)
 
+    }, [data])
     const onFinish = (values: any) => {
+        values.id = Number(id)
 
-        values.data_urodzenia = values.data_urodzenia.format('DD-MM-YYYY');
         const requestOptions = {
             method: "POST",
             headers: {
@@ -86,31 +100,34 @@ const AddClients = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
-        setLoading(true);
-        fetch(config.SERVER_URL + "/api/push/client", requestOptions)
+        setLoading(true)
+        fetch(config.SERVER_URL + "/api/update/certain_accommodation", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-
-                    message.success("Dodanie klienta powiodło się.")
-                    console.log(response)
+                    message.success('Udało się zaktualizować zakwaterowanie')
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
+                        addAccommodationToJourney(Number(id), value)
+                    })
                     setTimeout(function () {
-                        window.open('/klienty', '_self')
+                        window.open('/zakwaterowanie', '_self')
                     }, 2.0 * 1000);
+
                 } else {
-                    setLoading(false);
-                    message.error("Wystąpił błąd podczas dodawania clienta, klient o podanym PESEL już istnieje")
+                    setLoading(false)
+                    message.error("Wystąpił błąd podczas edycję zakwaterowania, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(() => {
-
+                return response
+            }).then((response) => {
 
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
+
+
     };
     return <>
-        <h2>Dodawanie nowego klienta</h2>
+        <h2>Edycja zakwaterowania</h2>
         <Form
             form={form}
             {...formItemLayout}
@@ -120,36 +137,9 @@ const AddClients = () => {
             scrollToFirstError
         >
             <Form.Item
-                name="pesel"
-                label="PESEL"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole PESEL nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                            if (value.length != 11) {
-                                return Promise.reject('PESEL musi być długości 11');
-                            }
-                            return Promise.resolve();
-                        },
-                    }, {
-                        validator: (rule, value) => {
-                            if (isNaN(+value)) {
-                                return Promise.reject('PESEL musi skladać sie z cyfr');
-                            }
-                            return Promise.resolve();
-                        },
-                    }
-
-                ]}
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item
-                name="imie"
-                label="Imię"
+                name="nazwa"
+                label="Nazwa"
+                //initialValue={data.imie}
                 rules={[
                     {
                         required: true,
@@ -157,11 +147,11 @@ const AddClients = () => {
                     },
                 ]}
             >
-                <Input />
+                <Input value={data.nazwa} />
             </Form.Item>
             <Form.Item
-                name="nazwisko"
-                label="Nazwisko"
+                name="koszt"
+                label="Koszt"
                 rules={[
                     {
                         required: true,
@@ -169,7 +159,7 @@ const AddClients = () => {
                     },
                 ]}
             >
-                <Input />
+                <InputNumber value={data.koszt} />
             </Form.Item>
             <Form.Item
                 name="adres"
@@ -181,52 +171,51 @@ const AddClients = () => {
                     },
                 ]}
             >
-                <Input />
+                <Input value={data.adres} />
             </Form.Item>
             <Form.Item
-                name="numer_telefonu"
-                label="Numer telefonu"
+                name="ilosc_miejsc"
+                label="Ilosc miejsc"
                 rules={[
                     {
                         required: true,
                         message: 'Pole numer telefonu nie może być puste!',
                     },
-                    {
-                        validator: (rule, value) => {
-                            if (!/^\+?[0-9]{10,12}$/.test(value)) {
-                                return Promise.reject('Numer telefonu jest nieprawidłowy');
-                            }
-                            return Promise.resolve();
-                        }
-                    }
+
                 ]}
             >
-                <Input />
+                <InputNumber value={data.ilosc_miejsc} />
             </Form.Item>
-            <Form.Item name="data_urodzenia" label="Data urodzenia" {...config}
+
+            <Form.Item
+                name="standard_zakwaterowania"
+                label="Standard zakwaterowania"
                 rules={[
                     {
                         required: true,
-                        message: 'Pole nazwisko nie może być puste!',
+                        message: 'Pole standard zakwaterowania nie może być puste!',
                     },
+
                 ]}
             >
-                <DatePicker format="DD-MM-YYYY" />
+                <Input value={data.standard_zakwaterowania} />
             </Form.Item>
             <Form.Item
-                name=""
                 label="Powiązany z podróżami"
             >
-                <Table columns={columns_journey} dataSource={journeyData}
+                <Table
                     rowSelection={rowJourneySelection}
+                    columns={columns_journey}
+                    dataSource={journeyData}
                 />
             </Form.Item>
+
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                    Dodaj klienta
+                    Zaktualizuj zakwaterowanie
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddClients
+export default UpdateAccommodation

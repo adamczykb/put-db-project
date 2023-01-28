@@ -1,12 +1,15 @@
 import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
 import { useEffect, useState } from "react";
-
+import { useParams } from "react-router-dom";
+import dayjs from 'dayjs';
 import config from '../../config.json'
 import addEtapToJourney from "../../utils/adapter/addEtapToJourney";
 import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
+import getCertainEtap from "../../utils/adapter/getCertainEtapData";
 import getJourneyData from "../../utils/adapter/getJourneyData";
 import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 import { stringToDate } from "../home/UpdateClient";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 const { RangePicker } = DatePicker;
 
 const rangeConfig = {
@@ -79,15 +82,18 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const AddEtap = () => {
+const UpdateEtap = () => {
     const [form] = Form.useForm();
+    const { id } = useParams();
+
+    const [data, setData] = useState({ data_poczatkowa: '', data_koncowa: '', firmy_transportowe: [], podroze: [], transport: [] });
     const [selectedFirmaKeys, setSelectedFirmaKeys] = useState<React.Key[]>([]);
     const [firmaData, setFirmaData] = useState();
     const onSelectFirmaChange = (newSelectedRowKeys: React.Key[]) => {
         setSelectedFirmaKeys(newSelectedRowKeys);
     };
     const rowFirmaSelection = {
-        selectedFirmaKeys,
+        selectedRowKeys: selectedFirmaKeys,
         onChange: onSelectFirmaChange,
     };
     const [loading, setLoading] = useState(false);
@@ -102,7 +108,71 @@ const AddEtap = () => {
         preserveSelectedRowKeys: false,
         onChange: onSelectLanguagesChange,
     };
+    useEffect(() => {
+        getCertainEtap(id, setData)
+        getTransportCompanyData(setFirmaData)
+        getJourneyData(setJourneyData)
+        form.setFieldsValue({ koszt: 0, liczba_miejsc: 0, liczba_jednostek: 0 })
+    }, [])
+    useEffect(() => {
+        form.setFieldsValue(data)
+        if (data.transport.length > 0) {
+            form.setFieldsValue({ liczba_miejsc: data.transport[0]['liczba_miejsc'], nazwa: data.transport[0]['nazwa'], liczba_jednostek: data.transport[0]['liczba_jednostek'] })
+        }
+        if (data.data_poczatkowa) {
+            form.setFieldsValue({ data_rozpoczecia: [dayjs(data.data_poczatkowa), dayjs(data.data_koncowa)] })
+
+
+
+            const sendData = {
+                id_list: [],
+                from: dayjs(data.data_poczatkowa).format('DD-MM-YYYY'),
+                to: dayjs(data.data_koncowa).format('DD-MM-YYYY')
+            }
+
+
+
+            const requestOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                body: JSON.stringify({ params: sendData })
+            };
+
+            fetch(config.SERVER_URL + "/api/get/certain_journey", requestOptions)
+                .then((response) => response.json())
+                .then((response) => {
+
+                    if (response.status == 200) {
+                        setJourneyData(response.result)
+                    } else {
+                        message.error("Wystąpił błąd podczas pobierania podróży, spróbuj ponownie")
+                    }
+
+                }).then(() => {
+
+                })
+        }
+        let firmy: any = []
+        let podroze: any = []
+        data.firmy_transportowe.map((value: any) => {
+            firmy.push(value.id)
+        })
+        data.podroze.map((value: any) => {
+            podroze.push(value.id)
+        })
+
+        console.log(firmy)
+
+        setSelectedJounrneyKeys(podroze)
+        setSelectedFirmaKeys(firmy)
+    }, [data])
+
+
     const onChange = (data: any) => {
+        console.log(data)
         let sendData = {
             id_list: [],
             from: '',
@@ -144,11 +214,7 @@ const AddEtap = () => {
             .catch((error) => message.error('Błąd połączenia z serwerem'));
     }
 
-    useEffect(() => {
-        getTransportCompanyData(setFirmaData)
-        getJourneyData(setJourneyData)
-        form.setFieldsValue({ koszt: 0, liczba_miejsc: 0, liczba_jednostek: 0 })
-    }, [])
+
 
     const onFinish = (values: any) => {
 
@@ -156,9 +222,10 @@ const AddEtap = () => {
             nazwa: values.nazwa,
             liczba_jednostek: values.liczba_jednostek,
             liczba_miejsc: values.liczba_miejsc,
-
+            id: Number(id)
         }
         const out = {
+            id: Number(id),
             punkt_poczatkowy: values.punkt_poczatkowy,
             punkt_konczowy: values.punkt_konczowy,
             koszt: values.koszt,
@@ -175,24 +242,25 @@ const AddEtap = () => {
             },
             body: JSON.stringify({ params: out })
         };
+
         setLoading(true)
-        fetch(config.SERVER_URL + "/api/push/etap", requestOptions)
+        fetch(config.SERVER_URL + "/api/update/certain_etap", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedFirmaKeys.map((value: any) => {
-                        addTransportCompanyToTransport(response.result, value)
+                    selectedFirmaKeys.filter(onlyUnique).map((value: any) => {
+                        addTransportCompanyToTransport(value, Number(id))
                     })
-                    selectedJounrneyKeys.map((value: any) => {
-                        addEtapToJourney(response.result, value)
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
+                        addEtapToJourney(Number(id), value)
                     })
-                    message.success("Pomyślnie dodano etap")
+                    message.success("Pomyślnie zaktualizowano etap")
                     setTimeout(function () {
                         window.open('/etapy', '_self')
                     }, 2.0 * 1000);
                 } else {
                     setLoading(false)
-                    message.error("Wystąpił błąd podczas dodawania etapu, spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas aktualizowania etapu, spróbuj ponownie")
                 }
 
             })
@@ -313,7 +381,6 @@ const AddEtap = () => {
             </Form.Item>
             <Form.Item
                 label="Powiązany z firmami transportowymi"
-
             >
                 <Table
                     rowSelection={rowFirmaSelection}
@@ -332,10 +399,10 @@ const AddEtap = () => {
             </Form.Item>
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
-                    Dodaj etap
+                    Zatwierdź edycje
                 </Button>
             </Form.Item>
         </Form>
     </>
 }
-export default AddEtap
+export default UpdateEtap 

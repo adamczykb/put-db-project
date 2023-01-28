@@ -8,6 +8,7 @@ import getJourneyData from "../../utils/adapter/getJourneyData";
 import addAttractionToJourney from "../../utils/adapter/addAttractionToJourney";
 import getPilotData from "../../utils/adapter/getPilotData";
 import addAttractionToPilot from "../../utils/adapter/addAttractionToPilot";
+import TextArea from "antd/es/input/TextArea";
 const options = [{ value: 'zima' }, { value: 'lato' }, { value: 'wiosna' }, { value: 'jesień' }];
 
 const tagRender = (props: CustomTagProps) => {
@@ -229,7 +230,11 @@ const AddAttraction = () => {
                     },
                 ]}
             >
-                <Input />
+                <TextArea
+                    showCount
+                    maxLength={1000}
+                    style={{ height: 120, marginBottom: 24 }}
+                />
             </Form.Item>
             <Form.Item
                 name="koszt"

@@ -33,12 +33,12 @@ const WorkerView = () => {
             render: (text: any, record: any) =>
                 <>{record.jezyki.length > 0 ? <>{record.jezyki.map((value: any) => <Tag>{value.nazwa}</Tag>)}</> : <>Brak danych</>}</>
         },
-       
+
         {
             title: 'Akcja',
             render: (text: any, record: any) => <>
-                
-                <Popconfirm title="Sure to delete?" onConfirm={() => removeWorker(record.key)}>
+                <a href={"/pracownicy/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Napewno chcesz usunąc pracownika?" onConfirm={() => removeWorker(record.key)}>
                     <a>Usuń</a>
                 </Popconfirm>
             </>
@@ -47,11 +47,11 @@ const WorkerView = () => {
     return (
         <div>
             <h2>Pracownicy</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/pracownicy/dodaj') }}>Dodaj pracownika</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/pracownicy/dodaj', '_self') }}>Dodaj pracownika</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />
-        </div>
+        </div >
     )
 }
 export default WorkerView

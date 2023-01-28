@@ -30,6 +30,7 @@ pub struct Podroz {
     pub data_rozpoczecia: String,
     pub data_ukonczenia: String,
     pub opis: String,
+    pub zysk:i64,
     pub atrakcje: Vec<AtrakcjaBasic>,
     pub etapy: Vec<EtapBasic>,
     pub klienci: Vec<KlientBasic>,
@@ -86,6 +87,9 @@ pub struct PodrozDelete {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PodrozQuery {
     pub id_list: Vec<i64>,
+    pub from: String,
+    pub to: String,
+
 }
 pub fn get_all_journey_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
@@ -102,7 +106,8 @@ klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie 
+zakwaterowanie,
+zysk_z_podrozy(p.id)
                         from podroz p
 						left join lateral (
     						select COALESCE(json_agg(prz)::text,'[]')  as przewodnik
@@ -152,6 +157,7 @@ zakwaterowanie order by p.data_rozpoczecia",
                     data_ukonczenia: row.get(3),
                     opis: row.get(4),
                     cena: row.get(5),
+                    zysk: row.get(12),
                     przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
                         .unwrap_or(Vec::new()),
                     klienci: serde_json::from_str::<Vec<KlientBasic>>(row.get(7))
@@ -200,7 +206,8 @@ klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie 
+zakwaterowanie,
+zysk_z_podrozy(p.id)
                         from podroz p
 												left join lateral (
     						select COALESCE(json_agg(prz)::text,'[]')  as przewodnik
@@ -231,16 +238,31 @@ zakwaterowanie
     						select   COALESCE(json_agg(et)::text,'[]')   as zakwaterowanie
     						from zakwaterowanie et left join zakwaterowanie_podroz pp on pp.zakwaterowanie_id = et.id
     						where pp.podroz_id = p.id
-    					) zak on true
-                             where p.id in (".to_owned();
-    query.push_str(params_query.join(",").as_str());
+    					) zak on true ".to_owned();
+    if (!params.params.from.is_empty() && !params.params.to.is_empty())
+        || !params.params.id_list.is_empty()
+    {
+        query.push_str(" where ")
+    }
+    if !params.params.id_list.is_empty() {
+        query.push_str(" p.id in (");
+        query.push_str(params_query.join(",").as_str());
+        query.push_str(") or ");
+    }
+
+    if !params.params.from.is_empty() && !params.params.to.is_empty() {
+        query.push_str(" (p.data_rozpoczecia>= TO_DATE($1,'DD-MM-YYYY') and p.data_ukonczenia <= TO_DATE($2,'DD-MM-YYYY')) ");
+    } else {
+        query.push_str(" (false and $1=$2 )");
+    }
+
     query.push_str(
-        ") group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
+        " group by p.id,p.nazwa,p.data_rozpoczecia,p.data_ukonczenia, p.opis, p.cena,przewodnik ,
 klient ,
 atrakcja ,
 pracownik ,
 etap ,
-zakwaterowanie order by p.data_rozpoczecia",
+zakwaterowanie order by p.data_rozpoczecia desc",
     );
     if client.is_ok() {
         let mut connection = client.unwrap();
@@ -248,7 +270,7 @@ zakwaterowanie order by p.data_rozpoczecia",
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .query(&query, &[])
+                .query(&query, &[&params.params.from,&params.params.to])
                 .unwrap()
                 .iter()
                 .map(|row| Podroz {
@@ -259,6 +281,7 @@ zakwaterowanie order by p.data_rozpoczecia",
                     data_ukonczenia: row.get(3),
                     opis: row.get(4),
                     cena: row.get(5),
+                    zysk: row.get(12),
                     przewodnicy: serde_json::from_str::<Vec<PilotBasic>>(row.get(6))
                         .unwrap_or(Vec::new()),
                     klienci: serde_json::from_str::<Vec<KlientBasic>>(row.get(7))
@@ -374,11 +397,26 @@ pub fn update_certain_journey_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
+        connection
+                .execute("delete from podroz_atrakcja where podroz_id=$1", &[&params.params.id])
+                .unwrap();
+        connection
+                .execute("delete from pracownik_podroz where podroz_id=$1", &[&params.params.id])
+                .unwrap();
+connection
+                .execute("delete from przewodnik_podroz where podroz_id=$1", &[&params.params.id])
+                .unwrap(); 
+connection
+                .execute("delete from etap_podroz where podroz_id=$1", &[&params.params.id])
+                .unwrap(); 
+                connection
+                .execute("delete from zakwaterowanie_podroz where podroz_id=$1", &[&params.params.id])
+                .unwrap(); 
         let result: Response<u64> = Response {
             status: 200,
             message: "OK".to_owned(),
             result: connection
-                .execute("UPDATE podroz SET nazwa=$2, data_rozpoczecia=TO_DATE($3,'DD-MM-YYYY'),data_ukonczenia=TO_DATE($4,'DD-MM-YYYY'),opis=$5,cena=$6 where id=$1", &[&params.params.id,&params.params.data_rozpoczecia,&params.params.data_ukonczenia,&params.params.opis,&params.params.cena])
+                .execute("UPDATE podroz SET nazwa=$2, data_rozpoczecia=TO_DATE($3,'DD-MM-YYYY'),data_ukonczenia=TO_DATE($4,'DD-MM-YYYY'),opis=$5,cena=$6 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.data_rozpoczecia,&params.params.data_ukonczenia,&params.params.opis,&params.params.cena])
                 .unwrap()
         };
         connection.close();
