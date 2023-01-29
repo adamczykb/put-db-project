@@ -8,7 +8,7 @@ const addTransportCompanyToTransport = (id: any, transport_id: any) => {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ params: { firma_transportowa_id: id, transport_id: transport_id } })
+        body: JSON.stringify({ params: { firma_transportowa_id: transport_id, transport_id: id} })
     };
     fetch(config.SERVER_URL + "/api/push/transport_company_transport", requestOptions)
         .then((response) => response.json())
