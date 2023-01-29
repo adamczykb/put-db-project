@@ -59,7 +59,7 @@ const AddTransportCompany = () => {
                     }, 2.0 * 1000);
                 } else {
                     setLoading(false)
-                    message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
+                    message.error("Wystąpił błąd podczas dodawania firmy transportowej, firma o takiej nazwie już istnieje")
                 }
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
