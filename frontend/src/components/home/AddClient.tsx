@@ -2,7 +2,9 @@ import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "an
 import { useEffect, useState } from "react";
 
 import config from '../../config.json'
+import addClientToJourney from "../../utils/adapter/addClientsToJourney";
 import getJourneyData from "../../utils/adapter/getJourneyData";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 import { stringToDate } from "./UpdateClient";
 
 
@@ -92,7 +94,9 @@ const AddClients = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-
+                    selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
+                        addClientToJourney(response.result, value)
+                    })
                     message.success("Dodanie klienta powiodło się.")
                     console.log(response)
                     setTimeout(function () {

@@ -218,6 +218,13 @@ pub fn update_certain_accommodation_json<'a>(
                     &[&params.params.id,&params.params.nazwa,&params.params.koszt,&params.params.ilosc_miejsc,&params.params.standard_zakwaterowania,&params.params.adres])
                 .unwrap()
         };
+        connection
+            .execute(
+                "Delete from zakwaterowanie_podroz where zakwaterowanie_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+
         connection.close();
         return HashMap::from([
             ("Status", "200 OK".to_owned()),

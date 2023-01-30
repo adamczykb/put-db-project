@@ -181,7 +181,7 @@ const AddEtap = () => {
             .then((response) => {
                 if (response.status == 200) {
                     selectedFirmaKeys.map((value: any) => {
-                        addTransportCompanyToTransport(response.result, value)
+                        addTransportCompanyToTransport(value, response.result)
                     })
                     selectedJounrneyKeys.map((value: any) => {
                         addEtapToJourney(response.result, value)

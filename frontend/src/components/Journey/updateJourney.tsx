@@ -395,7 +395,7 @@ const UpdateJourney = () => {
         data.klienci.map((value: any) => {
             clients.push(value.pesel)
         })
-        setSelectedClientsKeys(attraction)
+        setSelectedClientsKeys(clients)
         let workers: any = []
         data.pracownicy.map((value: any) => {
             workers.push(value.id)
@@ -406,7 +406,7 @@ const UpdateJourney = () => {
         data.zakwaterowania.map((value: any) => {
             accommodation.push(value.id)
         })
-        setSelectedAccommodationKeys(workers)
+        setSelectedAccommodationKeys(accommodation)
         if (data.data_rozpoczecia) {
             form.setFieldsValue({ data_rozpoczecia: [dayjs(data.data_rozpoczecia), dayjs(data.data_ukonczenia)] })
 
@@ -487,7 +487,7 @@ const UpdateJourney = () => {
     const onFinish = (values: any) => {
         const out = {
             nazwa: values.nazwa,
-            opis: values.opis,
+            opis: values.opis ? values.opis : '',
             cena: values.cena,
             id: Number(id),
             data_rozpoczecia: values.data_rozpoczecia[0].format('DD-MM-YYYY'),

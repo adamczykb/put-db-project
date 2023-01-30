@@ -89,7 +89,7 @@ const PilotsView = () => {
     return (
         <div>
             <h2>Przewodnicy</h2>
-            <Space><Button type="primary" onClick={() => { window.open('/przewodnicy/dodaj') }}>Dodaj przewodnika</Button></Space>
+            <Space><Button type="primary" onClick={() => { window.open('/przewodnicy/dodaj', '_self') }}>Dodaj przewodnika</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

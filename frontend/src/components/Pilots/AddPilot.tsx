@@ -11,8 +11,6 @@ import { stringToDate } from "../home/UpdateClient";
 import { onlyUnique } from "./UpdatePilot";
 import addPilotToJourney from "../../utils/adapter/addPilotToJourney";
 
-const onFinish = (values: any) => {
-};
 const attraction_columns = [
     {
         title: 'Atrakcja',
@@ -92,6 +90,8 @@ const columns_journey = [
 ]
 const AddPilot = () => {
     const [form] = Form.useForm();
+
+    const [loading, setLoading] = useState(false);
     const [selectedAttractionKeys, setSelectedAttractionKeys] = useState<React.Key[]>([]);
     const [attractionData, setAttractionData] = useState();
     const onSelectAttractionChange = (newSelectedRowKeys: React.Key[]) => {
@@ -139,7 +139,7 @@ const AddPilot = () => {
             },
             body: JSON.stringify({ params: values })
         };
-
+        setLoading(true)
         fetch(config.SERVER_URL + "/api/push/pilot", requestOptions)
             .then((response) => response.json())
             .then((response) => {
@@ -153,18 +153,16 @@ const AddPilot = () => {
                     selectedJourneyKeys.filter(onlyUnique).map((value: any) => {
                         addPilotToJourney(response.result, value)
                     })
-                    console.log(response)
+                    message.success('Udało się dodać przewodnika')
                     setTimeout(function () {
                         window.open('/przewodnicy', '_self')
                     }, 2.0 * 1000);
                 } else {
+                    setLoading(false)
                     message.error("Wystąpił błąd podczas dodawania przewodnika, odśwież strone i spróbuj ponownie")
                 }
 
-            }).then(() => {
-                window.open('/przewodnicy')
-            })
-            .catch((error) => message.error('Błąd połączenia z serwerem'));
+            }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
     return <>
         <h2>Dodawanie nowego przewodnika</h2>
@@ -260,7 +258,7 @@ const AddPilot = () => {
             </Form.Item>
 
             <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                     Dodaj przewodnika
                 </Button>
             </Form.Item>

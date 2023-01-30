@@ -210,6 +210,9 @@ pub fn update_certain_pilot_json<'a>(params: RequestBody<PilotBasic>) -> HashMap
             .execute("delete from jezyk_przewodnik where przewodnik_id=$1",&[&params.params.id] ).unwrap(); 
         connection
             .execute("delete from atrakcja_przewodnik where przewodnik_id=$1",&[&params.params.id] ).unwrap();
+        connection
+            .execute("delete from przewodnik_podroz where przewodnik_id=$1",&[&params.params.id] ).unwrap();
+
         connection.close();
         return HashMap::from([
             ("Status", "200 OK".to_owned()),

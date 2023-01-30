@@ -356,7 +356,6 @@ const AddJourney = () => {
     useEffect(() => {
         getAllAttractions(setAttractionData)
         getAllPilots(setPilotsData)
-        //getAllEtaps(setEtapData)
         getAllClientsData(setClientsData)
         getAllWorkers(setWorkerData)
         getAllAccommodationData(setAccommodationData)
@@ -406,9 +405,8 @@ const AddJourney = () => {
     const onFinish = (values: any) => {
         const out = {
             nazwa: values.nazwa,
-            opis: values.opis,
+            opis: values.opis ? values.opis : '',
             cena: values.cena,
-
             data_rozpoczecia: values.data_rozpoczecia[0].format('DD-MM-YYYY'),
             data_ukonczenia: values.data_rozpoczecia[1].format('DD-MM-YYYY')
         }
