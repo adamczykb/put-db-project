@@ -1,4 +1,5 @@
 use crate::{
+    pilot::PilotDeleteQuery,
     transport_company::FirmaTransportowaBasic,
     urls::RequestBody,
     utils::get_postgres_client,
@@ -42,6 +43,13 @@ pub struct TransportFirmaTransportowaQuery {
     pub transport_id: i64,
     pub firma_transportowa_id: i64,
 }
+
+//"left join lateral (
+//select COALESCE(json_agg(prz)::text,'[]')  as firmy_transportowe
+//from firma_transportowa prz left join transport_firma_transportowa pp on pp.firma_transportowa_id = prz.id
+//where pp.transport_id = e.id
+//) pr3 on true
+//"
 pub fn get_all_transport_json<'a>() -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
@@ -103,11 +111,10 @@ pub fn get_certain_transport_json<'a>(
         .map(|v| v.to_string())
         .collect();
     let mut query: String =
-        "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft)::text 
-                    from transport t 
-                    left join transport_firma_transportowa fft on t.id = fft.transport_id
-                    left join firma_transportowa ft on ft.id = fft.firma_transportowa_id
-                     t.id in ("
+        "select t.id,t.nazwa, t.liczba_jednostek, t.liczba_miejsc, json_agg(ft)::text from transport t  
+                    left join transport_firma_transportowa fft on t.id = fft.transport_id 
+                    left join firma_transportowa ft on ft.id = fft.firma_transportowa_id 
+                    where t.id in ("
             .to_owned();
     query.push_str(params_query.join(",").as_str());
     query
@@ -152,12 +159,89 @@ pub fn get_certain_transport_json<'a>(
         ]);
     }
 }
+
+pub fn insert_certain_transport_json<'a>(
+    params: RequestBody<TransportInsert>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<i64>;
+
+        let mut query_result: Vec<PilotDeleteQuery> = match connection.query(
+            "INSERT INTO transport (nazwa, liczba_jednostek, liczba_miejsc) values ($1,$2,$3) returning id",
+            &[
+                &params.params.nazwa,
+                &params.params.liczba_jednostek,
+                &params.params.liczba_miejsc,
+            ],
+        ) {
+            Ok(result) => result
+                .iter()
+                .map(|row| PilotDeleteQuery { id: row.get(0) })
+                .collect::<Vec<PilotDeleteQuery>>(),
+            Err(result) => {println!("{}",result); Vec::new()},
+        };
+
+        if query_result
+            .get(0)
+            .unwrap_or(&PilotDeleteQuery { id: 0 })
+            .id
+            > 0
+        {
+            result = Response {
+                status: 200,
+                message: "OK".to_owned(),
+                result: query_result
+                    .get(0)
+                    .unwrap_or(&PilotDeleteQuery { id: 0 })
+                    .id,
+            };
+        } else {
+            result = Response {
+                status: 500,
+                message: "Cannot add new transport".to_owned(),
+                result: 0,
+            };
+        }
+
+        let mut response = HashMap::from([
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
+    } else {
+        println!("ERROR: Cannot connect to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}
+
 pub fn update_certain_transport_json<'a>(
     params: RequestBody<TransportBasic>,
 ) -> HashMap<&'a str, String> {
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
+        connection
+            .execute(
+                "delete from transport_firma_transportowa where transport_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap();
+
         let result: Response<u64> = Response {
             status: 200,
             message: "OK".to_owned(),
@@ -165,6 +249,7 @@ pub fn update_certain_transport_json<'a>(
             .execute("UPDATE transport SET nazwa=$2, liczba_jednostek=$3, liczba_miejsc=$4 where id=$1", &[&params.params.id,&params.params.nazwa,&params.params.liczba_jednostek,&params.params.liczba_miejsc])
             .unwrap()
             };
+
         connection.close();
         return HashMap::from([
             ("Status", "200 OK".to_owned()),
@@ -319,55 +404,62 @@ pub fn remove_transport_company_from_transport_json<'a>(
         ]);
     }
 }
-//pub fn delete_certain_transport_json<'a>(
-//params: RequestBody<TransportDelete>,
-//) -> HashMap<&'a str, String> {
-//let client = get_postgres_client();
-//if client.is_ok() {
-//let mut connection = client.unwrap();
-//let result: Response<u64>;
-//connection
-//.execute(
-//"Delete from transport_firma_transportowa where transport_id=$1",
-//&[&params.params.id],
-//)
-//.unwrap_or(0);
-//let query_result = connection
-//.execute("Delete from transport where id=$1", &[&params.params.id])
-//.unwrap_or(0);
-//if query_result > 0 {
-//result = Response {
-//status: 200,
-//message: "Transportowa zostal usuniety".to_owned(),
-//result: query_result,
-//};
-//} else {
-//result = Response {
-//status: 500,
-//message: "Nie mozna usunac transportu".to_owned(),
-//result: query_result,
-//};
-//}
-//let mut response = HashMap::from([
-//(
-//"Content",
-//serde_json::to_string(&result).unwrap().to_owned(),
-//),
-//("Content-Type", "application/json".to_owned()),
-//]);
-//if result.status == 200 {
-//response.extend([("Status", "200 OK".to_owned())]);
-//} else {
-//response.extend([("Status", "500 Internal Server Error".to_owned())]);
-//}
-//connection.close();
-//return response;
-//} else {
-//println!("ERROR: Cannot connet to database!");
-//return HashMap::from([
-//("Status", "401 PERMISSION DENIED".to_owned()),
-//("Content", "{result:'PERMISSION DENIED'}".to_owned()),
-//("Content-Type", "application/json".to_owned()),
-//]);
-//}
-//}
+pub fn delete_certain_transport_json<'a>(
+    params: RequestBody<TransportDelete>,
+) -> HashMap<&'a str, String> {
+    let client = get_postgres_client();
+    if client.is_ok() {
+        let mut connection = client.unwrap();
+        let result: Response<u64>;
+        connection
+            .execute(
+                "Delete from transport_firma_transportowa where transport_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+        connection
+            .execute(
+                "update etap set transport_id=null where transport_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+
+        let query_result = connection
+            .execute("Delete from transport where id=$1", &[&params.params.id])
+            .unwrap_or(0);
+        if query_result > 0 {
+            result = Response {
+                status: 200,
+                message: "Transport zostal usuniety".to_owned(),
+                result: query_result,
+            };
+        } else {
+            result = Response {
+                status: 500,
+                message: "Nie mozna usunac transportu".to_owned(),
+                result: query_result,
+            };
+        }
+        let mut response = HashMap::from([
+            (
+                "Content",
+                serde_json::to_string(&result).unwrap().to_owned(),
+            ),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+        if result.status == 200 {
+            response.extend([("Status", "200 OK".to_owned())]);
+        } else {
+            response.extend([("Status", "500 Internal Server Error".to_owned())]);
+        }
+        connection.close();
+        return response;
+    } else {
+        println!("ERROR: Cannot connet to database!");
+        return HashMap::from([
+            ("Status", "401 PERMISSION DENIED".to_owned()),
+            ("Content", "{result:'PERMISSION DENIED'}".to_owned()),
+            ("Content-Type", "application/json".to_owned()),
+        ]);
+    }
+}

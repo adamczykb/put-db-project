@@ -1,7 +1,7 @@
 import { message } from "antd";
 import config from "../../config.json";
 
-const removeTransportCompany = (id: any) => {
+const removeTransportNew = (id: any) => {
     const requestOptions = {
         method: "POST",
         headers: {
@@ -11,19 +11,19 @@ const removeTransportCompany = (id: any) => {
         body: JSON.stringify({ params: { id: id } })
     };
 
-    fetch(config.SERVER_URL + "/api/delete/transport_company", requestOptions)
+    fetch(config.SERVER_URL + "/api/delete/transport", requestOptions)
         .then((response) => response.json())
         .then((response) => {
             if (response.status == 200) {
-                message.success("Firmea trnasportowa została usunięta")
-                window.open('/firma_transportowa', '_self')
+                message.success("Transport został usunięty")
+                window.open('/transport', '_self')
             } else {
-                message.success("Wystąpił błąd podczas usuwania firmy transportowerj, odśwież strone i spróbuj ponownie")
+                message.error("Wystąpił błąd podczas usuwania transportu, odśwież strone i spróbuj ponownie")
             }
 
         })
         .catch((error) => console.log('Błąd połączenia z serwerem'));
 };
 
-export default removeTransportCompany;
+export default removeTransportNew;
 //

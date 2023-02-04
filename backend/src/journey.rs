@@ -251,7 +251,7 @@ zysk_z_podrozy(p.id)
     }
 
     if !params.params.from.is_empty() && !params.params.to.is_empty() {
-        query.push_str(" (p.data_rozpoczecia>= TO_DATE($1,'DD-MM-YYYY') and p.data_ukonczenia <= TO_DATE($2,'DD-MM-YYYY')) ");
+        query.push_str(" (p.data_rozpoczecia<= TO_DATE($1,'DD-MM-YYYY') and p.data_ukonczenia >= TO_DATE($2,'DD-MM-YYYY')) ");
     } else {
         query.push_str(" (false and $1=$2 )");
     }

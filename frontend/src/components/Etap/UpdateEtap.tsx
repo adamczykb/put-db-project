@@ -4,34 +4,33 @@ import { useParams } from "react-router-dom";
 import dayjs from 'dayjs';
 import config from '../../config.json'
 import addEtapToJourney from "../../utils/adapter/addEtapToJourney";
-import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
 import getCertainEtap from "../../utils/adapter/getCertainEtapData";
 import getJourneyData from "../../utils/adapter/getJourneyData";
-import getTransportCompanyData from "../../utils/adapter/getTransportCompanyData";
 import { stringToDate } from "../home/UpdateClient";
 import { onlyUnique } from "../Pilots/UpdatePilot";
+import getTransportData from "../../utils/adapter/getTransportData";
+import { RowSelectionType } from "antd/es/table/interface";
 const { RangePicker } = DatePicker;
 
 const rangeConfig = {
     rules: [{ type: 'array' as const, required: true, message: 'Proszę wybrać date i godzine' }],
 };
 
-const firma_transportowa_columns = [
+const columns_transport = [
     {
         title: 'Nazwa',
         key: 'nazwa',
         render: (text: any, record: any) => <>{record.nazwa}</>,
-        sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
     },
     {
-        title: 'Numer telefonu',
-        key: 'telefon',
-        render: (text: any, record: any) => <>{record.telefon}</>,
+        title: 'Liczba jednostek',
+        key: 'liczba_jednostek',
+        render: (text: any, record: any) => <>{record.liczba_jednostek}</>,
     },
     {
-        title: 'Adres',
-        render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
-        key: 'adres',
+        title: 'Liczba miejsc',
+        key: 'liczba_miejsc',
+        render: (text: any, record: any) => <>{record.liczba_miejsc}</>,
     },
 ]
 const columns_journey = [
@@ -87,15 +86,6 @@ const UpdateEtap = () => {
     const { id } = useParams();
 
     const [data, setData] = useState({ data_poczatkowa: '', data_koncowa: '', firmy_transportowe: [], podroze: [], transport: [] });
-    const [selectedFirmaKeys, setSelectedFirmaKeys] = useState<React.Key[]>([]);
-    const [firmaData, setFirmaData] = useState();
-    const onSelectFirmaChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedFirmaKeys(newSelectedRowKeys);
-    };
-    const rowFirmaSelection = {
-        selectedRowKeys: selectedFirmaKeys,
-        onChange: onSelectFirmaChange,
-    };
     const [loading, setLoading] = useState(false);
     const [selectedJounrneyKeys, setSelectedJounrneyKeys] = useState<React.Key[]>([]);
     const [journeyData, setJourneyData] = useState();
@@ -108,30 +98,41 @@ const UpdateEtap = () => {
         preserveSelectedRowKeys: false,
         onChange: onSelectLanguagesChange,
     };
+    const [selectedTransportKeys, setSelectedTransportKeys] = useState<React.Key[]>([]);
+    const [transportData, setTransportData] = useState();
+    const onSelectTransportsChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedTransportKeys(newSelectedRowKeys);
+
+    };
+    const rowTransportSelection = {
+        selectedRowKeys: selectedTransportKeys,
+        preserveSelectedRowKeys: false,
+        type: 'radio' as RowSelectionType,
+        onChange: onSelectTransportsChange,
+    };
     useEffect(() => {
         getCertainEtap(id, setData)
-        getTransportCompanyData(setFirmaData)
+        getTransportData(setTransportData);
         getJourneyData(setJourneyData)
-        form.setFieldsValue({ koszt: 0, liczba_miejsc: 0, liczba_jednostek: 0 })
+        form.setFieldsValue({ koszt: 0 })
     }, [])
+
     useEffect(() => {
         form.setFieldsValue(data)
-        if (data.transport.length > 0) {
-            form.setFieldsValue({ liczba_miejsc: data.transport[0]['liczba_miejsc'], nazwa: data.transport[0]['nazwa'], liczba_jednostek: data.transport[0]['liczba_jednostek'] })
+        if (data.transport.length > 0 && data.transport.at(-1)) {
+            let transport: any = []
+            data.transport.map((value: any) => {
+                transport.push(value.id)
+            })
+            setSelectedTransportKeys(transport)
         }
         if (data.data_poczatkowa) {
             form.setFieldsValue({ data_rozpoczecia: [dayjs(data.data_poczatkowa), dayjs(data.data_koncowa)] })
-
-
-
             const sendData = {
                 id_list: [],
                 from: dayjs(data.data_poczatkowa).format('DD-MM-YYYY'),
                 to: dayjs(data.data_koncowa).format('DD-MM-YYYY')
             }
-
-
-
             const requestOptions = {
                 method: "POST",
                 headers: {
@@ -151,23 +152,13 @@ const UpdateEtap = () => {
                         message.error("Wystąpił błąd podczas pobierania podróży, spróbuj ponownie")
                     }
 
-                }).then(() => {
-
                 })
         }
-        let firmy: any = []
         let podroze: any = []
-        data.firmy_transportowe.map((value: any) => {
-            firmy.push(value.id)
-        })
         data.podroze.map((value: any) => {
             podroze.push(value.id)
         })
-
-        console.log(firmy)
-
         setSelectedJounrneyKeys(podroze)
-        setSelectedFirmaKeys(firmy)
     }, [data])
 
 
@@ -218,12 +209,7 @@ const UpdateEtap = () => {
 
     const onFinish = (values: any) => {
 
-        const transport = {
-            nazwa: values.nazwa,
-            liczba_jednostek: values.liczba_jednostek,
-            liczba_miejsc: values.liczba_miejsc,
-            id: Number(id)
-        }
+
         const out = {
             id: Number(id),
             punkt_poczatkowy: values.punkt_poczatkowy,
@@ -231,8 +217,7 @@ const UpdateEtap = () => {
             koszt: values.koszt,
             data_poczatkowa: values.data_rozpoczecia[0].format('DD-MM-YYYY'),
             data_koncowa: values.data_rozpoczecia[1].format('DD-MM-YYYY'),
-
-            transport
+            transport_id: selectedTransportKeys.length == 0 ? -1 : selectedTransportKeys.at(0)
         }
         const requestOptions = {
             method: "POST",
@@ -248,9 +233,6 @@ const UpdateEtap = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedFirmaKeys.filter(onlyUnique).map((value: any) => {
-                        addTransportCompanyToTransport(value, Number(id))
-                    })
                     selectedJounrneyKeys.filter(onlyUnique).map((value: any) => {
                         addEtapToJourney(Number(id), value)
                     })
@@ -325,69 +307,15 @@ const UpdateEtap = () => {
             </Form.Item>
 
             <Form.Item
-                label='Nazwa transportu'
-                name={'nazwa'}
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole nazwa transportu nie może być puste!',
-                    },
-                ]}
-
-            >
-                <Input />
-            </Form.Item>
-            <Form.Item
-                label='Liczba jednostek'
-                name={'liczba_jednostek'}
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole liczba jednostek nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                            if (value < 0) {
-                                return Promise.reject('Liczba jednostek musi być dodatnia');
-                            }
-                            return Promise.resolve();
-                        },
-                    }
-                ]
-                }
-            >
-                <InputNumber />
-            </Form.Item>
-            <Form.Item
-                label='Liczba miejsc'
-                name='liczba_miejsc'
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole liczba miejsc nie może być puste!',
-                    },
-                    {
-                        validator: (rule, value) => {
-                            if (value < 0) {
-                                return Promise.reject('Liczba miejsc musi być dodatnia');
-                            }
-                            return Promise.resolve();
-                        },
-                    }
-                ]
-                }
-            >
-                <InputNumber />
-            </Form.Item>
-            <Form.Item
-                label="Powiązany z firmami transportowymi"
+                label="Powiązany z transportem"
             >
                 <Table
-                    rowSelection={rowFirmaSelection}
-                    columns={firma_transportowa_columns}
-                    dataSource={firmaData}
+                    rowSelection={rowTransportSelection}
+                    columns={columns_transport}
+                    dataSource={transportData}
                 />
             </Form.Item>
+
             <Form.Item
                 label="Powiązany z podróżami"
             >

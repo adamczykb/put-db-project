@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, message, Table } from "antd";
+import { Button, DatePicker, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
 
 import config from '../../config.json'

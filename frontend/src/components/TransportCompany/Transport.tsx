@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import getTransportData from "../../utils/adapter/getTransportData";
 
 import removeTransport from "../../utils/adapter/removeTransport";
+import removeTransportNew from "../../utils/adapter/removeTransportNew";
 const { Panel } = Collapse;
 
 const TransportyView = () => {
@@ -34,7 +35,7 @@ const TransportyView = () => {
             render: (text: any, record: any) =>
                 <>{record.firmy_transportowe.length > 0 ?
                     <Collapse >
-                        <Panel header={record.firmy_transportowe.length > 4 ? "Obsługuje " + record.firmy_transportowe.length + " podróże" : "Obsługuje " + record.firmy_transportowe.length + " podróży"} key="1">
+                        <Panel header={"Przypisano firm " + record.firmy_transportowe.length} key="1">
                             <List
                                 bordered
                                 dataSource={record.firmy_transportowe}
@@ -52,20 +53,21 @@ const TransportyView = () => {
                 }</>
         },
 
-        // {
-        //     title: 'Akcja',
-        //     render: (text: any, record: any) => <>
+        {
+            title: 'Akcja',
+            render: (text: any, record: any) => <>
 
-        //         <Popconfirm title="Sure to delete?" onConfirm={() => removeTransport(record.key)}>
-        //             <a>Usuń</a>
-        //         </Popconfirm>
-        //     </>
-        // },
+                <a href={"/transport/edycja/" + record.id}>Edytuj</a><br />
+                <Popconfirm title="Napewno chcesz usunąć transport?" onConfirm={() => removeTransportNew(record.key)}>
+                    <a>Usuń</a>
+                </Popconfirm>
+            </>
+        },
     ]
     return (
         <div>
-            <h2>Transporty dla etapów</h2>
-            <h3>Podgląd wykorzystywanych transportów podczas przemierzania poszczególnych etapów</h3>
+            <h2>Transporty</h2>
+            <Space><Button type="primary" onClick={() => { window.open('/transport/dodaj', '_self') }}>Dodaj transport</Button></Space>
             <br />
             <br />
             <Table columns={columns} dataSource={data} />

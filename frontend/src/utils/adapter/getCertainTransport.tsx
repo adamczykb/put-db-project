@@ -1,11 +1,11 @@
 import { message } from "antd";
 import config from "../../config.json";
 
-const getCertainTransportCompany = (id: any, setData: any) => {
+const getCertainTransport = (id: any, setData: any) => {
     if (isNaN(+id)) {
-        message.error("Zły identyfikator firmy transportowej")
+        message.error("Zły identyfikator transportu")
         setTimeout(function () {
-            window.open('/firma_transportowa', '_self')
+            window.open('/transport', '_self')
         }, 2.0 * 1000);
 
     } else {
@@ -17,13 +17,13 @@ const getCertainTransportCompany = (id: any, setData: any) => {
             },
             body: JSON.stringify({ params: { id_list: [Number(id)] } })
         };
-        fetch(config.SERVER_URL + "/api/get/certain_transport_companies", requestOptions)
+        fetch(config.SERVER_URL + "/api/get/certain_transports", requestOptions)
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200 && response.result.length > 0) {
                     setData(response.result[0]);
                 } else {
-                    message.error("Taka firma nie istnieje")
+                    message.error("Taki transport nie istnieje")
                     setTimeout(function () {
                         window.open('/firma_transportowa', '_self')
                     }, 2.0 * 1000);
@@ -35,4 +35,4 @@ const getCertainTransportCompany = (id: any, setData: any) => {
     }
 };
 
-export default getCertainTransportCompany;
+export default getCertainTransport;

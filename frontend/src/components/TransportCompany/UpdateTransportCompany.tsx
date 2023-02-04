@@ -5,7 +5,9 @@ import { useParams } from "react-router-dom";
 import config from '../../config.json'
 import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
 import getAllEtaps from "../../utils/adapter/getAllEtaps";
+import getAllTransport from "../../utils/adapter/getAllTransport";
 import getCertainTransportCompany from "../../utils/adapter/getCertainTransportCompany";
+import getTransportData from "../../utils/adapter/getTransportData";
 import { onlyUnique } from "../Pilots/UpdatePilot";
 
 
@@ -31,46 +33,28 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
-const etaps_columns = [
-
+const columns_transport = [
     {
-        title: 'Punkt poczatkowy',
-        key: 'punkt_poczatkowy',
-        render: (text: any, record: any) => <>{record.punkt_poczatkowy}</>,
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
     },
     {
-        title: 'Punkt konczowy',
-        key: 'punkt_konczowy',
-        render: (text: any, record: any) => <>{record.punkt_konczowy}</>,
+        title: 'Liczba jednostek',
+        key: 'liczba_jednostek',
+        render: (text: any, record: any) => <>{record.liczba_jednostek}</>,
     },
     {
-        title: 'Koszt',
-        key: 'koszt',
-        render: (text: any, record: any) => <>{record.koszt}</>,
-    },
-    {
-        title: 'Data poczatkowa',
-        key: 'data_poczatkowa',
-        render: (text: any, record: any) => <>{record.data_poczatkowa.split(' ')[0]}</>,
-    },
-    {
-        title: 'Data koncowa',
-        key: 'data_koncowa',
-        render: (text: any, record: any) => <>{record.data_koncowa.split(' ')[0]}</>,
+        title: 'Liczba miejsc',
+        key: 'liczba_miejsc',
+        render: (text: any, record: any) => <>{record.liczba_miejsc}</>,
     },
 ]
 const UpdateTransportCompany = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false)
     const { id } = useParams()
-    const [selectedEtapKeys, setSelectedEtapKeys] = useState<React.Key[]>([]);
-    const onSelectEtapChange = (newSelectedRowKeys: React.Key[]) => {
-        setSelectedEtapKeys(newSelectedRowKeys);
-    }
-    const rowEtapSelection = {
-        selectedRowKeys: selectedEtapKeys,
-        onChange: onSelectEtapChange,
-    }
+
     const onFinish = (values: any) => {
         values.id = Number(id)
         const requestOptions = {
@@ -87,7 +71,7 @@ const UpdateTransportCompany = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
-                    selectedEtapKeys.filter(onlyUnique).map((value: any) => {
+                    selectedTransportKeys.filter(onlyUnique).map((value: any) => {
                         addTransportCompanyToTransport(Number(id), value)
                     })
                     setTimeout(function () {
@@ -101,21 +85,32 @@ const UpdateTransportCompany = () => {
 
             }).catch((error) => message.error('Błąd połączenia z serwerem'));
     };
+    const [selectedTransportKeys, setSelectedTransportKeys] = useState<React.Key[]>([]);
+    const [transportData, setTransportData] = useState();
+    const onSelectTransportsChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedTransportKeys(newSelectedRowKeys);
 
-    const [etapData, setEtapData] = useState();
-    const [data, setData] = useState({ etapy: [] });
+    };
+
+    const rowTransportSelection = {
+        selectedRowKeys: selectedTransportKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectTransportsChange,
+    };
+    const [data, setData] = useState({ transporty: [] });
     useEffect(() => {
-        getAllEtaps(setEtapData)
+        getAllTransport(setTransportData)
         getCertainTransportCompany(id, setData)
     }, [])
-
     useEffect(() => {
         form.setFieldsValue(data)
-        let etapy: any = []
-        data.etapy.map((value: any) => {
-            etapy.push(value.id)
-        })
-        setSelectedEtapKeys(etapy)
+        if (data.transporty.length > 0 && data.transporty.at(-1)) {
+            let transport: any = []
+            data.transporty.map((value: any) => {
+                transport.push(value.id)
+            })
+            setSelectedTransportKeys(transport)
+        }
     }, [data])
     return <>
         <h2>Aktualizowanie firmy transportowej</h2>
@@ -174,17 +169,14 @@ const UpdateTransportCompany = () => {
             </Form.Item>
 
             <Form.Item
-                label="Etapy"
+                label="Powiązany z transportami"
             >
                 <Table
-                    rowSelection={rowEtapSelection}
-                    columns={etaps_columns}
-                    dataSource={etapData}
+                    rowSelection={rowTransportSelection}
+                    columns={columns_transport}
+                    dataSource={transportData}
                 />
             </Form.Item>
-
-
-
             <Form.Item {...tailFormItemLayout}>
                 <Button type="primary" htmlType="submit" loading={loading}>
                     Zaktualizuj firmę transportową

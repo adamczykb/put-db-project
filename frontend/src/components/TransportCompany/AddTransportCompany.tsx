@@ -1,9 +1,10 @@
 import { Button, Form, Input, message, Table } from "antd";
 import { useEffect, useState } from "react";
-import getAllAttractions from "../../utils/adapter/getAllAttractions";
-import getAllLanguages from "../../utils/adapter/getAllLanguages";
 
 import config from '../../config.json'
+import addTransportCompanyToTransport from "../../utils/adapter/addTransportCompanyToTransport";
+import getTransportData from "../../utils/adapter/getTransportData";
+import { onlyUnique } from "../Pilots/UpdatePilot";
 
 
 const tailFormItemLayout = {
@@ -28,15 +29,41 @@ const formItemLayout = {
         sm: { span: 16 },
     },
 };
+
+const columns_transport = [
+    {
+        title: 'Nazwa',
+        key: 'nazwa',
+        render: (text: any, record: any) => <>{record.nazwa}</>,
+    },
+    {
+        title: 'Liczba jednostek',
+        key: 'liczba_jednostek',
+        render: (text: any, record: any) => <>{record.liczba_jednostek}</>,
+    },
+    {
+        title: 'Liczba miejsc',
+        key: 'liczba_miejsc',
+        render: (text: any, record: any) => <>{record.liczba_miejsc}</>,
+    },
+]
 const AddTransportCompany = () => {
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const [selectedTransportKeys, setSelectedTransportKeys] = useState<React.Key[]>([]);
+    const [transportData, setTransportData] = useState();
+    const onSelectTransportsChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedTransportKeys(newSelectedRowKeys);
 
-
-
-
-    const [loading, setLoading] = useState(false)
-
-
+    };
+    useEffect(() => {
+        getTransportData(setTransportData)
+    }, [])
+    const rowTransportSelection = {
+        selectedRowKeys: selectedTransportKeys,
+        preserveSelectedRowKeys: false,
+        onChange: onSelectTransportsChange,
+    };
     const onFinish = (values: any) => {
         const requestOptions = {
             method: "POST",
@@ -51,6 +78,12 @@ const AddTransportCompany = () => {
             .then((response) => response.json())
             .then((response) => {
                 if (response.status == 200) {
+                    selectedTransportKeys.filter(onlyUnique).map((value: any) => {
+                        addTransportCompanyToTransport(Number(response.result), value)
+                    })
+                    setTimeout(function () {
+                        window.open('/firma_transportowa', '_self')
+                    }, 2.0 * 1000);
 
                     console.log(response)
                     message.success("Dodano nowa firme transportową")
@@ -119,6 +152,15 @@ const AddTransportCompany = () => {
                 <Input />
             </Form.Item>
 
+            <Form.Item
+                label="Powiązany z transportami"
+            >
+                <Table
+                    rowSelection={rowTransportSelection}
+                    columns={columns_transport}
+                    dataSource={transportData}
+                />
+            </Form.Item>
 
 
 

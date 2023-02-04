@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
-    UploadOutlined,
-    CompassOutlined,
     UserOutlined, FolderViewOutlined,
-    VideoCameraOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import IndexRouter from '../../../routes/router';
@@ -74,7 +71,7 @@ const Frontend: React.FC = () => {
                         {
                             key: '7',
                             icon: <FolderViewOutlined />,
-                            label: (<a href='/transporty'>
+                            label: (<a href='/transport'>
                                 Transport
                             </a>)
                         },

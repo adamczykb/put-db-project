@@ -44,7 +44,8 @@ use crate::pilot::{
     PilotQuery,
 };
 use crate::transport::{
-    add_transport_company_to_transport_json, get_all_transport_json, get_certain_transport_json,
+    add_transport_company_to_transport_json, delete_certain_transport_json, get_all_transport_json,
+    get_certain_transport_json, insert_certain_transport_json,
     remove_transport_company_from_transport_json, update_certain_transport_json, TransportBasic,
     TransportDelete, TransportFirmaTransportowaQuery, TransportInsert, TransportQuery,
 };
@@ -400,6 +401,19 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             ) {
                                 Ok(params) => {
                                     response.extend(insert_certain_language_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("wrong query".to_owned()));
+                                }
+                            };
+                        }
+                        "transport" => {
+                            match serde_json::from_str::<RequestBody<TransportInsert>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(insert_certain_transport_json(params));
                                 }
                                 Err(error) => {
                                     println!("{}", error);
@@ -789,6 +803,19 @@ pub fn urls(request: HashMap<String, String>) -> String {
                             ) {
                                 Ok(params) => {
                                     response.extend(delete_certain_transport_company_json(params));
+                                }
+                                Err(error) => {
+                                    println!("{}", error);
+                                    response.extend(server_error("WRONG QUERY".to_owned()));
+                                }
+                            };
+                        }
+                        "transport" => {
+                            match serde_json::from_str::<RequestBody<TransportDelete>>(
+                                request.get("Content").unwrap_or(&"".to_owned()),
+                            ) {
+                                Ok(params) => {
+                                    response.extend(delete_certain_transport_json(params));
                                 }
                                 Err(error) => {
                                     println!("{}", error);
