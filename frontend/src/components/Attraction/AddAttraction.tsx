@@ -139,7 +139,9 @@ const AddAttraction = () => {
         if (!values.sezon) {
             values.sezon = []
         }
-
+        if(!values.opis){
+            values.opis=''
+        }
         const requestOptions = {
             method: "POST",
             headers: {
@@ -220,15 +222,16 @@ const AddAttraction = () => {
                     options={options}
                 />
             </Form.Item>
+            
             <Form.Item
                 name="opis"
                 label="Opis"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole opisu nie może być puste!',
-                    },
-                ]}
+                // rules={[
+                //     {
+                //         required: true,
+                //         message: 'Pole opisu nie może być puste!',
+                //     },
+                // ]}
             >
                 <TextArea
                     showCount

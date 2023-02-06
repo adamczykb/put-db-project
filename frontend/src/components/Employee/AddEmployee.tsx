@@ -108,7 +108,7 @@ const AddEmployee = () => {
 
             }).then(() => {
                 if (message.error.length == 0) {
-                    window.open('/pracownicy')
+                    // window.open('/pracownicy')
                 }
             })
             .catch((error) => message.error('Błąd połączenia z serwerem'));
