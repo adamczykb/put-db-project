@@ -191,6 +191,13 @@ pub fn update_certain_attraction_json<'a>(
     let client = get_postgres_client();
     if client.is_ok() {
         let mut connection = client.unwrap();
+        connection
+            .execute(
+                "Delete from atrakcja_przewodnik where atrakcja_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap_or(0);
+
         let result: Response<u64> = Response {
             status: 200,
             message: "OK".to_owned(),
