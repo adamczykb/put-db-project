@@ -72,7 +72,7 @@ const columns_pilot = [
         render: (text: any, record: any) => <>{record.numer_telefonu}</>,
     },
     {
-        title: 'Addres',
+        title: 'Adres',
         render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
         key: 'addres',
         sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),
@@ -227,6 +227,14 @@ const UpdateAttraction = () => {
             <Form.Item
                 name="sezon"
                 label="Sezon"
+                rules={
+                    [
+                        {
+                            required: true,
+                            message: 'Sezon nie może być pusty'
+                        }
+                    ]
+                }
             >
                 <Select
                     mode="multiple"
@@ -240,12 +248,6 @@ const UpdateAttraction = () => {
             <Form.Item
                 name="opis"
                 label="Opis"
-                rules={[
-                    {
-                        required: true,
-                        message: 'Pole opis nie może być pusty!',
-                    },
-                ]}
             >
                 <TextArea
                     showCount

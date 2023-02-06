@@ -32,20 +32,20 @@ const AttractionView = () => {
                 <>{record.sezon.length > 0 ? <>{record.sezon.map((value: any) => <Tag>{value}</Tag>)}</> : <>Brak zdefiniowanych sezonów</>}</>,
             filters: [
                 {
-                    text: 'Wiosna',
-                    value: 'Wiosna',
+                    text: 'wiosna',
+                    value: 'wiosna',
                 },
                 {
-                    text: 'Lato',
-                    value: 'Lato',
+                    text: 'lato',
+                    value: 'lato',
                 },
                 {
-                    text: 'Jesień',
-                    value: 'Jesien',
+                    text: 'jesień',
+                    value: 'jesień',
                 },
                 {
-                    text: 'Zima',
-                    value: 'Zima',
+                    text: 'zima',
+                    value: 'zima',
                 },
             ],
             onFilter: (value: any, record: any) => record.sezon.join('').toLowerCase().indexOf(value.toLowerCase()) === 0,

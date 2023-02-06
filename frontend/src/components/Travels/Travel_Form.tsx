@@ -252,7 +252,7 @@ const TravelForm: React.FC = () => {
                 label="Opis"
             ><TextArea
                     showCount
-                    maxLength={1000}
+                    maxLength={100}
                     style={{ height: 120, marginBottom: 24 }}
                 />
             </Form.Item>

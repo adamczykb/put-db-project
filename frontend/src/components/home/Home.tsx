@@ -23,7 +23,7 @@ const ClientsView = () => {
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: { setSelectedKeys: any, selectedKeys: any, confirm: any, clearFilters: any, close: any }) => (
             <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
                 <Input
-                    placeholder={`Search PDB ID`}
+                    placeholder={`Szukaj`}
                     value={selectedKeys[0]}
                     onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
                     onPressEnter={() => handleSearch(confirm)}
@@ -91,7 +91,7 @@ const ClientsView = () => {
             sorter: (a: any, b: any) => a.numer_telefonu.localeCompare(b.numer_telefonu),
         },
         {
-            title: 'Addres',
+            title: 'Adres',
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'adres',
             sorter: (a: any, b: any) => a.adres.localeCompare(b.adres),

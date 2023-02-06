@@ -213,7 +213,16 @@ const AddClients = () => {
                         required: true,
                         message: 'Pole nazwisko nie może być puste!',
                     },
+                    {
+                        validator(_, value) {
+                            if (value > new Date()) {
+                                return Promise.reject('Data urodzenia późniejsza niz dzisiejsza');
+                            }
+                            return Promise.resolve();
+                        },
+                    }
                 ]}
+
             >
                 <DatePicker format="DD-MM-YYYY" />
             </Form.Item>

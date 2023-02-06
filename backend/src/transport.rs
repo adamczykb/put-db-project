@@ -411,33 +411,36 @@ pub fn delete_certain_transport_json<'a>(
     if client.is_ok() {
         let mut connection = client.unwrap();
         let result: Response<u64>;
-        connection
-            .execute(
-                "Delete from transport_firma_transportowa where transport_id=$1",
-                &[&params.params.id],
-            )
-            .unwrap_or(0);
-        connection
-            .execute(
-                "update etap set transport_id=null where transport_id=$1",
-                &[&params.params.id],
-            )
-            .unwrap_or(0);
 
-        let query_result = connection
-            .execute("Delete from transport where id=$1", &[&params.params.id])
-            .unwrap_or(0);
-        if query_result > 0 {
+        if connection
+            .query(
+                "select * from etap where transport_id=$1",
+                &[&params.params.id],
+            )
+            .unwrap()
+            .len()
+            == 0
+        {
+            connection
+                .execute("Delete from transport where id=$1", &[&params.params.id])
+                .unwrap_or(0);
+
+            connection
+                .execute(
+                    "Delete from transport_firma_transportowa where transport_id=$1",
+                    &[&params.params.id],
+                )
+                .unwrap_or(0);
             result = Response {
                 status: 200,
                 message: "Transport zostal usuniety".to_owned(),
-                result: query_result,
+                result: 1,
             };
         } else {
             result = Response {
                 status: 500,
                 message: "Nie mozna usunac transportu".to_owned(),
-                result: query_result,
+                result: 0,
             };
         }
         let mut response = HashMap::from([

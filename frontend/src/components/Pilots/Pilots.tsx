@@ -22,7 +22,7 @@ const PilotsView = () => {
             render: (text: any, record: any) => <>{record.numer_telefonu}</>,
         },
         {
-            title: 'Addres',
+            title: 'Adres',
             render: (text: any, record: any) => <a href={"https://www.google.com/maps/search/?api=1&query=" + record.adres.replace(' ', '+')}>{record.adres}</a>,
             key: 'addres',
         },
