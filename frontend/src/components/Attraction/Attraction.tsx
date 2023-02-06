@@ -14,7 +14,7 @@ const AttractionView = () => {
     const columns = [
         {
             title: 'Nazwa',
-            key: 'nazwa, adres, sezon, opis,koszt',
+            key: 'nazwa',
             render: (text: any, record: any) => <>{record.nazwa}</>,
             sorter: (a: any, b: any) => a.nazwa.localeCompare(b.nazwa),
         },
@@ -49,6 +49,17 @@ const AttractionView = () => {
                 },
             ],
             onFilter: (value: any, record: any) => record.sezon.join('').toLowerCase().indexOf(value.toLowerCase()) === 0,
+        },
+
+        {
+            title: 'Opis',
+            key: 'opis',
+            sorter: (a: any, b: any) => a.nazwa.localeCompare(b.opis),
+            render: (text: any, record: any) => <>{record.opis.length > 0 ? 
+                record.opis
+                :
+                <>Brak opisu</>
+            }</>,
         },
         {
             title: 'Przewodnicy',
